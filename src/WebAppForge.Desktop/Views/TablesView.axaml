@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             x:Class="WebAppForge.Desktop.Views.TablesView">
+    <UserControl.Resources>
+        <vm:OwnerFieldChoicesConverter x:Key="OwnerFieldChoices" />
+        <vm:OwnerFieldDisplayConverter x:Key="OwnerFieldDisplay" />
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <!-- Row classes are set by TablesView.axaml.cs from TableRowRules. -->
+        <Style Selector="DataGridRow.row-muted">
+            <Setter Property="Background" Value="{DynamicResource RowMutedBackground}" />
+        </Style>
+        <Style Selector="DataGridRow.row-warning">
+            <Setter Property="Background" Value="{DynamicResource RowWarningBackground}" />
+        </Style>
+    </UserControl.Styles>
+    <DockPanel Margin="12">
+        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7"
+                   Text="Select a row to edit its fields on the Fields tab. Muted rows are not generated; yellow rows have no primary key." />
+        <Border DockPanel.Dock="Top" IsVisible="{Binding Security.HasValidationMessage}" Padding="8" Margin="0,0,0,8"
+                BorderThickness="1" BorderBrush="#B3261E" CornerRadius="4">
+            <TextBlock Text="{Binding Security.ValidationMessage}" Foreground="#B3261E" TextWrapping="Wrap" />
+        </Border>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Text="Page size for the selected table" VerticalAlignment="Center" />
+            <ComboBox Name="PageSizeCombo" AutomationProperties.AutomationId="PageSizeCombo"
+                      ItemsSource="{Binding Tables.PageSizeChoices}"
+                      SelectedItem="{Binding Tables.SelectedPageSize, Mode=TwoWay}"
+                      IsEnabled="{Binding Tables.HasSelectedTable}"
+                      MinWidth="100" />
+        </StackPanel>
+        <DataGrid HorizontalScrollBarVisibility="Auto" Name="TablesGrid" AutomationProperties.AutomationId="TablesGrid"
+                  ItemsSource="{Binding Tables.Items}"
+                  SelectedItem="{Binding Tables.SelectedTable, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="All"
+                  SelectionMode="Single"
+                  LoadingRow="OnRowPrepared"
+                  CellEditEnded="OnCellEditEnded">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Table" Binding="{Binding Name}" IsReadOnly="True" Width="*" MinWidth="120" />
+                <DataGridCheckBoxColumn Header="Generate" Binding="{Binding Generate}" />
+                <DataGridTextColumn Header="Caption" Binding="{Binding Caption}" Width="*" MinWidth="120" />
+                <DataGridTextColumn Header="Filter (WHERE)" Binding="{Binding Filter}" Width="2*" MinWidth="120" />
+                <DataGridTemplateColumn Header="Owner field" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding Converter={StaticResource OwnerFieldChoices}}"
+                                      SelectedItem="{Binding OwnerField, Mode=OneWay, Converter={StaticResource OwnerFieldDisplay}}"
+                                      SelectionChanged="OnOwnerFieldSelectionChanged"
+                                      Margin="2,0" MinWidth="140" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="View level" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding ViewMinLevel, Mode=OneWay, StringFormat={}{0}}"
+                                     TextChanged="OnViewLevelTextChanged"
+                                     MinWidth="90" Margin="2,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Edit level" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding EditMinLevel, Mode=OneWay, StringFormat={}{0}}"
+                                     TextChanged="OnEditLevelTextChanged"
+                                     MinWidth="90" Margin="2,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Page size" Binding="{Binding Pages.PageSize}" />
+                <DataGridCheckBoxColumn Header="List" Binding="{Binding Pages.List}" />
+                <DataGridCheckBoxColumn Header="View" Binding="{Binding Pages.View}" />
+                <DataGridCheckBoxColumn Header="Add" Binding="{Binding Pages.Add}" />
+                <DataGridCheckBoxColumn Header="Copy" Binding="{Binding Pages.Copy}" />
+                <DataGridCheckBoxColumn Header="Edit" Binding="{Binding Pages.Edit}" />
+                <DataGridCheckBoxColumn Header="Delete" Binding="{Binding Pages.Delete}" />
+                <DataGridCheckBoxColumn Header="Search" Binding="{Binding Pages.Search}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

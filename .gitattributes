@@ -1,0 +1,7 @@
+# Keep line endings identical on every platform: the generator's raw-string templates take their newlines from the
+# source files, so the golden-output tests depend on them.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.jpg binary
+*.db binary

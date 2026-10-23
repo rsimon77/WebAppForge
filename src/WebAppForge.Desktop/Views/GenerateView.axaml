@@ -1,0 +1,194 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             x:Class="WebAppForge.Desktop.Views.GenerateView">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="WarningTextBrush">#8A5A00</SolidColorBrush>
+                    <SolidColorBrush x:Key="StageOkBrush">#2E7D32</SolidColorBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="WarningTextBrush">#FFD166</SolidColorBrush>
+                    <SolidColorBrush x:Key="StageOkBrush">#66BB6A</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.warning">
+            <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+        </Style>
+        <Style Selector="TextBlock.console">
+            <Setter Property="FontFamily" Value="Consolas, Menlo, Courier New, monospace" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+        </Style>
+        <Style Selector="ListBox.console ListBoxItem">
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="MinHeight" Value="0" />
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="Foreground" Value="{DynamicResource AppAccentBrush}" />
+        </Style>
+        <Style Selector="Button.link TextBlock">
+            <Setter Property="TextDecorations" Value="Underline" />
+        </Style>
+        <Style Selector="Path.stage">
+            <Setter Property="Width" Value="16" />
+            <Setter Property="Height" Value="16" />
+            <Setter Property="Stretch" Value="Uniform" />
+            <Setter Property="StrokeThickness" Value="1.8" />
+            <Setter Property="StrokeLineCap" Value="Round" />
+            <Setter Property="StrokeJoin" Value="Round" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12" RowSpacing="8">
+
+        <!-- Output folder, commands, site link, summary and tool status. -->
+        <StackPanel Grid.Row="0" Spacing="6">
+            <TextBlock Text="Output folder (relative to the project folder, or absolute)" FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" MaxWidth="760" HorizontalAlignment="Left">
+                <TextBox Grid.Column="0" Text="{Binding Generate.OutputFolder}" Width="560"
+                         AutomationProperties.AutomationId="GenerateOutputFolderBox" />
+                <Button Grid.Column="1" Content="Browse..." Command="{Binding Generate.BrowseCommand}" />
+            </Grid>
+
+            <WrapPanel>
+                <Button Content="Generate" Command="{Binding Generate.GenerateCommand}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="GenerateButton">
+                    <Button.IsEnabled>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="Security.CanGenerate" />
+                            <Binding Path="Generate.IsIdle" />
+                        </MultiBinding>
+                    </Button.IsEnabled>
+                </Button>
+                <Button Content="Build only" Command="{Binding Generate.BuildOnlyCommand}" IsEnabled="{Binding Generate.IsIdle}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="BuildOnlyButton" />
+                <Button Content="Publish only" Command="{Binding Generate.PublishOnlyCommand}" IsEnabled="{Binding Generate.IsIdle}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="PublishOnlyButton" />
+                <Button Content="Cancel" Command="{Binding Generate.CancelCommand}" IsEnabled="{Binding Generate.IsBusy}" Margin="0,0,24,4"
+                        AutomationProperties.AutomationId="CancelBuildButton" />
+                <Button Content="Run site" Command="{Binding Generate.RunSiteCommand}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="RunSiteButton" />
+                <Button Content="Stop" Command="{Binding Generate.StopSiteCommand}" IsEnabled="{Binding Generate.IsSiteRunning}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="StopSiteButton" />
+                <Button Content="Open in browser" Command="{Binding Generate.OpenInBrowserCommand}" IsEnabled="{Binding Generate.IsSiteRunning}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="OpenInBrowserButton" />
+                <Button Content="Open output folder" Command="{Binding Generate.OpenOutputFolderCommand}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="OpenOutputFolderButton" />
+            </WrapPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Generate.IsSiteRunning}">
+                <TextBlock Text="Running at" VerticalAlignment="Center" />
+                <Button Classes="link" Command="{Binding Generate.OpenInBrowserCommand}" AutomationProperties.AutomationId="SiteLinkButton">
+                    <TextBlock Text="{Binding Generate.SiteUrl}" />
+                </Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding Generate.BuildSummary}" VerticalAlignment="Center" TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="BuildSummaryText" />
+                <Button Classes="link" Command="{Binding Generate.ShowBuildSettingsCommand}" AutomationProperties.AutomationId="ShowBuildSettingsLink">
+                    <TextBlock Text="Change in the Project tab" />
+                </Button>
+            </StackPanel>
+
+            <WrapPanel>
+                <TextBlock Classes="hint" Text="{Binding Generate.DotnetStatus}" Margin="0,0,16,0" AutomationProperties.AutomationId="DotnetStatusText" />
+                <TextBlock Classes="hint" Text="{Binding Generate.NodeStatus}" Margin="0,0,16,0" AutomationProperties.AutomationId="NodeStatusText" />
+                <TextBlock Classes="hint" Text="{Binding Generate.DockerStatus}" AutomationProperties.AutomationId="DockerStatusText" />
+            </WrapPanel>
+            <Button IsVisible="{Binding Generate.ShowOptionsHint}" Classes="link" Command="{Binding Generate.OpenOptionsCommand}"
+                    HorizontalAlignment="Left" AutomationProperties.AutomationId="OpenOptionsLink">
+                <TextBlock Text="Open Options" />
+            </Button>
+            <TextBlock IsVisible="{Binding Generate.HasDockerWarning}" Classes="warning" TextWrapping="Wrap" Text="{Binding Generate.DockerWarning}"
+                       AutomationProperties.AutomationId="DockerWarningText" />
+
+            <TextBlock IsVisible="{Binding Security.HasValidationMessage}" Text="{Binding Security.ValidationMessage}"
+                       Foreground="#B3261E" TextWrapping="Wrap" AutomationProperties.AutomationId="ValidationBlockText" />
+            <TextBlock IsVisible="{Binding Generate.HasMessage}" Classes="error" Text="{Binding Generate.Message}"
+                       AutomationProperties.AutomationId="GenerateMessageText" />
+        </StackPanel>
+
+        <!-- Stage strip. -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Generate.Stages}" AutomationProperties.AutomationId="StageStrip">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:StageItem">
+                    <Border CornerRadius="14" Padding="10,4" BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                            ToolTip.Tip="{Binding Tooltip}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Panel Width="16" Height="16" VerticalAlignment="Center">
+                                <Path Classes="stage" IsVisible="{Binding IsPending}" Opacity="0.5" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                                      Data="M8,2 A6,6 0 1 0 8,14 A6,6 0 1 0 8,2 Z" />
+                                <Path Classes="stage" IsVisible="{Binding IsRunning}" Stroke="{DynamicResource AppAccentBrush}"
+                                      Data="M8,2 A6,6 0 0 1 14,8" />
+                                <Path Classes="stage" IsVisible="{Binding IsOk}" Stroke="{DynamicResource StageOkBrush}"
+                                      Data="M3,8.5 L6.5,12 L13,4.5" />
+                                <Path Classes="stage" IsVisible="{Binding IsFailed}" Stroke="{DynamicResource ValidationBrush}"
+                                      Data="M4,4 L12,12 M12,4 L4,12" />
+                                <Path Classes="stage" IsVisible="{Binding IsSkipped}" Opacity="0.5" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                                      Data="M4,8 H12" />
+                                <Path Classes="stage" IsVisible="{Binding IsCancelled}" Stroke="{DynamicResource WarningTextBrush}"
+                                      Data="M4,4 H12 V12 H4 Z" />
+                            </Panel>
+                            <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Live output and diagnostics. -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto,160" RowSpacing="4">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Output" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <CheckBox Content="Auto-scroll" IsChecked="{Binding Generate.AutoScroll}" AutomationProperties.AutomationId="AutoScrollCheck" />
+                <Button Content="Clear" Command="{Binding Generate.ClearOutputCommand}" AutomationProperties.AutomationId="ClearOutputButton" />
+                <Button Content="Copy all" Command="{Binding Generate.CopyAllCommand}" AutomationProperties.AutomationId="CopyAllButton" />
+                <TextBlock Text="{Binding Generate.LastResult}" Classes="hint" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <ListBox Grid.Row="1" x:Name="OutputList" Classes="console" ItemsSource="{Binding Generate.OutputLines}"
+                     MinHeight="120" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                     AutomationProperties.AutomationId="OutputList">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="vm:OutputLineItem">
+                        <TextBlock Classes="console" Text="{Binding Text}"
+                                   Classes.error="{Binding IsError}" Classes.warning="{Binding IsWarning}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <TextBlock Grid.Row="2" Text="Diagnostics (double-click a row to copy path:line)" FontWeight="SemiBold" />
+            <DataGrid HorizontalScrollBarVisibility="Auto" Grid.Row="3" x:Name="DiagnosticsGrid" ItemsSource="{Binding Generate.Diagnostics}" AutoGenerateColumns="False"
+                      IsReadOnly="True" SelectionMode="Single" GridLinesVisibility="All" CanUserResizeColumns="True"
+                      AutomationProperties.AutomationId="DiagnosticsGrid">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="80" />
+                    <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="90" />
+                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" MinWidth="160" />
+                    <DataGridTextColumn Header="File" Binding="{Binding File}" Width="260" />
+                    <DataGridTextColumn Header="Line" Binding="{Binding Line}" Width="60" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <TextBlock Grid.Row="3" TextWrapping="Wrap" Opacity="0.7"
+                   Text="Writes the ASP.NET Core project for every table marked Generate, then builds, publishes or packs it as the Project tab says. Save the project before generating." />
+    </Grid>
+</UserControl>

@@ -1,0 +1,87 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WebAppForge.Desktop.App"
+             xmlns:local="using:WebAppForge.Desktop"
+             RequestedThemeVariant="Default">
+             <!-- The theme variant is set at startup from the Appearance setting (Light, Dark or System). -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <!--
+                Default accent. AvaloniaAppearance merges its accent and the custom styles after this dictionary, so
+                they win. Keep the default here, not as a direct key: direct keys would take priority over them.
+            -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <SolidColorBrush x:Key="AppAccentBrush">#0D6EFD</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Simple 16 x 16 stroke icons for the menu bar. -->
+            <StreamGeometry x:Key="IconNew">M4,1.5 H9.5 L12.5,4.5 V14.5 H4 Z M9.5,1.5 V4.5 H12.5</StreamGeometry>
+            <StreamGeometry x:Key="IconOpen">M1.5,4 V13.5 H14.5 V6 H7.5 L6,4 Z</StreamGeometry>
+            <StreamGeometry x:Key="IconSave">M2,2 H12 L14,4 V14 H2 Z M5,2 V6 H10 V2 M5,14 V10 H11 V14</StreamGeometry>
+            <StreamGeometry x:Key="IconSaveAs">M2,2 H10 L12,4 V7 M2,2 V14 H7 M5,2 V5 H9 V2 M10,11 H14 M12,9 V13</StreamGeometry>
+            <StreamGeometry x:Key="IconConnect">M3,4 C3,2 13,2 13,4 V12 C13,14 3,14 3,12 Z M3,4 C3,6 13,6 13,4 M3,8 C3,10 13,10 13,8</StreamGeometry>
+            <StreamGeometry x:Key="IconTable">M1.5,2.5 H14.5 V13.5 H1.5 Z M1.5,6 H14.5 M1.5,9.5 H14.5 M6,6 V13.5</StreamGeometry>
+            <StreamGeometry x:Key="IconGenerate">M4,2 L13,8 L4,14 Z</StreamGeometry>
+            <StreamGeometry x:Key="IconSettings">M2,4 H14 M2,12 H14 M5,2 V6 M11,10 V14</StreamGeometry>
+            <StreamGeometry x:Key="IconExit">M6,2 H2.5 V14 H6 M6,8 H14 M11,5 L14,8 L11,11</StreamGeometry>
+            <StreamGeometry x:Key="IconStyles">M8,1.5 C4,1.5 1.5,4.5 1.5,8 C1.5,11.5 4,14.5 7.5,14.5 C8.5,14.5 8.5,13.5 8,12.5 C7.5,11.5 8.5,10.5 10,10.5 H11.5 C13.5,10.5 14.5,9.5 14.5,7.5 C14.5,4 11.5,1.5 8,1.5 Z</StreamGeometry>
+            <StreamGeometry x:Key="IconAbout">M8,1.5 A6.5,6.5 0 1 0 8,14.5 A6.5,6.5 0 1 0 8,1.5 Z M8,7 V11.5 M8,4.5 V5</StreamGeometry>
+
+            <!-- Row backgrounds on the Tables tab. Light and dark variants keep the grid text readable. -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="RowMutedBackground">#F1F3F5</SolidColorBrush>
+                    <SolidColorBrush x:Key="RowWarningBackground">#FFF3CD</SolidColorBrush>
+                    <SolidColorBrush x:Key="ValidationBrush">#B3261E</SolidColorBrush>
+                    <SolidColorBrush x:Key="PanelBackground">#F8F9FA</SolidColorBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="RowMutedBackground">#2B2F33</SolidColorBrush>
+                    <SolidColorBrush x:Key="RowWarningBackground">#4D3F12</SolidColorBrush>
+                    <SolidColorBrush x:Key="ValidationBrush">#FF8A80</SolidColorBrush>
+                    <SolidColorBrush x:Key="PanelBackground">#2B2F33</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+        <Style Selector="Path.icon">
+            <Setter Property="Width" Value="16" />
+            <Setter Property="Height" Value="16" />
+            <Setter Property="Stretch" Value="Uniform" />
+            <Setter Property="Stroke" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+            <Setter Property="StrokeThickness" Value="1.4" />
+        </Style>
+
+        <!-- Shared by the Project, Fields and Pages tabs. -->
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,6,0,0" />
+        </Style>
+        <Style Selector="TextBlock.hint">
+            <Setter Property="Opacity" Value="0.7" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TextBlock.error">
+            <Setter Property="Foreground" Value="{DynamicResource ValidationBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TextBox.code">
+            <Setter Property="FontFamily" Value="Consolas, Menlo, Courier New, monospace" />
+            <Setter Property="AcceptsReturn" Value="True" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="MinHeight" Value="90" />
+        </Style>
+    </Application.Styles>
+</Application>

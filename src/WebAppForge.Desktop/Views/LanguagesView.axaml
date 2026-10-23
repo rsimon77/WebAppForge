@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             x:Class="WebAppForge.Desktop.Views.LanguagesView">
+    <UserControl.Styles>
+        <!-- A translation whose source text changed since it was made. -->
+        <Style Selector="Border.stale">
+            <Setter Property="Background" Value="{DynamicResource RowWarningBackground}" />
+        </Style>
+        <Style Selector="TextBox.source">
+            <Setter Property="Opacity" Value="0.6" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="TranslationCellTemplate" DataType="vm:TranslationCell">
+            <Border Classes.stale="{Binding IsStale}" Padding="4,2">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <TextBox Text="{Binding Text}" IsReadOnly="{Binding IsSource}" Classes.source="{Binding IsSource}"
+                             MinHeight="28" Padding="6,2" VerticalContentAlignment="Center"
+                             AutomationProperties.AutomationId="TranslationCellBox" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" IsVisible="{Binding CanEdit}">
+                        <CheckBox IsChecked="{Binding Reviewed}" IsEnabled="{Binding HasEntry}" MinWidth="0"
+                                  ToolTip.Tip="Reviewed: a reviewed text is never replaced by automatic translation"
+                                  AutomationProperties.AutomationId="TranslationReviewedCheck" />
+                        <TextBlock Text="{Binding SourceLabel}" Classes="hint" VerticalAlignment="Center" Width="48" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="8" DataContext="{Binding Languages}">
+
+        <!-- Settings and the list of languages. -->
+        <Expander Grid.Row="0" Header="Languages and automatic translation" IsExpanded="True" HorizontalAlignment="Stretch">
+            <ScrollViewer MaxHeight="300" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="6" Margin="0,4,0,0">
+                    <CheckBox Content="Enable multi-language support in the generated site" IsChecked="{Binding Enabled}"
+                              AutomationProperties.AutomationId="LocalizationEnabledCheck" />
+                    <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
+                            BorderBrush="{DynamicResource ValidationBrush}">
+                        <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="LanguagesMessageText" />
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Classes="label" Text="Default language (the language of your captions)" />
+                            <ComboBox ItemsSource="{Binding LanguageCodes}" SelectedItem="{Binding DefaultLanguage}" Width="200"
+                                      AutomationProperties.AutomationId="DefaultLanguageCombo" />
+
+                            <TextBlock Classes="label" Text="Languages" />
+                            <ListBox ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" MaxHeight="130"
+                                     AutomationProperties.AutomationId="LanguageList">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="vm:LanguageRow">
+                                        <Grid ColumnDefinitions="60,*,Auto,Auto,Auto" ColumnSpacing="8">
+                                            <TextBlock Text="{Binding Code}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                                <Run Text="{Binding EnglishName}" /> <Run Text="{Binding NativeName}" Foreground="Gray" />
+                                            </TextBlock>
+                                            <TextBlock Grid.Column="2" Text="{Binding RightToLeftMarker}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                       ToolTip.Tip="Written right to left" />
+                                            <TextBlock Grid.Column="3" Text="{Binding DefaultMarker}" Classes="hint" VerticalAlignment="Center" />
+                                            <Button Grid.Column="4" Content="Remove" Padding="8,2" IsEnabled="{Binding CanRemove}"
+                                                    Command="{Binding $parent[ListBox].DataContext.RemoveLanguageCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    AutomationProperties.AutomationId="RemoveLanguageButton" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                <Button Content="Add from list..." Command="{Binding PickLanguageCommand}"
+                                        AutomationProperties.AutomationId="PickLanguageButton" />
+                                <TextBox Text="{Binding NewLanguageText}" PlaceholderText="or type a code, e.g. pt-BR" Width="190"
+                                         AutomationProperties.AutomationId="NewLanguageBox" />
+                                <Button Content="Add" Command="{Binding AddLanguageCommand}"
+                                        AutomationProperties.AutomationId="AddLanguageButton" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <CheckBox Content="Translate automatically with an online service (opt in)" IsChecked="{Binding AutoTranslate}"
+                                      AutomationProperties.AutomationId="AutoTranslateCheck" />
+                            <TextBlock Classes="hint"
+                                       Text="Texts are sent to the service only when you start a translation and confirm. Reviewed and typed texts are never replaced." />
+                            <TextBlock Classes="label" Text="Translation service" />
+                            <ComboBox ItemsSource="{Binding ProviderChoices}" SelectedItem="{Binding Provider}" Width="200"
+                                      AutomationProperties.AutomationId="ProviderCombo" />
+                            <TextBlock Text="{Binding ProviderStatus}" TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="ProviderStatusText" />
+                            <TextBlock Classes="label" Text="Translation notes (style, glossary; sent with the texts)" />
+                            <TextBox Text="{Binding TranslationNotes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60" MaxHeight="90"
+                                     AutomationProperties.AutomationId="TranslationNotesBox" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Expander>
+
+        <!-- Filters, translate buttons, progress and result. -->
+        <StackPanel Grid.Row="1" Spacing="6">
+            <WrapPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,16,4">
+                    <TextBlock Text="Language" VerticalAlignment="Center" />
+                    <ComboBox ItemsSource="{Binding FilterChoices}" SelectedItem="{Binding FilterLanguage}" Width="150"
+                              AutomationProperties.AutomationId="LanguageFilterCombo" />
+                </StackPanel>
+                <CheckBox Content="Only missing" IsChecked="{Binding OnlyMissing}" Margin="0,0,12,4"
+                          AutomationProperties.AutomationId="OnlyMissingCheck" />
+                <CheckBox Content="Only unreviewed" IsChecked="{Binding OnlyUnreviewed}" Margin="0,0,12,4"
+                          AutomationProperties.AutomationId="OnlyUnreviewedCheck" />
+                <CheckBox Content="Only stale" IsChecked="{Binding OnlyStale}" Margin="0,0,12,4"
+                          AutomationProperties.AutomationId="OnlyStaleCheck" />
+                <TextBox Text="{Binding Search}" PlaceholderText="Search keys and texts" Width="200" Margin="0,0,16,4"
+                         AutomationProperties.AutomationId="TranslationSearchBox" />
+                <TextBlock VerticalAlignment="Center" Classes="hint" Margin="0,0,0,4">
+                    <Run Text="{Binding ShownRowCount}" /> <Run Text="of" /> <Run Text="{Binding TotalRowCount}" /> <Run Text="rows" />
+                </TextBlock>
+            </WrapPanel>
+
+            <WrapPanel>
+                <Button Content="Translate missing" Command="{Binding TranslateMissingCommand}" IsEnabled="{Binding IsIdle}" Margin="0,0,8,4"
+                        ToolTip.Tip="Translates the missing texts of the chosen language, or of all languages"
+                        AutomationProperties.AutomationId="TranslateMissingButton" />
+                <Button Content="Translate selected rows" Command="{Binding TranslateSelectedCommand}" IsEnabled="{Binding IsIdle}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="TranslateSelectedButton" />
+                <Button Content="Cancel" Command="{Binding CancelTranslationCommand}" IsEnabled="{Binding IsTranslating}" Margin="0,0,24,4"
+                        AutomationProperties.AutomationId="CancelTranslationButton" />
+                <Button Content="Import CSV..." Command="{Binding ImportCsvCommand}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="ImportCsvButton" />
+                <Button Content="Export CSV..." Command="{Binding ExportCsvCommand}" Margin="0,0,8,4"
+                        AutomationProperties.AutomationId="ExportCsvButton" />
+            </WrapPanel>
+
+            <ProgressBar IsVisible="{Binding IsTranslating}" IsIndeterminate="{Binding IsProgressIndeterminate}"
+                         Minimum="0" Maximum="{Binding ProgressMaximum}" Value="{Binding ProgressValue}"
+                         AutomationProperties.AutomationId="TranslationProgress" />
+            <TextBlock IsVisible="{Binding HasTranslateMessage}" Classes="error" Text="{Binding TranslateMessage}"
+                       AutomationProperties.AutomationId="TranslateMessageText" />
+            <TextBlock IsVisible="{Binding HasResult}" TextWrapping="Wrap" Text="{Binding ResultSummary}"
+                       AutomationProperties.AutomationId="TranslationResultText" />
+        </StackPanel>
+
+        <!-- Rows are table captions, field captions and fixed UI strings; the language columns are added in code. -->
+        <DataGrid HorizontalScrollBarVisibility="Auto" Grid.Row="2" x:Name="TranslationsGrid" ItemsSource="{Binding Rows}" AutoGenerateColumns="False"
+                  SelectionMode="Extended" IsReadOnly="True" CanUserResizeColumns="True" GridLinesVisibility="All"
+                  AutomationProperties.AutomationId="TranslationsGrid">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="210" />
+                <DataGridTextColumn Header="Source text" Binding="{Binding SourceText}" Width="220" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

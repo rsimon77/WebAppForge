@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WebAppForge.Desktop.Views.DatabaseView">
+    <StackPanel Spacing="8" Margin="12" MaxWidth="760" HorizontalAlignment="Left">
+        <TextBlock Text="Provider" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding Database.Provider}" />
+        <TextBlock Text="SQLite file (relative to the project folder, forward slashes)" FontWeight="SemiBold" Margin="0,8,0,0" />
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <TextBox Grid.Column="0" Text="{Binding Database.DatabasePath}" PlaceholderText="e.g. data/app.db"
+                     AutomationProperties.AutomationId="SqlitePathBox" />
+            <Button Grid.Column="1" Content="Browse..." Command="{Binding Database.BrowseCommand}" />
+            <Button Grid.Column="2" Content="Connect" Command="{Binding Database.ConnectCommand}" />
+        </Grid>
+        <TextBlock TextWrapping="Wrap" Opacity="0.7"
+                   Text="Connect reads the tables and columns. Tables already in the project keep their settings; new tables are added and tables missing from the database are removed." />
+    </StackPanel>
+</UserControl>

@@ -426,3 +426,18 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# ---- WebAppForge ----
+[Bb]in/
+[Oo]bj/
+*.db
+*.db-shm
+*.db-wal
+*.autosave.xml
+generated/
+publish/
+**/artifacts/
+tests/ui/node_modules/
+tests/ui/.sites/
+tests/ui/test-results/
+tests/ui/playwright-report/

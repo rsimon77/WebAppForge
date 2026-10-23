@@ -1,0 +1,219 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             x:Class="WebAppForge.Desktop.Views.ProjectSettingsView">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="8" Margin="12" MaxWidth="760" HorizontalAlignment="Left" DataContext="{Binding ProjectSettings}">
+
+            <TextBlock Classes="hint" Text="Settings of the whole project. Changes are saved with the project file." />
+            <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
+                    BorderBrush="{DynamicResource ValidationBrush}">
+                <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="ProjectMessageText" />
+            </Border>
+
+            <Expander Header="Identity" IsExpanded="True" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4" Margin="0,4,0,0">
+                    <TextBlock Classes="label" Text="Project name" />
+                    <TextBox Text="{Binding Name}" AutomationProperties.AutomationId="ProjectIdentityNameBox" />
+
+                    <TextBlock Classes="label" Text="Project id" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox Text="{Binding ProjectId, Mode=OneWay}" IsReadOnly="True" Width="340"
+                                 AutomationProperties.AutomationId="ProjectIdBox" />
+                        <Button Content="Regenerate..." Command="{Binding RegenerateProjectIdCommand}"
+                                AutomationProperties.AutomationId="RegenerateProjectIdButton" />
+                    </StackPanel>
+
+                    <TextBlock Classes="label" Text="Description" />
+                    <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60"
+                             AutomationProperties.AutomationId="ProjectDescriptionBox" />
+
+                    <TextBlock Classes="label" Text="Author" />
+                    <TextBox Text="{Binding Author}" AutomationProperties.AutomationId="ProjectAuthorBox" />
+                    <TextBlock Classes="label" Text="Company" />
+                    <TextBox Text="{Binding Company}" AutomationProperties.AutomationId="ProjectCompanyBox" />
+                    <TextBlock Classes="label" Text="Copyright" />
+                    <TextBox Text="{Binding Copyright}" AutomationProperties.AutomationId="ProjectCopyrightBox" />
+                    <TextBlock Classes="label" Text="Version" />
+                    <TextBox Text="{Binding Version}" Width="200" HorizontalAlignment="Left"
+                             AutomationProperties.AutomationId="ProjectVersionBox" />
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Output" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4" Margin="0,4,0,0">
+                    <TextBlock Classes="label" Text="Output folder (relative to the project file, or absolute)" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse..." Margin="8,0,0,0" Command="{Binding BrowseOutputCommand}"
+                                AutomationProperties.AutomationId="BrowseOutputFolderButton" />
+                        <TextBox Text="{Binding OutputFolder}" AutomationProperties.AutomationId="OutputFolderBox" />
+                    </DockPanel>
+                    <TextBlock Classes="label" Text="Root namespace (empty: from the project name)" />
+                    <TextBox Text="{Binding RootNamespace}" AutomationProperties.AutomationId="RootNamespaceBox" />
+                    <TextBlock Classes="label" Text="Assembly name (empty: from the project name)" />
+                    <TextBox Text="{Binding AssemblyName}" AutomationProperties.AutomationId="AssemblyNameBox" />
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Site" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4" Margin="0,4,0,0">
+                    <TextBlock Classes="label" Text="ASP.NET application title" />
+                    <TextBox Text="{Binding SiteTitle}" AutomationProperties.AutomationId="SiteTitleBox" />
+                    <TextBlock Classes="label" Text="Theme" />
+                    <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Themes}" SelectedItem="{Binding Theme}"
+                              MinWidth="200" AutomationProperties.AutomationId="SiteThemeCombo" />
+                    <CheckBox Content="Include home page" IsChecked="{Binding IncludeHomePage}"
+                              AutomationProperties.AutomationId="IncludeHomePageCheck" />
+
+                    <TextBlock Classes="label" Text="Favicon" />
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                            <Button Content="Browse..." Command="{Binding BrowseFaviconCommand}" AutomationProperties.AutomationId="BrowseFaviconButton" />
+                            <Button Content="Clear" Command="{Binding ClearFaviconCommand}" AutomationProperties.AutomationId="ClearFaviconButton" />
+                        </StackPanel>
+                        <TextBox Text="{Binding FaviconPath}" AutomationProperties.AutomationId="FaviconPathBox" />
+                    </DockPanel>
+                    <TextBlock Classes="label" Text="Logo" />
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                            <Button Content="Browse..." Command="{Binding BrowseLogoCommand}" AutomationProperties.AutomationId="BrowseLogoButton" />
+                            <Button Content="Clear" Command="{Binding ClearLogoCommand}" AutomationProperties.AutomationId="ClearLogoButton" />
+                        </StackPanel>
+                        <TextBox Text="{Binding LogoPath}" AutomationProperties.AutomationId="LogoPathBox" />
+                    </DockPanel>
+
+                    <TextBlock Classes="label" Text="Footer text" />
+                    <TextBox Text="{Binding FooterText}" AutomationProperties.AutomationId="FooterTextBox" />
+                    <StackPanel Orientation="Horizontal" Spacing="24">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="label" Text="Color mode" />
+                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.ColorModes}" SelectedItem="{Binding ColorMode}"
+                                      MinWidth="160" AutomationProperties.AutomationId="ColorModeCombo" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="label" Text="Navbar style" />
+                            <ComboBox ItemsSource="{x:Static vm:ContextStyles.Names}" SelectedItem="{Binding NavbarStyle}"
+                                      MinWidth="160" AutomationProperties.AutomationId="NavbarStyleCombo">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Width="14" Height="14" CornerRadius="3" BorderThickness="1"
+                                                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                                    Background="{Binding Converter={x:Static vm:StyleSwatchConverter.Instance}}" />
+                                            <TextBlock Text="{Binding}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Runtime" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4" Margin="0,4,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="24">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="label" Text="Environment" />
+                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Environments}" SelectedItem="{Binding Environment}"
+                                      MinWidth="160" AutomationProperties.AutomationId="EnvironmentCombo" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="label" Text="Log level" />
+                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.LogLevels}" SelectedItem="{Binding LogLevel}"
+                                      MinWidth="160" AutomationProperties.AutomationId="LogLevelCombo" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="24">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="label" Text="HTTP port (1-65535)" />
+                            <TextBox Text="{Binding HttpPortText}" Width="160" AutomationProperties.AutomationId="HttpPortBox" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="label" Text="HTTPS port (1-65535)" />
+                            <TextBox Text="{Binding HttpsPortText}" Width="160" AutomationProperties.AutomationId="HttpsPortBox" />
+                        </StackPanel>
+                    </StackPanel>
+                    <CheckBox Content="Use HTTPS" IsChecked="{Binding UseHttps}" AutomationProperties.AutomationId="UseHttpsCheck" />
+                    <CheckBox Content="Send HSTS headers (needs HTTPS)" IsChecked="{Binding EnableHsts}" IsEnabled="{Binding CanUseHsts}"
+                              AutomationProperties.AutomationId="EnableHstsCheck" />
+                    <CheckBox Content="Compress responses" IsChecked="{Binding EnableResponseCompression}"
+                              AutomationProperties.AutomationId="ResponseCompressionCheck" />
+                    <CheckBox Content="Add a /health endpoint" IsChecked="{Binding EnableHealthEndpoint}"
+                              AutomationProperties.AutomationId="HealthEndpointCheck" />
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Global CSS" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4" Margin="0,4,0,0">
+                    <TextBlock Classes="hint" Text="Added to every page of the generated site." />
+                    <TextBox Classes="code" Text="{Binding GlobalCss}" Height="160" AutomationProperties.AutomationId="GlobalCssBox" />
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Global script" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4" Margin="0,4,0,0">
+                    <TextBlock Classes="hint" Text="JavaScript added to every page of the generated site." />
+                    <TextBox Classes="code" Text="{Binding GlobalScript}" Height="160" AutomationProperties.AutomationId="GlobalScriptBox" />
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Database" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4" Margin="0,4,0,0">
+                    <TextBlock Classes="label" Text="Provider" />
+                    <TextBox Text="{Binding Provider, Mode=OneWay}" IsReadOnly="True" Width="200" HorizontalAlignment="Left"
+                             AutomationProperties.AutomationId="ProviderBox" />
+                    <TextBlock Classes="label" Text="SQLite file path" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse..." Margin="8,0,0,0" Command="{Binding BrowseDatabaseCommand}"
+                                AutomationProperties.AutomationId="BrowseDatabaseButton" />
+                        <TextBox Text="{Binding DatabasePath}" AutomationProperties.AutomationId="ProjectDatabasePathBox" />
+                    </DockPanel>
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Build and Docker" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="4" Margin="0,4,0,0">
+                    <CheckBox Content="Build after generating" IsChecked="{Binding BuildAfterGenerate}" AutomationProperties.AutomationId="BuildAfterGenerateCheck" />
+                    <TextBlock Classes="label" Text="Configuration" />
+                    <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Configurations}" SelectedItem="{Binding Configuration}"
+                              MinWidth="160" AutomationProperties.AutomationId="ConfigurationCombo" />
+                    <CheckBox Content="Publish instead of build" IsChecked="{Binding Publish}" AutomationProperties.AutomationId="PublishCheck" />
+                    <TextBlock Classes="label" Text="Publish folder (relative to the output folder)" />
+                    <TextBox Text="{Binding PublishFolder}" AutomationProperties.AutomationId="PublishFolderBox" />
+                    <TextBlock Classes="label" Text="Runtime identifier (for example win-x64, empty for any platform)" />
+                    <TextBox Text="{Binding RuntimeIdentifier}" AutomationProperties.AutomationId="RuntimeIdentifierBox" />
+                    <CheckBox Content="Self-contained" IsChecked="{Binding SelfContained}" AutomationProperties.AutomationId="SelfContainedCheck" />
+
+                    <CheckBox Content="Generate a Dockerfile" IsChecked="{Binding GenerateDockerfile}" Margin="0,8,0,0"
+                              AutomationProperties.AutomationId="GenerateDockerfileCheck" />
+                    <TextBlock Classes="label" Text="Image name (empty: the project name in lower case)" />
+                    <TextBox Text="{Binding DockerImageName}" AutomationProperties.AutomationId="DockerImageNameBox" />
+                    <TextBlock Classes="label" Text="Exposed port (1-65535)" />
+                    <TextBox Text="{Binding DockerExposePortText}" Width="160" HorizontalAlignment="Left"
+                             AutomationProperties.AutomationId="DockerExposePortBox" />
+                    <TextBlock Classes="label" Text="Base SDK image" />
+                    <TextBox Text="{Binding DockerBaseSdkImage}" AutomationProperties.AutomationId="DockerSdkImageBox" />
+                    <TextBlock Classes="label" Text="Base runtime image" />
+                    <TextBox Text="{Binding DockerBaseRuntimeImage}" AutomationProperties.AutomationId="DockerRuntimeImageBox" />
+                    <CheckBox Content="Generate docker-compose file" IsChecked="{Binding GenerateCompose}" AutomationProperties.AutomationId="GenerateComposeCheck" />
+                    <CheckBox Content="Build the Docker image after generating" IsChecked="{Binding BuildDockerImage}"
+                              AutomationProperties.AutomationId="BuildDockerImageCheck" />
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Security and localization" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="6" Margin="0,4,0,0">
+                    <TextBlock Classes="label" Text="Security" />
+                    <TextBlock Text="{Binding SecuritySummary}" TextWrapping="Wrap" AutomationProperties.AutomationId="SecuritySummaryText" />
+                    <Button Content="Go to Security tab" Command="{Binding ShowSecurityTabCommand}" HorizontalAlignment="Left"
+                            AutomationProperties.AutomationId="GoToSecurityButton" />
+                    <TextBlock Classes="label" Text="Localization" />
+                    <TextBlock Text="{Binding LocalizationSummary}" TextWrapping="Wrap" AutomationProperties.AutomationId="LocalizationSummaryText" />
+                    <Button Content="Go to Languages tab" Command="{Binding ShowLocalizationTabCommand}" HorizontalAlignment="Left"
+                            AutomationProperties.AutomationId="GoToLocalizationButton" />
+                </StackPanel>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

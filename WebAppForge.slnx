@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WebAppForge.Core/WebAppForge.Core.csproj" />
+    <Project Path="src/WebAppForge.Desktop/WebAppForge.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WebAppForge.Core.Tests/WebAppForge.Core.Tests.csproj" />
+    <Project Path="tests/WebAppForge.Desktop.Tests/WebAppForge.Desktop.Tests.csproj" />
+    <Project Path="tests/WebAppForge.Desktop.Ui.Tests/WebAppForge.Desktop.Ui.Tests.csproj" />
+  </Folder>
+</Solution>

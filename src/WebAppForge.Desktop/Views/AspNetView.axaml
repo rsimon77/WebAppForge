@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WebAppForge.Desktop.Views.AspNetView">
+    <StackPanel Spacing="8" Margin="12" MaxWidth="600" HorizontalAlignment="Left">
+        <TextBlock Text="Application title" FontWeight="SemiBold" />
+        <TextBox Text="{Binding Current.AspNet.Title}" />
+        <CheckBox Content="Include home page" IsChecked="{Binding Current.AspNet.IncludeHomePage}" Margin="0,8,0,0" />
+    </StackPanel>
+</UserControl>
