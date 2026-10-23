@@ -47,4 +47,5 @@ environment variable points to one. The FlaUI tests need Windows and a built des
 ## Branches
 
 `main` holds released code and `develop` is where work is integrated. Start every feature, fix and chore branch
-from `develop`.
+from `develop` and open its pull request into `develop`; `develop` is merged into `main` by a release pull request.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
