@@ -16,6 +16,36 @@ internal static partial class Templates
     [ThreadStatic]
     internal static bool Localized;
 
+    [ThreadStatic]
+    private static SqlDialect? _db;
+
+    [ThreadStatic]
+    private static bool _entraAuth;
+
+    /// <summary>True when the site signs in to SQL Server with Microsoft Entra ID, which needs SqlClient's Azure extension package.</summary>
+    internal static bool EntraAuth
+    {
+        get => _entraAuth;
+        set => _entraAuth = value;
+    }
+
+    [ThreadStatic]
+    private static string? _connectionVariable;
+
+    /// <summary>Environment variable the generated site reads its connection string from (empty: appsettings.json only).</summary>
+    internal static string ConnectionVariable
+    {
+        get => _connectionVariable ?? string.Empty;
+        set => _connectionVariable = value;
+    }
+
+    /// <summary>The SQL dialect of the site being generated. SQLite unless a generation sets another.</summary>
+    internal static SqlDialect Db
+    {
+        get => _db ?? SqlDialect.Sqlite;
+        set => _db = value;
+    }
+
     /// <summary>Name of the table whose pages are being generated; part of the key of its field captions.</summary>
     [ThreadStatic]
     private static string? _localizedTable;
@@ -65,12 +95,18 @@ internal static partial class Templates
           </PropertyGroup>
 
           <ItemGroup>
-            <PackageReference Include="Microsoft.Data.Sqlite" Version="@@SQLITE@@" />
+            @@PACKAGES@@
           </ItemGroup>
 
         </Project>
 
-        """.Replace("@@SQLITE@@", sqliteVersion);
+        """.Replace("    @@PACKAGES@@", Db.PackageReferences + (EntraAuth ? "\n" + EntraPackage : string.Empty)).Replace("@@SQLITE@@", sqliteVersion);
+
+    /// <summary>
+    /// Microsoft.Data.SqlClient 7 moved the "Active Directory" sign-in modes to this package, which registers them when it is
+    /// referenced. Same version as the driver.
+    /// </summary>
+    private const string EntraPackage = """    <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="7.1.1" />""";
 
     public static string AppSettings(string connectionString, ProjectMetadata? meta = null) =>
         AppSettingsMeta(AppSettingsBase(connectionString), meta);
@@ -129,8 +165,20 @@ internal static partial class Templates
         sb.AppendLine($"using {ns}.Web;");
         sb.AppendLine();
         sb.AppendLine("var builder = WebApplication.CreateBuilder(args);");
-        sb.AppendLine("var connectionString = builder.Configuration.GetConnectionString(\"Default\")");
-        sb.AppendLine("    ?? throw new InvalidOperationException(\"Connection string 'Default' is missing.\");");
+        if (ConnectionVariable.Length > 0)
+        {
+            // The connection string stays out of appsettings.json; ConnectionStrings:Default still wins when it is configured.
+            sb.AppendLine("var connectionString = builder.Configuration.GetConnectionString(\"Default\") is { Length: > 0 } configured");
+            sb.AppendLine("    ? configured");
+            sb.AppendLine($"    : Environment.GetEnvironmentVariable({Lit(ConnectionVariable)}) is {{ Length: > 0 }} fromVariable");
+            sb.AppendLine("        ? fromVariable");
+            sb.AppendLine($"        : throw new InvalidOperationException({Lit($"Set the connection string in the {ConnectionVariable} environment variable or in ConnectionStrings:Default.")});");
+        }
+        else
+        {
+            sb.AppendLine("var connectionString = builder.Configuration.GetConnectionString(\"Default\")");
+            sb.AppendLine("    ?? throw new InvalidOperationException(\"Connection string 'Default' is missing.\");");
+        }
         sb.AppendLine("builder.Services.AddAntiforgery();");
         if (UsesCompression(meta))
         {
@@ -575,7 +623,7 @@ internal static partial class Templates
             sb.AppendLine("            await command.ExecuteNonQueryAsync();");
             if (keys.Count == 1 && keys[0].IsAutoIncrement)
             {
-                sb.AppendLine("            command.CommandText = \"SELECT last_insert_rowid()\";");
+                sb.AppendLine($"            command.CommandText = {Lit(Db.LastInsertId)};");
                 sb.AppendLine($"            item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await command.ExecuteScalarAsync());");
             }
 
@@ -963,8 +1011,8 @@ internal static partial class Templates
         sb.AppendLine("        await using (var command = connection.CreateCommand())");
         sb.AppendLine("        {");
         sb.AppendLine(custom
-            ? "            command.CommandText = \"SELECT \" + SelectColumns + \" FROM \" + Table + where + order + \" LIMIT @limit OFFSET @offset\";"
-            : "            command.CommandText = \"SELECT \" + SelectColumns + \" FROM \" + Table + where + Order + \" LIMIT @limit OFFSET @offset\";");
+            ? $"            command.CommandText = \"SELECT \" + SelectColumns + \" FROM \" + Table + where + order + {Lit(Db.Page)};"
+            : $"            command.CommandText = \"SELECT \" + SelectColumns + \" FROM \" + Table + where + Order + {Lit(Db.Page)};");
         sb.AppendLine("            BindParameters(command, parameters);");
         sb.AppendLine($"            command.Parameters.AddWithValue(\"@limit\", {size});");
         sb.AppendLine($"            command.Parameters.AddWithValue(\"@offset\", (page - 1) * {size});");
@@ -1230,7 +1278,8 @@ internal static partial class Templates
         sb.AppendLine("            foreach (var column in SearchColumns)");
         sb.AppendLine("            {");
         sb.AppendLine("                var name = \"@q\" + parameters.Count;");
-        sb.AppendLine("                any.Add(\"CAST(\" + column + \" AS TEXT) LIKE \" + name);");
+        var cast = TextCastParts();
+        sb.AppendLine($"                any.Add({Lit(cast.Before)} + column + {Lit(cast.After + " LIKE ")} + name);");
         sb.AppendLine("                parameters.Add(new KeyValuePair<string, object>(name, \"%\" + quick + \"%\"));");
         sb.AppendLine("            }");
         sb.AppendLine("            if (any.Count > 0)");
@@ -1248,7 +1297,7 @@ internal static partial class Templates
         sb.AppendLine("            }");
         sb.AppendLine();
         sb.AppendLine("            var name = \"@f\" + parameters.Count;");
-        sb.AppendLine("            clauses.Add(\"CAST(\" + SearchColumns[i] + \" AS TEXT) LIKE \" + name);");
+        sb.AppendLine($"            clauses.Add({Lit(cast.Before)} + SearchColumns[i] + {Lit(cast.After + " LIKE ")} + name);");
         sb.AppendLine("            parameters.Add(new KeyValuePair<string, object>(name, \"%\" + value + \"%\"));");
         sb.AppendLine("        }");
         sb.AppendLine();
@@ -1459,7 +1508,7 @@ internal static partial class Templates
             {
                 sb.AppendLine("        await using (var idCommand = connection.CreateCommand())");
                 sb.AppendLine("        {");
-                sb.AppendLine("            idCommand.CommandText = \"SELECT last_insert_rowid()\";");
+                sb.AppendLine($"            idCommand.CommandText = {Lit(Db.LastInsertId)};");
                 sb.AppendLine($"            item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await idCommand.ExecuteScalarAsync());");
                 sb.AppendLine("        }");
                 sb.AppendLine();
@@ -2280,19 +2329,40 @@ internal static partial class Templates
 
         var keys = table.PrimaryKeys;
         return keys.Count == 0
-            ? string.Empty
+            ? Db.FallbackOrder
             : " ORDER BY " + string.Join(", ", keys.Select(k => QuoteIdent(k.Name) + " ASC"));
     }
 
-    /// <summary>Double-quoted SQL identifier (raw SQL text; escape with <see cref="Lit"/> before emitting C#).</summary>
-    internal static string QuoteIdent(string name)
+    /// <summary>Quoted SQL identifier of the dialect (raw SQL text; escape with <see cref="Lit"/> before emitting C#).</summary>
+    internal static string QuoteIdent(string name) => Db.Quote(name);
+
+    /// <summary>
+    /// Rewrites a generated C# file for the dialect: the SQLite transaction statements, the unique constraint check, the
+    /// login_attempts statements and the ADO.NET type names. SQLite files are returned unchanged.
+    /// </summary>
+    internal static string ForDialect(string code)
     {
-        if (name.Contains('"'))
+        if (Db == SqlDialect.Sqlite)
         {
-            throw new NotSupportedException($"Identifier '{name}' contains a double quote and cannot be generated.");
+            return code;
         }
 
-        return "\"" + name + "\"";
+        var sqlite = SqlDialect.Sqlite;
+        code = code
+            .Replace(Lit(sqlite.BeginTransaction), Lit(Db.BeginTransaction))
+            .Replace(Lit(sqlite.Commit), Lit(Db.Commit))
+            .Replace(Lit(sqlite.Rollback), Lit(Db.Rollback))
+            .Replace(sqlite.UniqueViolation, Db.UniqueViolation)
+            .Replace(Lit(sqlite.CreateLoginAttempts), Lit(Db.CreateLoginAttempts));
+        code = System.Text.RegularExpressions.Regex.Replace(code, "\"INSERT INTO login_attempts [^\n]*\n\\s*\\+ \"ON CONFLICT\\(username\\)[^\n]*\"", _ => Lit(Db.UpsertLoginAttempt));
+        return Db.AdaptCode(code);
+    }
+
+    /// <summary>The text before and after the expression in the dialect's text cast: "CAST(" and " AS TEXT)" in SQLite.</summary>
+    private static (string Before, string After) TextCastParts()
+    {
+        var parts = Db.TextCast("\u0001").Split('\u0001');
+        return (parts[0], parts[1]);
     }
 
     private static string StringArray(IEnumerable<string> values)
@@ -2365,15 +2435,7 @@ internal static partial class Templates
 
     private static string ReaderExpression(FieldInfo field, int ordinal)
     {
-        var getter = field.Type switch
-        {
-            FieldType.Integer => $"reader.GetInt64({ordinal})",
-            FieldType.Decimal => $"reader.GetDecimal({ordinal})",
-            FieldType.Boolean => $"reader.GetInt64({ordinal}) != 0",
-            FieldType.Date or FieldType.DateTime => $"reader.GetDateTime({ordinal})",
-            FieldType.Binary => $"(byte[])reader.GetValue({ordinal})",
-            _ => $"reader.GetString({ordinal})",
-        };
+        var getter = Db.Read(field.Type, ordinal);
 
         return field.IsRequired ? getter : $"reader.IsDBNull({ordinal}) ? null : {getter}";
     }
@@ -2386,6 +2448,7 @@ internal static partial class Templates
             FieldType.Boolean => field.IsRequired
                 ? $"{property} ? 1L : 0L"
                 : $"{property} is null ? DBNull.Value : (object)({property}.Value ? 1L : 0L)",
+            FieldType.Binary when !field.IsRequired => $"(object?){property} ?? {Db.NullBinary}",
             _ => field.IsRequired ? $"(object){property}" : $"(object?){property} ?? DBNull.Value",
         };
     }

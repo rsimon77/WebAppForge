@@ -1,0 +1,97 @@
+using System.Text.RegularExpressions;
+using WebAppForge.Core.Model;
+
+namespace WebAppForge.Core.Tests;
+
+/// <summary>
+/// The richest sample projects generated for SQL Server and MySQL: every file must be free of SQLite names and SQL, and the site
+/// must build without warnings. No database is needed; the running sites are tested in <see cref="ServerSiteTests{TSite}"/>.
+/// </summary>
+public class DialectBuildTests
+{
+    private static Project Sample(string sample, string root) => sample switch
+    {
+        "customized" => Customized(),
+        "masterdetail" => MasterDetail(root),
+        _ => ReportGenerationTests.WithReports("secure"),
+    };
+
+    private static Project Customized()
+    {
+        var project = CustomizationSamples.Create("localized");
+        CustomizationSamples.Customize(project);
+        foreach (var table in project.Tables)
+        {
+            table.Designs.List.FilterBuilder = true;
+            table.Designs.List.QuickFilter = true;
+            table.Designs.List.ResetButton = true;
+        }
+
+        return project;
+    }
+
+    private static Project MasterDetail(string root)
+    {
+        var project = MdSupport.SampleProject(Path.Combine(root, "md.db"));
+        foreach (var link in project.Tables.SelectMany(t => t.Details))
+        {
+            link.FilterAndSort = true;
+        }
+
+        return project;
+    }
+
+    [Theory]
+    [InlineData(DatabaseProviders.SqlServer, "customized")]
+    [InlineData(DatabaseProviders.SqlServer, "masterdetail")]
+    [InlineData(DatabaseProviders.SqlServer, "reports")]
+    [InlineData(DatabaseProviders.AzureSql, "reports")]
+    [InlineData(DatabaseProviders.MySql, "customized")]
+    [InlineData(DatabaseProviders.MySql, "masterdetail")]
+    [InlineData(DatabaseProviders.MySql, "reports")]
+    public async Task SamplesBuildForEveryServerWithoutSqliteLeftovers(string provider, string sample)
+    {
+        var root = MdSupport.TempFolder();
+        try
+        {
+            Directory.CreateDirectory(root);
+            var project = Sample(sample, root);
+            project.Database = new DatabaseSettings { Provider = provider, ConnectionString = "Server=db;Database=shop", ConnectionStringVariable = sample == "reports" ? "SHOP_DB" : string.Empty };
+            var files = MdSupport.GenerateText(project, root);
+
+            foreach (var (path, text) in files.Where(f => f.Key.EndsWith(".cs", StringComparison.Ordinal)))
+            {
+                // Comments may still name SQLite; code and SQL may not.
+                var code = Regex.Replace(text, "//.*", string.Empty);
+                var leftover = Regex.Match(code, "Sqlite|last_insert_rowid|BEGIN IMMEDIATE|COLLATE NOCASE|ON CONFLICT|unixepoch");
+                Assert.False(leftover.Success, path + ": " + leftover.Value);
+                if (DatabaseProviders.IsSqlServer(provider))
+                {
+                    var sql = Regex.Match(code, " LIMIT [0-9@]|AS TEXT\\)");
+                    Assert.False(sql.Success, path + ": " + sql.Value);
+                }
+            }
+
+            var csproj = files.Single(f => f.Key.EndsWith(".csproj", StringComparison.Ordinal)).Value;
+            Assert.Contains(DatabaseProviders.IsSqlServer(provider) ? "Microsoft.Data.SqlClient" : "MySqlConnector", csproj);
+            Assert.DoesNotContain("Microsoft.Data.Sqlite", csproj);
+            Assert.Equal(provider == DatabaseProviders.AzureSql, csproj.Contains("Microsoft.Data.SqlClient.Extensions.Azure", StringComparison.Ordinal));
+            if (sample == "reports")
+            {
+                Assert.Contains("\"Default\": \"\"", files["appsettings.json"]);
+                Assert.Contains("Environment.GetEnvironmentVariable(\"SHOP_DB\")", files["Program.cs"]);
+            }
+            else
+            {
+                Assert.Contains("Server=db;Database=shop", files["appsettings.json"]);
+            }
+
+            var build = await MdSupport.RunDotnetAsync(Path.Combine(root, "site"), "build --nologo -v q -nodeReuse:false -warnaserror");
+            Assert.True(build.ExitCode == 0, build.Output);
+        }
+        finally
+        {
+            MdSupport.TryDelete(root);
+        }
+    }
+}

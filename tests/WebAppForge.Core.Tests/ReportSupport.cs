@@ -195,8 +195,17 @@ public abstract class ReportSiteBase : IAsyncLifetime
         }
 
         MdSupport.TryDelete(Root);
+        CleanUp();
         return Task.CompletedTask;
     }
+
+    /// <summary>Runs after the site has stopped, for example to drop a server database.</summary>
+    protected virtual void CleanUp()
+    {
+    }
+
+    /// <summary>A connection to the site's database (the SQLite file at <see cref="DbPath"/>), not yet opened.</summary>
+    protected virtual System.Data.Common.DbConnection CreateConnection() => new SqliteConnection($"Data Source={DbPath}");
 
     public async Task<string> Get(string url)
     {
@@ -208,7 +217,7 @@ public abstract class ReportSiteBase : IAsyncLifetime
 
     public async Task<object?> Scalar(string sql) => await Task.Run(() =>
     {
-        using var connection = new SqliteConnection($"Data Source={DbPath}");
+        using var connection = CreateConnection();
         connection.Open();
         using var command = connection.CreateCommand();
         command.CommandText = sql;

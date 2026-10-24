@@ -71,7 +71,7 @@ Done:
 - 8 unit tests pass.
 
 Not done:
-- Providers other than SQLite (the generator throws `NotSupportedException`).
+- Providers other than SQLite (the generator threw `NotSupportedException`). SQL Server, Azure SQL and MySQL were added later; see [ADR 001](adr-001-data-access.md).
 - Razor UI pages, search, master/detail, reports and the desktop editor.
 - Templates and output are our own; the vendor's `@aspnetmaker/*` templates are not used.
 

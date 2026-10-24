@@ -3,16 +3,47 @@
              x:Class="WebAppForge.Desktop.Views.DatabaseView">
     <Border Classes="card" Margin="12" MaxWidth="760" HorizontalAlignment="Left" VerticalAlignment="Top">
         <StackPanel Spacing="8">
-            <TextBlock Text="Provider" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding Database.Provider}" />
-            <TextBlock Text="SQLite file (relative to the project folder, forward slashes)" FontWeight="SemiBold" Margin="0,8,0,0" />
-            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                <TextBox Grid.Column="0" Text="{Binding Database.DatabasePath}" PlaceholderText="e.g. data/app.db"
-                         AutomationProperties.AutomationId="SqlitePathBox" />
-                <Button Grid.Column="1" Content="Browse..." Command="{Binding Database.BrowseCommand}" />
-                <Button Grid.Column="2" Content="Connect" Command="{Binding Database.ConnectCommand}" />
-            </Grid>
-            <TextBlock TextWrapping="Wrap" Opacity="0.7"
+            <TextBlock Classes="label" Text="Engine" />
+            <ListBox Classes="segmented" ItemsSource="{Binding Database.ProviderChoices}" SelectedItem="{Binding Database.SelectedProvider}"
+                     AutomationProperties.AutomationId="ProviderSelector">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+
+            <StackPanel Spacing="8" IsVisible="{Binding Database.IsSqlite}">
+                <TextBlock Classes="label" Text="SQLite file (relative to the project folder, forward slashes)" Margin="0,4,0,0" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBox Grid.Column="0" Text="{Binding Database.DatabasePath}" PlaceholderText="e.g. data/app.db"
+                             AutomationProperties.AutomationId="SqlitePathBox" />
+                    <Button Grid.Column="1" Content="Browse..." Command="{Binding Database.BrowseCommand}" AutomationProperties.AutomationId="BrowseDatabaseButton" />
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Spacing="8" IsVisible="{Binding Database.IsServer}">
+                <TextBlock Classes="label" Text="Connection string" Margin="0,4,0,0" />
+                <TextBox Text="{Binding Database.ConnectionString}" PlaceholderText="{Binding Database.ConnectionPlaceholder}" TextWrapping="Wrap"
+                         FontFamily="{StaticResource CodeFontFamily}" AutomationProperties.AutomationId="ConnectionStringBox" />
+                <TextBlock Classes="hint" TextWrapping="Wrap" Text="{Binding Database.ConnectionHint}" />
+                <TextBlock Classes="label" Text="Or read it from this environment variable" />
+                <TextBox Text="{Binding Database.ConnectionStringVariable}" PlaceholderText="e.g. SHOP_DB" Width="320" HorizontalAlignment="Left"
+                         AutomationProperties.AutomationId="ConnectionVariableBox" />
+                <TextBlock Classes="hint" TextWrapping="Wrap"
+                           Text="With a variable the connection string is kept out of the project file and appsettings.json; the generated site reads the same variable." />
+                <TextBlock Classes="hint" TextWrapping="Wrap" Text="{Binding Database.VariableState}" IsVisible="{Binding Database.VariableState, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           AutomationProperties.AutomationId="VariableStateText" />
+                <Border Classes="banner error" IsVisible="{Binding Database.PasswordWarning, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Database.PasswordWarning}" AutomationProperties.AutomationId="PasswordWarningText" />
+                </Border>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                <Button Content="Test connection" Command="{Binding Database.TestCommand}" AutomationProperties.AutomationId="TestConnectionButton" />
+                <Button Classes="primary" Content="Connect" Command="{Binding Database.ConnectCommand}" AutomationProperties.AutomationId="ConnectDatabaseButton" />
+            </StackPanel>
+            <TextBlock Classes="hint" TextWrapping="Wrap"
                        Text="Connect reads the tables and columns. Tables already in the project keep their settings; new tables are added and tables missing from the database are removed." />
         </StackPanel>
     </Border>

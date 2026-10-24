@@ -163,10 +163,12 @@ internal static partial class Templates
                 public static object Normalize(object value) => value switch
                 {
                     decimal d => d,
-                    long or int or short or byte => Convert.ToDecimal(value, CultureInfo.InvariantCulture),
+                    long or int or short or byte or sbyte or ulong or uint or ushort => Convert.ToDecimal(value, CultureInfo.InvariantCulture),
+                    bool flag => flag ? 1m : 0m,
                     double d when !double.IsNaN(d) && !double.IsInfinity(d) && Math.Abs(d) < 7.9e28 => (decimal)d,
                     float f when !float.IsNaN(f) && !float.IsInfinity(f) => (decimal)f,
                     DateTime date => date.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
+                    DateTimeOffset date => date.DateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
                     string s => s,
                     _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty,
                 };
@@ -382,8 +384,11 @@ internal static partial class Templates
                 /// <summary>A group value in a link, typed so that it compares with the database value as read: i:42, r:4.5 or s:text.</summary>
                 private static string? KeyText(object value) => value switch
                 {
-                    long or int or short or byte => "i:" + Convert.ToString(value, CultureInfo.InvariantCulture),
+                    long or int or short or byte or sbyte or ulong or uint or ushort => "i:" + Convert.ToString(value, CultureInfo.InvariantCulture),
+                    bool flag => flag ? "i:1" : "i:0",
                     double d => "r:" + d.ToString("R", CultureInfo.InvariantCulture),
+                    float f => "r:" + ((double)f).ToString("R", CultureInfo.InvariantCulture),
+                    decimal m => "m:" + m.ToString(CultureInfo.InvariantCulture),
                     string text => "s:" + text,
                     _ => null,
                 };
@@ -398,6 +403,11 @@ internal static partial class Templates
                     if (text.StartsWith("r:", StringComparison.Ordinal) && double.TryParse(text[2..], NumberStyles.Float, CultureInfo.InvariantCulture, out var real))
                     {
                         return real;
+                    }
+
+                    if (text.StartsWith("m:", StringComparison.Ordinal) && decimal.TryParse(text[2..], NumberStyles.Number, CultureInfo.InvariantCulture, out var exact))
+                    {
+                        return exact;
                     }
 
                     return text.StartsWith("s:", StringComparison.Ordinal) ? text[2..] : null;
@@ -446,7 +456,7 @@ internal static partial class Templates
                     await using var reader = await command.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
                     {
-                        var value = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
+                        var value = reader.IsDBNull(0) ? string.Empty : Convert.ToString(reader.GetValue(0), CultureInfo.InvariantCulture) ?? string.Empty;
                         choices.Add((value, PlainLabel(Read(reader, 1), filter.Boolean, texts)));
                     }
 

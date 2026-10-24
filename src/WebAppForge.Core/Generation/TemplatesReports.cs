@@ -48,19 +48,9 @@ internal static partial class Templates
 
     /// <summary>
     /// SQL expression of a date field as ISO text (yyyy-MM-dd HH:mm:ss or yyyy-MM-dd). Number columns that hold Unix time or Julian day
-    /// numbers are converted with SQLite's datetime().
+    /// numbers are converted with the dialect's date functions (SQLite's datetime()).
     /// </summary>
-    internal static string DateTextSql(TableInfo table, FieldInfo field)
-    {
-        var column = ColumnSql(table, field);
-        return field.DateStorage switch
-        {
-            DateStorage.UnixSeconds => $"datetime({column}, 'unixepoch')",
-            DateStorage.UnixMilliseconds => $"datetime({column} / 1000.0, 'unixepoch')",
-            DateStorage.JulianDay => $"datetime({column})",
-            _ => column,
-        };
-    }
+    internal static string DateTextSql(TableInfo table, FieldInfo field) => Db.DateText(ColumnSql(table, field), field.Type, field.DateStorage);
 
     /// <summary>
     /// SQL expression of a group value of <paramref name="table"/>: the leading part of the ISO date text for a date interval, the display
@@ -74,23 +64,22 @@ internal static partial class Templates
             var date = DateTextSql(table, field);
             return interval switch
             {
-                DateInterval.Year => $"substr({date}, 1, 4)",
-                DateInterval.Quarter => $"substr({date}, 1, 4) || '-Q' || ((CAST(substr({date}, 6, 2) AS INTEGER) + 2) / 3)",
-                DateInterval.Month => $"substr({date}, 1, 7)",
-                _ => $"substr({date}, 1, 10)",
+                DateInterval.Year => Db.Substring(date, 1, 4),
+                DateInterval.Quarter => Db.Concat(Db.Substring(date, 1, 4), Db.Text("-Q"), $"({Db.IntegerDivide($"({Db.IntegerCast(Db.Substring(date, 6, 2))} + 2)", "3")})"),
+                DateInterval.Month => Db.Substring(date, 1, 7),
+                _ => Db.Substring(date, 1, 10),
             };
         }
 
         if (ReportLookup(field) is { } lookup)
         {
-            return $"COALESCE((SELECT l.{QuoteIdent(lookup.Display.Name)} FROM {QuoteIdent(lookup.Table.Name)} AS l WHERE l.{QuoteIdent(lookup.Key.Name)} = {column} LIMIT 1), {column})";
+            return $"COALESCE((SELECT {Db.Top(1)}l.{QuoteIdent(lookup.Display.Name)} FROM {QuoteIdent(lookup.Table.Name)} AS l WHERE l.{QuoteIdent(lookup.Key.Name)} = {column}{Db.Limit(1)}), {Db.TextFallback(column)})";
         }
 
         var options = field.Ui.Options.Where(o => o.Text.Length > 0).ToList();
         if (options.Count > 0)
         {
-            static string Text(string value) => "'" + value.Replace("'", "''") + "'";
-            return $"CASE CAST({column} AS TEXT) " + string.Join(" ", options.Select(o => $"WHEN {Text(o.Value)} THEN {Text(o.Text)}")) + $" ELSE {column} END";
+            return $"CASE {Db.TextCast(column)} " + string.Join(" ", options.Select(o => $"WHEN {Db.Text(o.Value)} THEN {Db.Text(o.Text)}")) + $" ELSE {Db.TextFallback(column)} END";
         }
 
         return column;
@@ -115,6 +104,31 @@ internal static partial class Templates
         IsBooleanField(field) && interval == DateInterval.None && ReportLookup(field) is null && field.Ui.Options.Count == 0;
 
     /// <summary>The four columns ReportKit.Partial reads: COUNT, SUM, MIN and MAX. Counting rows uses the constant 1.</summary>
+    /// <summary>
+    /// The outer and inner select lists of a grouped query for a dialect that cannot group by position or by a subquery (SQL Server).
+    /// The inner query names the group expressions g0, g1, ... and the aggregated columns v0, v1, ...; the outer one groups by the names
+    /// and returns the same columns as the SQLite query: the groups, then COUNT, SUM, MIN and MAX of each value.
+    /// </summary>
+    private static (List<string> Outer, List<string> Inner) DerivedGroups(List<string> groups, List<FieldInfo?> values)
+    {
+        // A constant NULL group (a chart without series) stays a constant, so it needs no GROUP BY entry.
+        var outer = groups.Select((g, i) => g == "NULL" ? "NULL" : "g" + i).ToList();
+        var inner = groups.Select((g, i) => (g, i)).Where(x => x.g != "NULL").Select(x => x.g + " AS g" + x.i).ToList();
+        for (var j = 0; j < values.Count; j++)
+        {
+            inner.Add((values[j] is { } field ? QuoteIdent(field.Name) : "1") + " AS v" + j);
+            outer.Add($"COUNT(v{j}), SUM(v{j}), MIN(v{j}), MAX(v{j})");
+        }
+
+        return (outer, inner);
+    }
+
+    /// <summary>The select list joined with commas, except before a "FROM (SELECT ..." part, which follows with a space.</summary>
+    private static string JoinSelect(List<string> select) =>
+        select.Count > 0 && select[^1].StartsWith("FROM (", StringComparison.Ordinal)
+            ? string.Join(", ", select[..^1]) + " " + select[^1]
+            : string.Join(", ", select);
+
     private static string PartialSql(FieldInfo? field)
     {
         var value = field is null ? "1" : QuoteIdent(field.Name);
@@ -264,7 +278,7 @@ internal static partial class Templates
         {
             sb.AppendLine($"    private const string From = {Lit(" FROM " + QuoteIdent(table.Name))};");
             sb.AppendLine($"    private const string StaticWhere = {Lit(StaticWhere(table, report))};");
-            var dateFilter = UsesDateRange(report) ? $"substr({DateTextSql(table, ReportField(table, report.DateFilterField))}, 1, 10)" : string.Empty;
+            var dateFilter = UsesDateRange(report) ? Db.Substring(DateTextSql(table, ReportField(table, report.DateFilterField)), 1, 10) : string.Empty;
             sb.AppendLine($"    private const string DateFilter = {Lit(dateFilter)};");
             if (drill)
             {
@@ -339,8 +353,8 @@ internal static partial class Templates
             var column = ColumnSql(table, field);
             var label = GroupSql(table, field, DateInterval.None);
             var where = (staticWhere.Length > 0 ? staticWhere + " AND " : string.Empty) + column + " IS NOT NULL";
-            var options = $"SELECT DISTINCT CAST({column} AS TEXT), {label} FROM {QuoteIdent(table.Name)} WHERE {where} ORDER BY 2 LIMIT {ReportKitMaxFilterOptions}";
-            sb.AppendLine($"        new({Lit("f_" + field.Name)}, {FieldText(field)}, {Lit("CAST(" + column + " AS TEXT)")}, {Lit(options)}, {Bool(BooleanGroup(field, DateInterval.None))}),");
+            var options = $"SELECT DISTINCT {Db.Top(ReportKitMaxFilterOptions)}{Db.TextCast(column)}, {label} FROM {QuoteIdent(table.Name)} WHERE {where} ORDER BY 2{Db.Limit(ReportKitMaxFilterOptions)}";
+            sb.AppendLine($"        new({Lit("f_" + field.Name)}, {FieldText(field)}, {Lit(Db.TextCast(column))}, {Lit(options)}, {Bool(BooleanGroup(field, DateInterval.None))}),");
         }
 
         sb.AppendLine("    };");
@@ -412,7 +426,14 @@ internal static partial class Templates
 
         var select = groups.Select(g => GroupSql(table, g.Field, g.Interval)).ToList();
         string tail;
-        if (details is null)
+        if (details is null && groups.Count > 0 && !Db.GroupsByPosition)
+        {
+            var (outer, inner) = DerivedGroups(select, aggregates.Select(a => a.Field).ToList());
+            select = [.. outer, "FROM (SELECT " + string.Join(", ", inner)];
+            tail = ") AS r GROUP BY " + string.Join(", ", groups.Select((_, i) => "g" + i))
+                + " ORDER BY " + string.Join(", ", groups.Select((g, i) => "g" + i + (g.Descending ? " DESC" : string.Empty)));
+        }
+        else if (details is null)
         {
             select.AddRange(aggregates.Select(a => PartialSql(a.Field)));
             tail = groups.Count == 0
@@ -429,7 +450,7 @@ internal static partial class Templates
             tail = order.Count > 0 ? " ORDER BY " + string.Join(", ", order) : string.Empty;
         }
 
-        sb.AppendLine($"    private const string Select = {Lit("SELECT " + string.Join(", ", select))};");
+        sb.AppendLine($"    private const string Select = {Lit("SELECT " + JoinSelect(select))};");
         sb.AppendLine($"    private const string Tail = {Lit(tail)};");
         sb.AppendLine($"    private static readonly bool[] BooleanGroups = {{ {string.Join(", ", groups.Select(g => Bool(BooleanGroup(g.Field, g.Interval))))} }};");
         sb.AppendLine();
@@ -475,16 +496,30 @@ internal static partial class Templates
             : table.Fields.Where(f => f.ShowInList && !f.IsSecret && f.Type != FieldType.Binary).ToList();
 
     /// <summary>ORDER BY terms of the table: its sort fields, else its key.</summary>
-    private static IEnumerable<string> TableOrder(TableInfo table) =>
-        table.Sort.Count > 0
-            ? table.Sort.Select(s => QuoteIdent(s.Field) + (s.Descending ? " DESC" : string.Empty))
-            : table.PrimaryKeys.Select(k => QuoteIdent(k.Name));
+    /// <remarks>SQL Server gets the columns qualified with the table, because the select list may name a key column twice.</remarks>
+    private static IEnumerable<string> TableOrder(TableInfo table)
+    {
+        var prefix = Db.QualifiesOrder ? QuoteIdent(table.Name) + "." : string.Empty;
+        return table.Sort.Count > 0
+            ? table.Sort.Select(s => prefix + QuoteIdent(s.Field) + (s.Descending ? " DESC" : string.Empty))
+            : table.PrimaryKeys.Select(k => prefix + QuoteIdent(k.Name));
+    }
 
     /// <summary>Select and Tail of a crosstab or chart: row (category) and optional column (series) values with the partial aggregate.</summary>
     private static void AppendGridSql(StringBuilder sb, ReportInfo report, TableInfo table, FieldInfo row, FieldInfo? column, FieldInfo? value)
     {
         var select = new List<string> { GroupSql(table, row, report.RowInterval) };
         select.Add(column is null ? "NULL" : GroupSql(table, column, report.ColumnInterval));
+        if (!Db.GroupsByPosition)
+        {
+            var (outer, inner) = DerivedGroups(select, [value]);
+            var groupBy = column is null ? "g0" : "g0, g1";
+            sb.AppendLine($"    private const string Select = {Lit("SELECT " + string.Join(", ", outer) + " FROM (SELECT " + string.Join(", ", inner))};");
+            sb.AppendLine($"    private const string Tail = {Lit(") AS r GROUP BY " + groupBy + " ORDER BY " + groupBy)};");
+            sb.AppendLine();
+            return;
+        }
+
         select.Add(PartialSql(value));
         var by = column is null ? "1" : "1, 2";
         sb.AppendLine($"    private const string Select = {Lit("SELECT " + string.Join(", ", select))};");
@@ -569,10 +604,10 @@ internal static partial class Templates
         select.Add(dateSql);
         select.Add(end is null ? "NULL" : DateTextSql(table, end));
         select.Add(title is null ? "NULL" : QuoteIdent(title.Name));
-        var range = $"{dateSql} IS NOT NULL AND substr({dateSql}, 1, 10) <= @last AND substr({endSql}, 1, 10) >= @first";
-        sb.AppendLine($"    private const string Select = {Lit("SELECT " + string.Join(", ", select))};");
+        var range = $"{dateSql} IS NOT NULL AND {Db.Substring(dateSql, 1, 10)} <= @last AND {Db.Substring(endSql, 1, 10)} >= @first";
+        sb.AppendLine($"    private const string Select = {Lit("SELECT " + Db.Top(ReportKitMaxCalendarEntries) + string.Join(", ", select))};");
         sb.AppendLine($"    private const string Range = {Lit(range)};");
-        sb.AppendLine($"    private const string Tail = {Lit($" ORDER BY {dateSql} LIMIT {ReportKitMaxCalendarEntries}")};");
+        sb.AppendLine($"    private const string Tail = {Lit($" ORDER BY {dateSql}{Db.Limit(ReportKitMaxCalendarEntries)}")};");
         sb.AppendLine($"    private const bool WeekStartsMonday = {Bool(report.WeekStartsMonday)};");
         sb.AppendLine();
         AppendQueryStart(sb, table, "Tail", ", Range",
@@ -616,7 +651,7 @@ internal static partial class Templates
         var order = TableOrder(table).ToList();
         sb.AppendLine();
         sb.AppendLine($"    private const string RowsSelect = {Lit("SELECT " + string.Join(", ", select))};");
-        sb.AppendLine($"    private const string RowsOrder = {Lit(order.Count > 0 ? " ORDER BY " + string.Join(", ", order) : string.Empty)};");
+        sb.AppendLine($"    private const string RowsOrder = {Lit(order.Count > 0 ? " ORDER BY " + string.Join(", ", order) : Db.FallbackOrder)};");
         sb.AppendLine($"    private const int RowsPageSize = {DrillPageSize};");
         sb.AppendLine();
         sb.AppendLine("    public static async Task<string> Rows(HttpContext context, string connectionString)");
@@ -637,7 +672,7 @@ internal static partial class Templates
         sb.AppendLine("        var rows = new List<ReportKit.ListedRow>();");
         sb.AppendLine("        await using (var command = connection.CreateCommand())");
         sb.AppendLine("        {");
-        sb.AppendLine("            command.CommandText = RowsSelect + From + where + RowsOrder + \" LIMIT @limit OFFSET @offset\";");
+        sb.AppendLine($"            command.CommandText = RowsSelect + From + where + RowsOrder + {Lit(Db.Page)};");
         sb.AppendLine("            ReportKit.Bind(command, arguments);");
         AppendOwnerBinding(sb, table, "            ");
         sb.AppendLine("            command.Parameters.AddWithValue(\"@limit\", RowsPageSize);");

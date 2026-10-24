@@ -22,10 +22,40 @@ public sealed class ProjectGenerator
         ArgumentException.ThrowIfNullOrEmpty(outputDirectory);
         ArgumentException.ThrowIfNullOrEmpty(projectFolder);
 
-        if (!string.Equals(project.Database.Provider, "sqlite", StringComparison.OrdinalIgnoreCase))
+        if (!DatabaseProviders.IsKnown(project.Database.Provider))
         {
-            throw new NotSupportedException($"Provider '{project.Database.Provider}' is not supported yet. Only SQLite is implemented.");
+            throw new NotSupportedException(UnsupportedProviderMessage(project.Database.Provider));
         }
+
+        Templates.Db = SqlDialect.For(project.Database.Provider);
+        Templates.ConnectionVariable = project.Database.IsServer ? project.Database.ConnectionStringVariable.Trim() : string.Empty;
+        Templates.EntraAuth = UsesEntraAuth(project.Database);
+        try
+        {
+            return Write(project, outputDirectory, projectFolder);
+        }
+        finally
+        {
+            Templates.Db = SqlDialect.Sqlite;
+            Templates.ConnectionVariable = string.Empty;
+            Templates.EntraAuth = false;
+        }
+    }
+
+    /// <summary>
+    /// True for Azure SQL, and for SQL Server with an "Active Directory" authentication mode in its connection string. A connection
+    /// string kept in an environment variable is not known here, so Azure SQL always gets the Entra ID package.
+    /// </summary>
+    internal static bool UsesEntraAuth(DatabaseSettings database) =>
+        DatabaseProviders.Normalize(database.Provider) == DatabaseProviders.AzureSql
+        || (DatabaseProviders.IsSqlServer(database.Provider) && database.ConnectionString.Contains("Active Directory", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>The message for a provider key the generator does not know.</summary>
+    public static string UnsupportedProviderMessage(string provider) =>
+        $"Provider '{provider}' is not supported. Use one of: {string.Join(", ", DatabaseProviders.All)}.";
+
+    private static IReadOnlyList<string> Write(Project project, string outputDirectory, string projectFolder)
+    {
 
         // Localization is off by default; the templates then produce the same output as before it existed.
         var localized = project.Localization.Enabled;
@@ -48,7 +78,7 @@ public sealed class ProjectGenerator
         {
             [$"{ns}.csproj"] = Templates.Csproj(SqliteVersion, project.Meta),
             ["Program.cs"] = Templates.Program(ns, project.AspNet, tables, project.Security, project.Meta),
-            ["appsettings.json"] = Templates.AppSettings(project.Database.ResolveConnectionString(projectFolder), project.Meta),
+            ["appsettings.json"] = Templates.AppSettings(project.Database.GeneratedConnectionString(projectFolder), project.Meta),
             ["Web/Html.cs"] = Templates.HtmlHelper(ns, project.Meta, tables),
         };
 
@@ -131,6 +161,14 @@ public sealed class ProjectGenerator
             foreach (var (path, content) in Localization.LocalizedSite.Files(ns, project))
             {
                 files[path] = content;
+            }
+        }
+
+        if (Templates.Db != SqlDialect.Sqlite)
+        {
+            foreach (var path in files.Keys.Where(k => k.EndsWith(".cs", StringComparison.Ordinal)).ToList())
+            {
+                files[path] = Templates.ForDialect(files[path]);
             }
         }
 
