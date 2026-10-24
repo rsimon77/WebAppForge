@@ -85,6 +85,8 @@ public class CustomizationViewTests
         var caption = Find<TextBox>(window, "FieldCaptionBox")!;
         Assert.Equal("Customer name", caption.Text);
         caption.Text = "Full name";
+        Assert.Equal("General", main.FieldDesigner.Section);
+        ShowSection(window, main, "Editing");
         Find<TextBox>(window, "FieldHelpTextBox")!.Text = "As on the card";
         Find<ComboBox>(window, "FieldControlCombo")!.SelectedItem = EditControl.TextArea;
         Settle(window);
@@ -95,6 +97,13 @@ public class CustomizationViewTests
         Assert.Equal(EditControl.TextArea, name.Ui.Control);
         Assert.True(Find<TextBox>(window, "FieldRowsBox")!.IsEffectivelyVisible);
 
+        // The live preview follows the edits: caption, text area and help text.
+        Assert.Equal("Full name", Find<TextBlock>(window, "FieldPreviewLabel")!.Text);
+        Assert.True(main.FieldDesigner.PreviewIsArea);
+        Assert.False(Find<TextBox>(window, "FieldPreviewInput")!.IsEffectivelyVisible);
+        Assert.True(Find<Border>(window, "FieldPreview")!.IsEffectivelyVisible);
+
+        ShowSection(window, main, "Display");
         Assert.Equal("Sample text", Find<TextBlock>(window, "FormatPreviewText")!.Text);
         // Only number columns can store dates as numbers.
         Assert.False(Find<ComboBox>(window, "FieldDateStorageCombo")!.IsEffectivelyEnabled);
@@ -106,7 +115,7 @@ public class CustomizationViewTests
         Assert.Equal(DateStorage.UnixMilliseconds, customers.Fields.Single(f => f.Name == "Age").DateStorage);
         main.Tables.SelectedField = name;
         Settle(window);
-        ExpandAll(window);
+        ShowSection(window, main, "Validation");
         Assert.NotNull(Find<TextBox>(window, "PatternTestBox"));
         Find<TextBox>(window, "FieldPatternBox")!.Text = "[a-z]+";
         Find<TextBox>(window, "PatternTestBox")!.Text = "abc";
@@ -120,9 +129,11 @@ public class CustomizationViewTests
         // Select and Radio show the options grid and the lookup section.
         Find<TextBox>(window, "FieldSearchBox")!.Text = string.Empty;
         main.Tables.SelectedField = customers.Fields.Single(f => f.Name == "Email");
+        ShowSection(window, main, "Editing");
         Find<ComboBox>(window, "FieldControlCombo")!.SelectedItem = EditControl.Select;
         Settle(window);
         ExpandAll(window);
+        Assert.True(main.FieldDesigner.PreviewIsChoice);
         Assert.True(Find<DataGrid>(window, "FieldOptionsGrid")!.IsEffectivelyVisible);
         Assert.True(Find<ComboBox>(window, "LookupTableCombo")!.IsEffectivelyVisible);
         Assert.NotNull(Find<DataGrid>(window, "BadgeRulesGrid"));
@@ -223,6 +234,14 @@ public class CustomizationViewTests
     }
 
     /// <summary>Content of a collapsed expander is not part of the visual tree, so tests open every section first.</summary>
+    /// <summary>Picks one of the inner tabs of the field inspector, which shows its sections only.</summary>
+    private static void ShowSection(Window window, MainViewModel main, string section)
+    {
+        main.FieldDesigner.Section = section;
+        Settle(window);
+        ExpandAll(window);
+    }
+
     private static void ExpandAll(Window window)
     {
         foreach (var expander in window.GetVisualDescendants().OfType<Expander>().Where(e => e.IsEffectivelyVisible))

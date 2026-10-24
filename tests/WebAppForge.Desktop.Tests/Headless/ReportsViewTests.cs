@@ -33,6 +33,7 @@ public class ReportsViewTests
                      "ReportAggregatesGrid", "AddReportAggregateButton", "ReportShowDetailsCheck", "ReportGrandTotalCheck",
                      "ReportDetailColumnsGrid", "AddReportColumnButton", "MoveReportColumnUpButton", "ReportDrillDownCheck", "ReportDateFilterCombo",
                      "ReportFilterFieldsGrid", "AddReportFilterButton", "RemoveReportFilterButton",
+                     "ReportPreviewButton", "ReportPreviewMessage", "ReportPreviewTable",
                  })
         {
             Assert.True(Find<Control>(window, id) is { IsEffectivelyVisible: true }, id);

@@ -286,6 +286,67 @@ public class ReportsTests
         Assert.Contains("substr(\\\"Orders\\\".\\\"OrderDate\\\", 1, 7)", File.ReadAllText(folder.File(Path.Combine("generated", "Reports", "ByMonthReport.cs"))));
     }
 
+    [Fact]
+    public async Task PreviewSaysWhatIsMissingAndThenShowsTheFirstRowsOfTheReport()
+    {
+        using var folder = new TempFolder();
+        var main = await Harness.SavedProjectAsync(folder);
+        main.Reports.AddReportCommand.Execute(null);
+        await main.Reports.PreviewCommand.ExecuteAsync(null);
+        Assert.Equal("Connect a database on the Database section first.", main.Reports.PreviewMessage);
+
+        using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={folder.File("shop.db")}"))
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "CREATE TABLE sales (id INTEGER PRIMARY KEY, region TEXT, amount REAL);"
+                + "INSERT INTO sales (region, amount) VALUES ('North', 10), ('North', 5), ('South', 40);";
+            command.ExecuteNonQuery();
+        }
+
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+        main.Database.DatabasePath = "shop.db";
+        await main.Database.ConnectCommand.ExecuteAsync(null);
+        main.Reports.Reload();
+        main.Reports.SelectedRow = main.Reports.Reports.Single();
+        main.Reports.SourceTable = "sales";
+        main.Reports.Kind = Choice(main.Reports.KindChoices, ReportKind.Chart);
+        main.Reports.RowField = "region";
+        main.Reports.ValueField = "amount";
+        main.Reports.Function = Choice(main.Reports.FunctionChoices, AggregateFunction.Sum);
+
+        await main.Reports.PreviewCommand.ExecuteAsync(null);
+
+        Assert.Equal(["region", "Sum of amount"], main.Reports.PreviewHeaders);
+        Assert.Equal([["North", "15"], ["South", "40"]], main.Reports.PreviewRows.Select(r => r.Cells.ToArray()));
+        Assert.Equal(ReportsViewModel.MaxBarWidth, main.Reports.PreviewRows[1].BarWidth);
+        Assert.Equal(Math.Round(15 / 40.0 * ReportsViewModel.MaxBarWidth), main.Reports.PreviewRows[0].BarWidth);
+        Assert.Equal("First 2 categories.", main.Reports.PreviewMessage);
+
+        main.Reports.TopCount = "1";
+        Assert.Equal("The settings changed. Preview again to see the result.", main.Reports.PreviewMessage);
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+    }
+
+    [NorthwindFact]
+    public async Task NorthwindPreviewShowsTheTopCountries()
+    {
+        using var folder = new TempFolder();
+        var main = await Harness.NorthwindProjectAsync(folder);
+        main.Tables.SelectedTable = main.Current.Tables.Single(t => t.Name == "Orders");
+        main.Reports.AddReportCommand.Execute(null);
+        main.Reports.Kind = Choice(main.Reports.KindChoices, ReportKind.Chart);
+        main.Reports.RowField = "ShipCountry";
+        main.Reports.ChartOrder = Choice(main.Reports.ChartOrderChoices, ChartOrder.ValueDescending);
+        main.Reports.TopCount = "3";
+
+        await main.Reports.PreviewCommand.ExecuteAsync(null);
+
+        Assert.Equal(["USA", "Germany", "France"], main.Reports.PreviewRows.Select(r => r.Cells[0]));
+        Assert.Equal(ReportsViewModel.MaxBarWidth, main.Reports.PreviewRows[0].BarWidth);
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+    }
+
     private static string BreadcrumbOn(MainViewModel main, string tab)
     {
         main.ActiveTabIndex = MainViewModel.TabNames.ToList().IndexOf(tab);

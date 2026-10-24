@@ -30,7 +30,55 @@
                     <TextBlock Classes="hint" TextWrapping="Wrap"
                                Text="A report reads one table. The table's filter, owner field and view level apply to it, and charts are drawn on the server, so the site needs no extra script." />
 
-                    <Expander Header="Validation" IsExpanded="True" HorizontalAlignment="Stretch">
+                    <Expander Header="Preview" IsExpanded="True" HorizontalAlignment="Stretch" IsEnabled="{Binding HasReport}">
+                    <StackPanel Spacing="6" Margin="0,4,0,0">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Preview" Classes="primary" Command="{Binding PreviewCommand}"
+                                    AutomationProperties.AutomationId="ReportPreviewButton" />
+                            <TextBlock Classes="hint" Text="{Binding PreviewMessage}" VerticalAlignment="Center" Margin="0,0,8,0"
+                                       AutomationProperties.AutomationId="ReportPreviewMessage" />
+                        </DockPanel>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <StackPanel AutomationProperties.AutomationId="ReportPreviewTable">
+                                <ItemsControl ItemsSource="{Binding PreviewHeaders}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" Width="110" Classes="section" TextTrimming="CharacterEllipsis" Margin="0,0,6,4" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <ItemsControl ItemsSource="{Binding PreviewRows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="0,1,0,0" Padding="0,4">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ItemsControl ItemsSource="{Binding Cells}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding}" Width="110" TextTrimming="CharacterEllipsis" Margin="0,0,6,0" />
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <Border IsVisible="{Binding HasBar}" Width="{Binding BarWidth}" Height="10" CornerRadius="3"
+                                                            Background="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                        <TextBlock Classes="hint" Text="Owner fields and user levels are not applied in the preview." />
+                    </StackPanel>
+                </Expander>
+
+                <Expander Header="Validation" IsExpanded="True" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="4" Margin="0,4,0,0">
                             <TextBlock Classes="hint" Text="{Binding ProblemSummary}" AutomationProperties.AutomationId="ReportProblemSummaryText" />
                             <ItemsControl ItemsSource="{Binding Problems}" AutomationProperties.AutomationId="ReportProblemList">
