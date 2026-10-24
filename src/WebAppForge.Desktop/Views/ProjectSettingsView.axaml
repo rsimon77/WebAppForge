@@ -163,12 +163,20 @@
                         <TextBlock Classes="label" Text="Provider" />
                         <TextBox Text="{Binding Provider, Mode=OneWay}" IsReadOnly="True" Width="200" HorizontalAlignment="Left"
                                  AutomationProperties.AutomationId="ProviderBox" />
-                        <TextBlock Classes="label" Text="SQLite file path" />
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="Browse..." Margin="8,0,0,0" Command="{Binding BrowseDatabaseCommand}"
-                                    AutomationProperties.AutomationId="BrowseDatabaseButton" />
-                            <TextBox Text="{Binding DatabasePath}" AutomationProperties.AutomationId="ProjectDatabasePathBox" />
-                        </DockPanel>
+                        <StackPanel Spacing="4" IsVisible="{Binding IsSqlite}">
+                            <TextBlock Classes="label" Text="SQLite file path" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Browse..." Margin="8,0,0,0" Command="{Binding BrowseDatabaseCommand}"
+                                        AutomationProperties.AutomationId="BrowseDatabaseButton" />
+                                <TextBox Text="{Binding DatabasePath}" AutomationProperties.AutomationId="ProjectDatabasePathBox" />
+                            </DockPanel>
+                        </StackPanel>
+                        <StackPanel Spacing="4" IsVisible="{Binding !IsSqlite}">
+                            <TextBlock Classes="label" Text="Connection" />
+                            <TextBox Text="{Binding ServerConnection, Mode=OneWay}" IsReadOnly="True"
+                                     AutomationProperties.AutomationId="ProjectServerConnectionBox" />
+                        </StackPanel>
+                        <TextBlock Classes="hint" TextWrapping="Wrap" Text="Change the engine and the connection on the Database tab." />
                     </StackPanel>
                 </Expander>
 
