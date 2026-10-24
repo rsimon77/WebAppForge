@@ -31,22 +31,85 @@ public sealed class Project
     public List<ReportInfo> Reports { get; } = [];
 }
 
+/// <summary>The database products the generator supports. The keys are stored in the project file.</summary>
+public static class DatabaseProviders
+{
+    public const string Sqlite = "sqlite";
+
+    public const string SqlServer = "sqlserver";
+
+    /// <summary>Azure SQL Database: the SQL Server dialect and driver, with Entra ID sign-in through the connection string.</summary>
+    public const string AzureSql = "azuresql";
+
+    public const string MySql = "mysql";
+
+    public static IReadOnlyList<string> All { get; } = [Sqlite, SqlServer, AzureSql, MySql];
+
+    public static bool IsKnown(string? provider) => All.Contains(Normalize(provider));
+
+    /// <summary>The key in lower case, with "sqlite" for an empty value.</summary>
+    public static string Normalize(string? provider) => string.IsNullOrWhiteSpace(provider) ? Sqlite : provider.Trim().ToLowerInvariant();
+
+    /// <summary>True for SQL Server and Azure SQL, which share the dialect and the driver.</summary>
+    public static bool IsSqlServer(string? provider) => Normalize(provider) is SqlServer or AzureSql;
+
+    /// <summary>True for the providers that connect to a server with a connection string instead of opening a file.</summary>
+    public static bool IsServer(string? provider) => Normalize(provider) != Sqlite;
+
+    public static string DisplayName(string? provider) => Normalize(provider) switch
+    {
+        SqlServer => "SQL Server",
+        AzureSql => "Azure SQL",
+        MySql => "MySQL",
+        _ => "SQLite",
+    };
+}
+
 public sealed class DatabaseSettings
 {
-    /// <summary>Provider key. Only "sqlite" is implemented in this version.</summary>
-    public string Provider { get; set; } = "sqlite";
+    /// <summary>Provider key, one of <see cref="DatabaseProviders.All"/>.</summary>
+    public string Provider { get; set; } = DatabaseProviders.Sqlite;
 
     /// <summary>SQLite file path, relative to the project file folder (or absolute). Forward slashes.</summary>
     public string Path { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Connection string of a server database. It is saved in the project file and written to the generated appsettings.json,
+    /// so a password in it is stored in plain text; <see cref="ConnectionStringVariable"/> keeps it out of both.
+    /// </summary>
+    public string ConnectionString { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of an environment variable that holds the connection string of a server database. When set, the editor reads the
+    /// connection from it, the generated appsettings.json leaves the connection empty and the generated site reads the variable.
+    /// </summary>
+    public string ConnectionStringVariable { get; set; } = string.Empty;
+
+    public bool IsServer => DatabaseProviders.IsServer(Provider);
+
     /// <summary>Resolves the connection string against the folder that contains the project file.</summary>
     public string ResolveConnectionString(string projectFolder)
     {
+        if (IsServer)
+        {
+            var variable = ConnectionStringVariable.Trim();
+            if (variable.Length > 0 && Environment.GetEnvironmentVariable(variable) is { Length: > 0 } fromVariable)
+            {
+                return fromVariable;
+            }
+
+            return variable.Length > 0 ? string.Empty : ConnectionString;
+        }
+
         var full = System.IO.Path.IsPathRooted(Path)
             ? Path
             : System.IO.Path.GetFullPath(System.IO.Path.Combine(projectFolder, Path));
         return $"Data Source={full}";
     }
+
+    /// <summary>The connection string written to the generated appsettings.json: empty when it comes from an environment variable.</summary>
+    public string GeneratedConnectionString(string projectFolder)
+        => IsServer && ConnectionStringVariable.Trim().Length > 0 ? string.Empty : ResolveConnectionString(projectFolder);
 }
 
 /// <summary>Application-level settings that apply to every generated page.</summary>

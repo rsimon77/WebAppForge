@@ -248,9 +248,15 @@ public partial class GenerateViewModel : ViewModelBase
         }
 
         var project = _main.Current;
-        if (!string.Equals(project.Database.Provider, "sqlite", StringComparison.OrdinalIgnoreCase))
+        if (!DatabaseProviders.IsKnown(project.Database.Provider))
         {
-            Block($"Not supported: Provider '{project.Database.Provider}' is not supported yet. Only SQLite is implemented.");
+            Block($"Not supported: {Core.Generation.ProjectGenerator.UnsupportedProviderMessage(project.Database.Provider)}");
+            return;
+        }
+
+        if (project.Database.IsServer && project.Database.ConnectionString.Trim().Length == 0 && project.Database.ConnectionStringVariable.Trim().Length == 0)
+        {
+            Block("Generation blocked: enter the connection string or its environment variable on the Database section.");
             return;
         }
 

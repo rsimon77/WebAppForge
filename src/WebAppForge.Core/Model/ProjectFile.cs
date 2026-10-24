@@ -28,9 +28,7 @@ public static class ProjectFile
             new XAttribute("name", project.Name),
             new XAttribute("id", project.ProjectId.ToString("D")),
             new XAttribute("outputFolder", project.OutputFolder),
-            new XElement("database",
-                new XAttribute("provider", project.Database.Provider),
-                new XAttribute("path", project.Database.Path)),
+            DatabaseElement(project.Database),
             new XElement("aspnet",
                 new XAttribute("title", project.AspNet.Title),
                 new XAttribute("theme", project.AspNet.Theme),
@@ -143,8 +141,10 @@ public static class ProjectFile
         {
             project.Database = new DatabaseSettings
             {
-                Provider = Optional(database, "provider", "sqlite"),
+                Provider = Optional(database, "provider", DatabaseProviders.Sqlite),
                 Path = Optional(database, "path", string.Empty),
+                ConnectionString = Optional(database, "connectionString", string.Empty),
+                ConnectionStringVariable = Optional(database, "connectionStringVariable", string.Empty),
             };
         }
 
@@ -270,6 +270,23 @@ public static class ProjectFile
     {
         return element.Attribute(name)?.Value
             ?? throw new InvalidDataException($"Element '{element.Name.LocalName}' is missing attribute '{name}'.");
+    }
+
+    /// <summary>The database element. A SQLite project writes only provider and path, as before servers were supported.</summary>
+    private static XElement DatabaseElement(DatabaseSettings database)
+    {
+        var e = new XElement("database", new XAttribute("provider", database.Provider), new XAttribute("path", database.Path));
+        if (database.ConnectionString.Length > 0)
+        {
+            e.Add(new XAttribute("connectionString", database.ConnectionString));
+        }
+
+        if (database.ConnectionStringVariable.Length > 0)
+        {
+            e.Add(new XAttribute("connectionStringVariable", database.ConnectionStringVariable));
+        }
+
+        return e;
     }
 
     private static string Optional(XElement element, string name, string fallback)

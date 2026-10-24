@@ -472,7 +472,7 @@ internal static partial class Templates
         L($"        var rows = new List<{dClass}>();");
         L("        await using (var command = connection.CreateCommand())");
         L("        {");
-        L($"            command.CommandText = {Lit("SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name))} + where + {(tools ? "order" : Lit(OrderSql(d)))} + \" LIMIT @limit OFFSET @offset\";");
+        L($"            command.CommandText = {Lit("SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name))} + where + {(tools ? "order" : Lit(OrderSql(d)))} + {Lit(Db.Page)};");
         L("            Bind(command);");
         L($"            command.Parameters.AddWithValue(\"@limit\", MdPageSize{i});");
         L($"            command.Parameters.AddWithValue(\"@offset\", (page - 1) * MdPageSize{i});");

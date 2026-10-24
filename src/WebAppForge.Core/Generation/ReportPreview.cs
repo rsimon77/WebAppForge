@@ -1,6 +1,7 @@
+using System.Data.Common;
 using System.Globalization;
-using Microsoft.Data.Sqlite;
 using WebAppForge.Core.Model;
+using WebAppForge.Core.Schema;
 
 namespace WebAppForge.Core.Generation;
 
@@ -11,7 +12,7 @@ public sealed record ReportPreviewResult(IReadOnlyList<string> Headers, IReadOnl
 }
 
 /// <summary>
-/// Runs a report on the project's SQLite file the way the generated page groups it (the same group, date and lookup SQL),
+/// Runs a report on the project's database the way the generated page groups it (the same group, date and lookup SQL),
 /// and returns the first rows. The preview reads every row the table filter and the report filter allow: owner fields and user
 /// levels are not applied, because the editor has no signed-in user.
 /// </summary>
@@ -39,10 +40,12 @@ public static class ReportPreview
 
         var table = tables.First(t => string.Equals(t.Name, report.SourceTable.Trim(), StringComparison.OrdinalIgnoreCase));
         var previous = Templates.MdTables;
+        var previousDb = Templates.Db;
         Templates.MdTables = tables;
+        Templates.Db = SqlDialect.For(project.Database.Provider);
         try
         {
-            using var connection = new SqliteConnection(connectionString);
+            using var connection = DatabaseConnections.Create(project.Database.Provider, connectionString);
             connection.Open();
             using var command = connection.CreateCommand();
             return report.Kind switch
@@ -53,13 +56,14 @@ public static class ReportPreview
                 _ => Calendar(command, report, table),
             };
         }
-        catch (SqliteException ex)
+        catch (DbException ex)
         {
             return ReportPreviewResult.Note("The database refused the query: " + ex.Message);
         }
         finally
         {
             Templates.MdTables = previous;
+            Templates.Db = previousDb;
         }
     }
 
@@ -71,9 +75,47 @@ public static class ReportPreview
 
     private static string From(TableInfo table, ReportInfo report) => " FROM " + Templates.QuoteIdent(table.Name) + Where(table, report);
 
-    private static string AggregateSql(AggregateFunction function, FieldInfo? field)
+    private static SqlDialect Db => Templates.Db;
+
+    /// <summary>
+    /// A grouped query: the groups g0, g1, ... and the aggregates a0, a1, ... of the values v0, v1, ... read by a derived table, so
+    /// that every dialect can group by a subquery (SQL Server cannot group by position or by a subquery).
+    /// </summary>
+    private static string GroupedSql(TableInfo table, ReportInfo report, List<string> groups, List<(AggregateFunction Function, FieldInfo? Field)> aggregates,
+        string order, int limit)
     {
-        var value = field is null ? "*" : Templates.QuoteIdent(field.Name);
+        var inner = groups.Select((g, i) => g + " AS g" + i).ToList();
+        var outer = groups.Select((_, i) => "g" + i).ToList();
+        for (var j = 0; j < aggregates.Count; j++)
+        {
+            var (function, field) = aggregates[j];
+            if (field is null)
+            {
+                outer.Add(AggregateSql(function, (string?)null) + " AS a" + j);
+                continue;
+            }
+
+            inner.Add(Templates.QuoteIdent(field.Name) + " AS v" + j);
+            outer.Add(AggregateSql(function, "v" + j) + " AS a" + j);
+        }
+
+        if (inner.Count == 0)
+        {
+            inner.Add("1 AS one");
+        }
+
+        var groupBy = groups.Count == 0 ? string.Empty : " GROUP BY " + string.Join(", ", groups.Select((_, i) => "g" + i));
+        var orderBy = order.Length == 0 ? string.Empty : " ORDER BY " + order;
+        return "SELECT " + Db.Top(limit) + string.Join(", ", outer) + " FROM (SELECT " + string.Join(", ", inner) + From(table, report) + ") AS r"
+            + groupBy + orderBy + Db.Limit(limit);
+    }
+
+    private static string AggregateSql(AggregateFunction function, FieldInfo? field) =>
+        AggregateSql(function, field is null ? null : Templates.QuoteIdent(field.Name));
+
+    private static string AggregateSql(AggregateFunction function, string? column)
+    {
+        var value = column ?? "*";
         return function switch
         {
             AggregateFunction.Sum => $"SUM({value})",
@@ -92,26 +134,25 @@ public static class ReportPreview
     private static string Text(object? value) => value switch
     {
         null or DBNull => "(empty)",
+        bool flag => flag ? "Yes" : "No",
         double d => d.ToString("#,0.##", CultureInfo.InvariantCulture),
         decimal m => m.ToString("#,0.##", CultureInfo.InvariantCulture),
         long l => l.ToString("#,0", CultureInfo.InvariantCulture),
+        int i => i.ToString("#,0", CultureInfo.InvariantCulture),
         _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty,
     };
 
     private static double Number(object? value) => value is null or DBNull ? 0 : Convert.ToDouble(value, CultureInfo.InvariantCulture);
 
-    private static ReportPreviewResult Summary(SqliteCommand command, ReportInfo report, TableInfo table)
+    private static ReportPreviewResult Summary(DbCommand command, ReportInfo report, TableInfo table)
     {
         var groups = report.Groups.Select(g => (Field: Templates.ReportField(table, g.Field), g.Interval, g.Descending)).ToList();
         var aggregates = report.Aggregates.Count > 0
             ? report.Aggregates.Select(a => (Field: Templates.OptionalReportField(table, a.Field), a.Function, a.Caption)).ToList()
             : [((FieldInfo?)null, AggregateFunction.Count, string.Empty)];
-        var select = groups.Select(g => Templates.GroupSql(table, g.Field, g.Interval)).Concat(aggregates.Select(a => AggregateSql(a.Function, a.Field)));
-        command.CommandText = "SELECT " + string.Join(", ", select) + From(table, report)
-            + (groups.Count == 0 ? string.Empty
-                : " GROUP BY " + string.Join(", ", groups.Select((_, i) => i + 1))
-                + " ORDER BY " + string.Join(", ", groups.Select((g, i) => (i + 1) + (g.Descending ? " DESC" : string.Empty))))
-            + " LIMIT " + MaxRows;
+        var groupSql = groups.Select(g => Templates.GroupSql(table, g.Field, g.Interval)).ToList();
+        var order = string.Join(", ", groups.Select((g, i) => "g" + i + (g.Descending ? " DESC" : string.Empty)));
+        command.CommandText = GroupedSql(table, report, groupSql, aggregates.Select(a => (a.Function, a.Field)).ToList(), order, MaxRows);
         var headers = groups.Select(g => Caption(g.Field)).Concat(aggregates.Select(a => Heading(a.Function, a.Field, a.Caption))).ToList();
         var rows = new List<string[]>();
         using var reader = command.ExecuteReader();
@@ -123,7 +164,7 @@ public static class ReportPreview
         return new ReportPreviewResult(headers, rows, null, rows.Count == 0 ? "No rows." : $"First {rows.Count} groups.");
     }
 
-    private static ReportPreviewResult Grid(SqliteCommand command, ReportInfo report, TableInfo table, bool pivot)
+    private static ReportPreviewResult Grid(DbCommand command, ReportInfo report, TableInfo table, bool pivot)
     {
         var row = Templates.ReportField(table, report.RowField);
         var column = Templates.OptionalReportField(table, report.ColumnField);
@@ -134,7 +175,7 @@ public static class ReportPreview
         {
             var byValue = report.Kind == ReportKind.Chart && report.ChartOrder == ChartOrder.ValueDescending;
             var limit = report.Kind == ReportKind.Chart && report.TopCount > 0 ? Math.Min(report.TopCount, MaxRows) : MaxRows;
-            command.CommandText = $"SELECT {rowSql}, {AggregateSql(report.Function, value)}{From(table, report)} GROUP BY 1 ORDER BY {(byValue ? "2 DESC" : "1")} LIMIT {limit}";
+            command.CommandText = GroupedSql(table, report, [rowSql], [(report.Function, value)], byValue ? "a0 DESC" : "g0", limit);
             var rows = new List<string[]>();
             var numbers = new List<double>();
             using var reader = command.ExecuteReader();
@@ -150,7 +191,7 @@ public static class ReportPreview
         }
 
         var columnSql = Templates.GroupSql(table, column, report.ColumnInterval);
-        command.CommandText = $"SELECT {rowSql}, {columnSql}, {AggregateSql(report.Function, value)}{From(table, report)} GROUP BY 1, 2 ORDER BY 1, 2";
+        command.CommandText = GroupedSql(table, report, [rowSql, columnSql], [(report.Function, value)], "g0, g1", 100000);
         var cells = new Dictionary<(string, string), string>();
         var rowKeys = new List<string>();
         var columnKeys = new SortedSet<string>(StringComparer.Ordinal);
@@ -181,14 +222,14 @@ public static class ReportPreview
         return new ReportPreviewResult(new[] { Caption(row) }.Concat(shown).ToList(), result, null, note);
     }
 
-    private static ReportPreviewResult Calendar(SqliteCommand command, ReportInfo report, TableInfo table)
+    private static ReportPreviewResult Calendar(DbCommand command, ReportInfo report, TableInfo table)
     {
         var date = Templates.ReportField(table, report.DateField);
         var title = Templates.CalendarTitle(report, table);
         var dateSql = Templates.DateTextSql(table, date);
         var where = Where(table, report);
-        command.CommandText = $"SELECT substr({dateSql}, 1, 10), {(title is null ? "NULL" : Templates.QuoteIdent(title.Name))} FROM {Templates.QuoteIdent(table.Name)}"
-            + (where.Length == 0 ? " WHERE " : where + " AND ") + $"{dateSql} IS NOT NULL ORDER BY {dateSql} DESC LIMIT {MaxRows}";
+        command.CommandText = $"SELECT {Db.Top(MaxRows)}{Db.Substring(dateSql, 1, 10)}, {(title is null ? "NULL" : Templates.QuoteIdent(title.Name))} FROM {Templates.QuoteIdent(table.Name)}"
+            + (where.Length == 0 ? " WHERE " : where + " AND ") + $"{dateSql} IS NOT NULL ORDER BY {dateSql} DESC{Db.Limit(MaxRows)}";
         var rows = new List<string[]>();
         using var reader = command.ExecuteReader();
         while (reader.Read())
