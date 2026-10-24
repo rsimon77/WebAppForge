@@ -36,6 +36,13 @@ public sealed class ProjectGenerator
 
         MasterDetailValidator.Validate(project.Tables);
 
+        // Reports with errors would generate a site that does not compile or shows wrong data, so the first error stops generation.
+        var reportError = Reports.ReportValidator.Validate(project).FirstOrDefault(i => i.Severity == Reports.ReportIssueSeverity.Error);
+        if (reportError is not null)
+        {
+            throw new InvalidOperationException(reportError.Message);
+        }
+
         Templates.Localized = localized;
         var ns = Identifier.Pascal(project.Name);
         var tables = project.Tables.Where(t => t.Generate).ToList();
@@ -44,9 +51,9 @@ public sealed class ProjectGenerator
         var files = new Dictionary<string, string>
         {
             [$"{ns}.csproj"] = Templates.Csproj(SqliteVersion, project.Meta),
-            ["Program.cs"] = Templates.Program(ns, project.AspNet, tables, project.Security, project.Meta),
+            ["Program.cs"] = Templates.Program(ns, project.AspNet, tables, project.Security, project.Meta, project.Reports),
             ["appsettings.json"] = Templates.AppSettings(project.Database.ResolveConnectionString(projectFolder), project.Meta),
-            ["Web/Html.cs"] = Templates.HtmlHelper(ns, project.Meta, tables),
+            ["Web/Html.cs"] = Templates.HtmlHelper(ns, project.Meta, tables, project.Reports),
         };
 
         // The runtime for customized fields and tables is only part of sites that use it.
@@ -76,6 +83,13 @@ public sealed class ProjectGenerator
         if (Templates.UsesReferentialIntegrity(copies))
         {
             files["Web/ReferentialIntegrity.cs"] = Templates.ReferentialIntegrityFile(ns, copies);
+        }
+
+        // Reports need the engine (SQL and result shaping) and the pages; sites without reports get neither.
+        if (project.Reports.Count > 0)
+        {
+            files["Web/ReportEngine.cs"] = TemplatesReports.EngineFile(ns);
+            files["Web/Reports.cs"] = TemplatesReports.ReportsFile(project, ns);
         }
 
         if (Templates.EnvironmentName(project.Meta) is { } environment)

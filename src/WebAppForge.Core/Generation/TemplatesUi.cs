@@ -772,6 +772,20 @@ internal static partial class Templates
     /// <summary>True when the shared layout gets a navigation menu: some table sets a menu group or hides itself.</summary>
     private static bool NavCustomized(IReadOnlyList<TableInfo> tables) => tables.Any(t => t.Ui.MenuGroup.Length > 0 || !t.Ui.ShowInMenu);
 
+    /// <summary>Reports shown in the menu, ordered by MenuOrder and then by their order in the project. Empty for a project without reports.</summary>
+    private static List<ReportDef> MenuReports(IReadOnlyList<ReportDef>? reports) => (reports ?? [])
+        .Select((report, index) => (report, index))
+        .Where(x => x.report.ShowInMenu)
+        .OrderBy(x => x.report.MenuOrder)
+        .ThenBy(x => x.index)
+        .Select(x => x.report)
+        .ToList();
+
+    /// <summary>The menu group of a report: its own, else "Reports".</summary>
+    internal static string ReportMenuGroup(ReportDef report) => report.MenuGroup.Length > 0 ? report.MenuGroup : "Reports";
+
+    internal static string ReportCaption(ReportDef report) => report.Caption.Length > 0 ? report.Caption : report.Name;
+
     private static string FileExtension(string path)
     {
         var extension = Path.GetExtension(path).ToLowerInvariant();
@@ -786,8 +800,9 @@ internal static partial class Templates
     /// Applies the project metadata to the text of the Html helper by replacing anchors that exist both in the plain and
     /// in the localized variant. Does nothing for default metadata and tables without menu settings.
     /// </summary>
-    private static string ApplyLayout(string text, ProjectMetadata meta, IReadOnlyList<TableInfo> tables)
+    private static string ApplyLayout(string text, ProjectMetadata meta, IReadOnlyList<TableInfo> tables, IReadOnlyList<ReportDef>? reports = null)
     {
+        var menuReports = MenuReports(reports);
         if (!string.Equals(meta.NavbarStyle, "light", StringComparison.OrdinalIgnoreCase) && meta.NavbarStyle.Length > 0)
         {
             var style = Token(meta.NavbarStyle, "light");
@@ -802,7 +817,7 @@ internal static partial class Templates
                 """<a class=\"navbar-brand\" href=\"/\">""" + $"<img src=\\\"/{LogoFile(meta)}\\\" alt=\\\"\\\" height=\\\"28\\\" class=\\\"me-2\\\">");
         }
 
-        var nav = NavCustomized(tables);
+        var nav = NavCustomized(tables) || menuReports.Count > 0;
         if (nav)
         {
             var menu = new StringBuilder();
@@ -813,6 +828,11 @@ internal static partial class Templates
             foreach (var table in MenuTables(tables))
             {
                 menu.AppendLine($"            ({Lit(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}),");
+            }
+
+            foreach (var report in menuReports)
+            {
+                menu.AppendLine($"            ({Lit(ReportMenuGroup(report))}, {Lit(ReportCaption(report))}, {Lit("/reports/" + report.Name)}),");
             }
 
             menu.AppendLine("        };");
@@ -855,7 +875,7 @@ internal static partial class Templates
             }
         }
 
-        if (MenuCustomized(tables))
+        if (MenuCustomized(tables) || menuReports.Count > 0)
         {
             const string grouped = """
                     public static string GroupedMenu(IEnumerable<(string Group, string Caption, string Href, string Icon)> items)
@@ -894,7 +914,7 @@ internal static partial class Templates
         }
 
         var head = new StringBuilder();
-        if (tables.Any(t => Token(t.Ui.Icon).Length > 0 || UsesFormPageIcons(t)))
+        if (tables.Any(t => Token(t.Ui.Icon).Length > 0 || UsesFormPageIcons(t)) || menuReports.Any(r => Token(r.Icon).Length > 0))
         {
             head.Append("<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css\">");
         }

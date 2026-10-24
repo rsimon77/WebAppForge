@@ -94,9 +94,10 @@ internal static partial class Templates
             """.Replace("@@CONN@@", escaped);
     }
 
-    public static string Program(string ns, AspNetSettings aspnet, IReadOnlyList<TableInfo> tables, SecuritySettings security, ProjectMetadata? meta = null)
+    public static string Program(string ns, AspNetSettings aspnet, IReadOnlyList<TableInfo> tables, SecuritySettings security, ProjectMetadata? meta = null, IReadOnlyList<ReportDef>? reports = null)
     {
         meta ??= new ProjectMetadata();
+        var menuReports = MenuReports(reports);
         var secure = security.Enabled;
         var sb = new StringBuilder();
         if (meta.EnableHealthEndpoint)
@@ -230,7 +231,7 @@ internal static partial class Templates
         if (aspnet.IncludeHomePage)
         {
             var handler = secure ? "(HttpContext context, IAntiforgery antiforgery) => " : "() => ";
-            var groupedMenu = MenuCustomized(tables);
+            var groupedMenu = MenuCustomized(tables) || menuReports.Count > 0;
             sb.AppendLine(groupedMenu
                 ? $"{target}.MapGet(\"/\", {handler}Html.Page({Lit(aspnet.Title)}, Html.GroupedMenu(new (string Group, string Caption, string Href, string Icon)[]"
                 : $"{target}.MapGet(\"/\", {handler}Html.Page({Lit(aspnet.Title)}, Html.Menu(new (string Caption, string Href)[]");
@@ -241,6 +242,12 @@ internal static partial class Templates
                     ? $"    ({Lit(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}, {Lit(Token(table.Ui.Icon))}),"
                     : $"    ({TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}),");
             }
+
+            foreach (var report in menuReports)
+            {
+                sb.AppendLine($"    ({Lit(ReportMenuGroup(report))}, {Lit(ReportCaption(report))}, {Lit("/reports/" + report.Name)}, {Lit(Token(report.Icon))}),");
+            }
+
             if (secure && security.AllowChangePassword)
             {
                 sb.AppendLine($"}}) + Html.Link(\"/changepassword\", {Ui("changePassword")}) + AuthPages.LogoutForm(context, antiforgery)));");
@@ -261,13 +268,18 @@ internal static partial class Templates
             sb.AppendLine($"{target}.Map{className}Pages(connectionString);");
         }
 
+        if (reports is { Count: > 0 })
+        {
+            sb.AppendLine($"{target}.MapReportPages(connectionString);");
+        }
+
         sb.AppendLine();
         sb.AppendLine("app.Run();");
         return sb.ToString();
     }
 
-    public static string HtmlHelper(string ns, ProjectMetadata? meta = null, IReadOnlyList<TableInfo>? tables = null) =>
-        ApplyLayout(LocalizedHtmlHelper(ns), meta ?? new ProjectMetadata(), tables ?? []);
+    public static string HtmlHelper(string ns, ProjectMetadata? meta = null, IReadOnlyList<TableInfo>? tables = null, IReadOnlyList<ReportDef>? reports = null) =>
+        ApplyLayout(LocalizedHtmlHelper(ns), meta ?? new ProjectMetadata(), tables ?? [], reports);
 
     private static string LocalizedHtmlHelper(string ns)
     {
