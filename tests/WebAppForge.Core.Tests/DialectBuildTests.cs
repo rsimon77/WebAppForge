@@ -13,6 +13,7 @@ public class DialectBuildTests
     {
         "customized" => Customized(),
         "masterdetail" => MasterDetail(root),
+        "audited" => Audited(root),
         _ => ReportGenerationTests.WithReports("secure"),
     };
 
@@ -41,10 +42,26 @@ public class DialectBuildTests
         return project;
     }
 
+    /// <summary>The master/detail sample with an audit trail on the tables of its cascades.</summary>
+    private static Project Audited(string root)
+    {
+        var project = MasterDetail(root);
+        project.Audit.Enabled = true;
+        project.Audit.RecordIpAddress = true;
+        foreach (var name in new[] { "customers", "orders", "order_lines", "line_notes" })
+        {
+            project.Tables.Single(t => t.Name == name).Audit.Enabled = true;
+        }
+
+        return project;
+    }
+
     [Theory]
     [InlineData(DatabaseProviders.SqlServer, "customized")]
     [InlineData(DatabaseProviders.SqlServer, "masterdetail")]
     [InlineData(DatabaseProviders.SqlServer, "reports")]
+    [InlineData(DatabaseProviders.SqlServer, "audited")]
+    [InlineData(DatabaseProviders.MySql, "audited")]
     [InlineData(DatabaseProviders.AzureSql, "reports")]
     [InlineData(DatabaseProviders.MySql, "customized")]
     [InlineData(DatabaseProviders.MySql, "masterdetail")]
@@ -69,6 +86,24 @@ public class DialectBuildTests
                 {
                     var sql = Regex.Match(code, " LIMIT [0-9@]|AS TEXT\\)");
                     Assert.False(sql.Success, path + ": " + sql.Value);
+                }
+            }
+
+            if (sample == "audited")
+            {
+                var audit = files["Web/Audit.cs"];
+                var page = files["Pages/AuditTrailPages.cs"];
+                if (DatabaseProviders.IsSqlServer(provider))
+                {
+                    Assert.Contains("IF OBJECT_ID(N'audit_trail', N'U') IS NULL CREATE TABLE [audit_trail]", audit);
+                    Assert.Contains("BEGIN TRANSACTION", audit);
+                    Assert.Contains("OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY", page);
+                }
+                else
+                {
+                    Assert.Contains("CREATE TABLE IF NOT EXISTS `audit_trail`", audit);
+                    Assert.Contains("START TRANSACTION", audit);
+                    Assert.Contains("LIMIT @limit OFFSET @offset", page);
                 }
             }
 

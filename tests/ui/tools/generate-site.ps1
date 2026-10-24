@@ -38,7 +38,7 @@ param(
     [string]$Target,
 
     [Parameter(Mandatory)]
-    [ValidateSet('shop', 'secure', 'designed', 'relations', 'reports')]
+    [ValidateSet('shop', 'secure', 'designed', 'relations', 'reports', 'audit')]
     [string]$Scenario,
 
     [string]$PasswordHashFile
