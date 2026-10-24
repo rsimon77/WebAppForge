@@ -7,7 +7,51 @@ namespace WebAppForge.Core.Generation;
 /// </summary>
 internal static partial class Templates
 {
-    internal static string UiRuntime(string ns) => """"
+    internal static string UiRuntime(string ns) => Localized ? LocalizedUiRuntime(PlainUiRuntime(ns), ns) : PlainUiRuntime(ns);
+
+    /// <summary>
+    /// The localized variant: display formats use the visitor's language (Strings.Culture), currency keeps the symbol of the
+    /// default language, and the default date formats become the short patterns of the language.
+    /// </summary>
+    private static string LocalizedUiRuntime(string text, string ns)
+    {
+        text = ReplaceOnce(text, "namespace " + ns + ".Web;", "using " + ns + ".Localization;\n\nnamespace " + ns + ".Web;");
+        text = ReplaceOnce(text, """return Numeric(value, FormatString.Length > 0 ? FormatString : "C");""",
+            """return Numeric(value, FormatString.Length > 0 ? FormatString : "C", Strings.CurrencyFormat);""");
+        text = ReplaceOnce(text, "private string Numeric(object value, string format)", "private string Numeric(object value, string format, IFormatProvider? provider = null)");
+        text = ReplaceOnce(text, "return WebUtility.HtmlEncode(number.ToString(format, CultureInfo.CurrentCulture));",
+            "return WebUtility.HtmlEncode(number.ToString(format, provider ?? Strings.Culture));");
+        text = ReplaceOnce(text, "? WebUtility.HtmlEncode(date.ToString(FormatString, CultureInfo.CurrentCulture))",
+            "? WebUtility.HtmlEncode(date.ToString(FormatString, Strings.Culture))");
+        text = ReplaceOnce(text, ": WebUtility.HtmlEncode(date.ToString(defaultFormat, CultureInfo.InvariantCulture));",
+            ": WebUtility.HtmlEncode(LanguageDate(date, defaultFormat));");
+        text = ReplaceOnce(text, "    private string Dated(object value, string defaultFormat)", LanguageDateMethod + "    private string Dated(object value, string defaultFormat)");
+        return text;
+    }
+
+    /// <summary>The default date formats of the field display kinds, written as the short patterns of the visitor's language.</summary>
+    private const string LanguageDateMethod = """
+            private static string LanguageDate(DateTime date, string defaultFormat)
+            {
+                var culture = Strings.Culture;
+                if (ReferenceEquals(culture, CultureInfo.InvariantCulture))
+                {
+                    return date.ToString(defaultFormat, CultureInfo.InvariantCulture);
+                }
+
+                var pattern = defaultFormat switch
+                {
+                    "yyyy-MM-dd" => culture.DateTimeFormat.ShortDatePattern,
+                    "HH:mm" => culture.DateTimeFormat.ShortTimePattern,
+                    _ => culture.DateTimeFormat.ShortDatePattern + " " + culture.DateTimeFormat.ShortTimePattern,
+                };
+                return date.ToString(pattern, culture);
+            }
+
+
+        """;
+
+    private static string PlainUiRuntime(string ns) => """"
         using System.Globalization;
         using System.Net;
         using System.Text;

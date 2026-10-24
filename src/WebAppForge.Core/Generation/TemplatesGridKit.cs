@@ -725,6 +725,12 @@ internal static partial class Templates
             }
             """).Replace("@@NS@@", ns);
 
+        // Filter values typed by a visitor fall back to the visitor's language in a localized site.
+        if (Localized)
+        {
+            text = text.Replace("CultureInfo.CurrentCulture", "Strings.Culture", StringComparison.Ordinal);
+        }
+
         var cast = TextCastParts();
         return text.Replace("@@USING@@\n", Localized ? $"using {ns}.Localization;\n" : string.Empty)
             .Replace("@@TEXTS@@", texts)

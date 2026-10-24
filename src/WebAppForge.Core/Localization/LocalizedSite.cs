@@ -66,6 +66,8 @@ internal static partial class LocalizedSite
     };
 
     private static string StringsHelper(string ns, string defaultLanguage, IReadOnlyList<string> languages) => ("""
+        using System.Collections.Concurrent;
+        using System.Globalization;
         using System.Net;
         using System.Text.Json;
         using Microsoft.AspNetCore.Http;
@@ -134,6 +136,81 @@ internal static partial class LocalizedSite
             /// <summary>Text for a format string key, such as "{0} is required.", with the arguments filled in.</summary>
             public static string F(string key, string fallback, params object[] args) => string.Format(T(key, fallback), args);
 
+            private static readonly ConcurrentDictionary<string, CultureInfo> Cultures = new(StringComparer.OrdinalIgnoreCase);
+
+            /// <summary>
+            /// The culture that formats dates and numbers for the visitor: the specific culture of the request language ("hu" is
+            /// formatted as hu-HU), or the invariant culture for a language .NET does not know. Only display uses it. Form values,
+            /// the API, exports and imports stay invariant, and CultureInfo.CurrentCulture is not changed, so nothing that formats
+            /// implicitly (such as input values) can pick up a decimal comma.
+            /// </summary>
+            public static CultureInfo Culture => CultureOf(CurrentLanguage);
+
+            public static CultureInfo CultureOf(string language) => Cultures.GetOrAdd(language, static tag =>
+            {
+                try
+                {
+                    return CultureInfo.CreateSpecificCulture(tag);
+                }
+                catch (CultureNotFoundException)
+                {
+                    return CultureInfo.InvariantCulture;
+                }
+            });
+
+            /// <summary>
+            /// Number format for currency values: the separators of the visitor's language with the currency symbol of the default
+            /// language, because the amount is the same whatever language the page is read in.
+            /// </summary>
+            public static NumberFormatInfo CurrencyFormat
+            {
+                get
+                {
+                    var format = (NumberFormatInfo)Culture.NumberFormat.Clone();
+                    format.CurrencySymbol = CultureOf(DefaultLanguage).NumberFormat.CurrencySymbol;
+                    return format;
+                }
+            }
+
+            /// <summary>A date and time as the visitor's language writes it (short date and short time).</summary>
+            public static string FormatDateTime(DateTime value)
+            {
+                var culture = Culture;
+                return ReferenceEquals(culture, CultureInfo.InvariantCulture)
+                    ? value.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)
+                    : value.ToString(culture.DateTimeFormat.ShortDatePattern + " " + culture.DateTimeFormat.ShortTimePattern, culture);
+            }
+
+            /// <summary>
+            /// A number as the visitor's language writes it. Decimals get the language's decimal and group separators and keep all
+            /// their digits; whole numbers get no group separator, because they are often keys and codes.
+            /// </summary>
+            public static string FormatNumber(IFormattable value)
+            {
+                var culture = Culture;
+                if (ReferenceEquals(culture, CultureInfo.InvariantCulture))
+                {
+                    return value.ToString(null, CultureInfo.InvariantCulture);
+                }
+
+                return value switch
+                {
+                    decimal or double or float => value.ToString("#,0.############################", culture),
+                    _ => value.ToString(null, culture),
+                };
+            }
+
+            /// <summary>
+            /// Reads a decimal typed by the visitor: first with the decimal separator of the visitor's language, then with ".".
+            /// Group separators are not accepted, so "1,5" can only mean one and a half (in a language with a decimal comma) and is
+            /// refused where "," is not a decimal separator, instead of being read as 15.
+            /// </summary>
+            public static bool TryParseDecimal(string text, out decimal value)
+            {
+                const NumberStyles style = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint;
+                return decimal.TryParse(text, style, Culture, out value) || decimal.TryParse(text, style, CultureInfo.InvariantCulture, out value);
+            }
+
             public static bool IsRightToLeft(string language) =>
                 RightToLeft.Contains(language.Split('-')[0], StringComparer.OrdinalIgnoreCase);
 
@@ -144,6 +221,8 @@ internal static partial class LocalizedSite
             public static Task Middleware(HttpContext context, Func<Task> next)
             {
                 Current.Value = new RequestState(Resolve(context), context.Request.Path + context.Request.QueryString.ToString());
+                // Resource lookups of the framework follow the language; formatting does not (see Culture).
+                CultureInfo.CurrentUICulture = Culture;
                 return next();
             }
 

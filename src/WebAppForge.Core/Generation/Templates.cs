@@ -425,6 +425,11 @@ internal static partial class Templates
         text = ReplaceOnce(text, "namespace " + ns + ".Web;", "using " + ns + ".Localization;\n\nnamespace " + ns + ".Web;");
         text = ReplaceOnce(text, """bool flag => flag ? "Yes" : "No",""",
             """bool flag => WebUtility.HtmlEncode(flag ? Strings.T("ui.yes", "Yes") : Strings.T("ui.no", "No")),""");
+        // Dates and numbers are shown as the visitor's language writes them; form values keep their invariant text.
+        text = ReplaceOnce(text, """DateTime date => WebUtility.HtmlEncode(date.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)),""",
+            """DateTime date => WebUtility.HtmlEncode(Strings.FormatDateTime(date)),""");
+        text = ReplaceOnce(text, """IFormattable number => WebUtility.HtmlEncode(number.ToString(null, CultureInfo.InvariantCulture)),""",
+            """IFormattable number => WebUtility.HtmlEncode(Strings.FormatNumber(number)),""");
         text = ReplaceOnce(text, """<html lang=\"en\"><head>""",
             """<html lang=\"" + Attr(Strings.CurrentLanguage) + "\"" + Strings.DirAttribute + "><head>""");
         text = ReplaceOnce(text, """href=\"/\">Home</a></div></nav>""",
@@ -2365,7 +2370,8 @@ internal static partial class Templates
     {
         var parse = field.Type == FieldType.Integer
             ? "long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)"
-            : "decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)";
+            // A localized site reads the decimal separator of the visitor's language too (see Strings.TryParseDecimal).
+            : Localized ? "Strings.TryParseDecimal(raw, out var parsed)" : "decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)";
         var invalid = FieldMessage("notNumber", field);
         var required = IsCustom(field) ? RequiredText(field) : FieldMessage("required", field);
 

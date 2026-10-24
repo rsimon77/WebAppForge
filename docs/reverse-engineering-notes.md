@@ -312,3 +312,16 @@ tables"). The first admin is seeded from an environment variable (default WEBAPP
 numeric user levels, so table levels, owner rows and the audit trail keep working. Generated /admin/users and /admin/roles pages
 manage accounts and roles. Not done: e-mail sending, password reset tokens, 2FA, external logins, migration from a
 project user table. SQL Server and MySQL Identity sites are generated and compiled in tests but not run.
+
+## Dates and numbers per language (translation phase 2, 2026-10-24)
+
+Localized sites show dates and numbers as the visitor's language writes them (Strings.Culture, the specific culture of the
+request language, invariant for an unknown one): list and view values, field display formats and report numbers.
+Currency keeps the symbol of the default language with the visitor's separators. Rules:
+- CultureInfo.CurrentCulture is not changed (only CurrentUICulture), so form input values, the JSON API, CSV/JSON/XML/Word
+  exports, imports, filters and stored values stay invariant. XLSX keeps native types. Word stays invariant because Word
+  files can be imported again.
+- A decimal typed in a form is read with the visitor's decimal separator first, then with "."; group separators are refused,
+  so "1,5" is 1.5 in Hungarian and an error in English (never 15). Integers stay invariant.
+- The html lang attribute and the Accept-Language fallback (when there is no language cookie) already existed.
+Sites without localization are byte-identical.
