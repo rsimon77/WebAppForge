@@ -54,11 +54,12 @@ public class OwnershipTests
             // BuildWhere adds the owner clause, and the count and page queries both use its result.
             Assert.Contains("clauses.Add(OwnerColumn + \" = @owner\");", pages);
             Assert.Contains("parameters.Add(new KeyValuePair<string, object>(\"@owner\", OwnerOf(request.HttpContext)));", pages);
-            Assert.Contains("count.CommandText = \"SELECT COUNT(*) FROM \" + Table + where;", pages);
-            Assert.Contains("command.CommandText = \"SELECT \" + SelectColumns + \" FROM \" + Table + where + Order", pages);
+            Assert.Contains("var args = Db.Args(parameters);", pages);
+            Assert.Contains("await connection.ExecuteScalarAsync<long>(\"SELECT COUNT(*) FROM \" + Table + where, args);", pages);
+            Assert.Contains("await connection.QueryAsync<Notes>(\"SELECT \" + SelectColumns + \" FROM \" + Table + where + Order", pages);
 
             var api = File.ReadAllText(Path.Combine(output, "Endpoints", "NotesEndpoints.cs"));
-            Assert.Contains("SELECT \\\"id\\\", \\\"owner\\\", \\\"body\\\" FROM \\\"notes\\\" WHERE \\\"owner\\\" = @owner", api);
+            Assert.Contains("SELECT \\\"id\\\" AS \\\"Id\\\", \\\"owner\\\" AS \\\"Owner\\\", \\\"body\\\" AS \\\"Body\\\" FROM \\\"notes\\\" WHERE \\\"owner\\\" = @owner", api);
         });
     }
 

@@ -446,9 +446,9 @@ public class PageDesignTests
         Assert.Contains("private static readonly int[] PageSizeOptions = [10, 20, 50];", pages);
         Assert.Contains("var pageSize = PageKit.PageSize(request, PageSize, PageSizeOptions);", pages);
         Assert.Contains("Math.Ceiling(total / (double)pageSize)", pages);
-        Assert.Contains("AddWithValue(\"@limit\", pageSize)", pages);
+        Assert.Contains("args.Add(\"@limit\", pageSize)", pages);
         Assert.Contains("PageKit.PageSizeSelector(request, Route, pageSize, PageSizeOptions)", pages);
-        Assert.DoesNotContain("AddWithValue(\"@limit\", PageSize)", pages);
+        Assert.DoesNotContain("args.Add(\"@limit\", PageSize)", pages);
     }
 
     [Fact]
@@ -456,7 +456,7 @@ public class PageDesignTests
     {
         var pages = Generate(OneTable(t => t.Designs.List.Striped = false))["Pages/ItemsPages.cs"];
 
-        Assert.Contains("AddWithValue(\"@limit\", PageSize)", pages);
+        Assert.Contains("args.Add(\"@limit\", PageSize)", pages);
         Assert.DoesNotContain("PageSizeSelector", pages);
         Assert.DoesNotContain("PageSizeOptions", pages);
     }

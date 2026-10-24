@@ -100,7 +100,10 @@ internal static partial class Templates
 
         </Project>
 
-        """.Replace("    @@PACKAGES@@", Db.PackageReferences + (EntraAuth ? "\n" + EntraPackage : string.Empty)).Replace("@@SQLITE@@", sqliteVersion);
+        """.Replace("    @@PACKAGES@@", DapperPackage + "\n" + Db.PackageReferences + (EntraAuth ? "\n" + EntraPackage : string.Empty)).Replace("@@SQLITE@@", sqliteVersion);
+
+    /// <summary>Dapper maps rows to the models and binds parameters in every generated site.</summary>
+    private const string DapperPackage = """    <PackageReference Include="Dapper" Version="2.1.89" />""";
 
     /// <summary>
     /// Microsoft.Data.SqlClient 7 moved the "Active Directory" sign-in modes to this package, which registers them when it is
@@ -137,6 +140,7 @@ internal static partial class Templates
         var sb = new StringBuilder();
         if (meta.EnableHealthEndpoint)
         {
+            sb.AppendLine("using Dapper;");
             sb.AppendLine("using Microsoft.Data.Sqlite;");
         }
 
@@ -164,6 +168,7 @@ internal static partial class Templates
 
         sb.AppendLine($"using {ns}.Web;");
         sb.AppendLine();
+        sb.AppendLine("Db.Configure();");
         sb.AppendLine("var builder = WebApplication.CreateBuilder(args);");
         if (ConnectionVariable.Length > 0)
         {
@@ -265,9 +270,7 @@ internal static partial class Templates
             sb.AppendLine("    {");
             sb.AppendLine("        await using var connection = new SqliteConnection(connectionString);");
             sb.AppendLine("        await connection.OpenAsync();");
-            sb.AppendLine("        await using var command = connection.CreateCommand();");
-            sb.AppendLine("        command.CommandText = \"SELECT 1\";");
-            sb.AppendLine("        await command.ExecuteScalarAsync();");
+            sb.AppendLine("        await connection.ExecuteScalarAsync(\"SELECT 1\");");
             sb.AppendLine("        return Results.Text(\"Healthy\");");
             sb.AppendLine("    }");
             sb.AppendLine("    catch (Exception)");
@@ -495,7 +498,6 @@ internal static partial class Templates
     {
         var sb = new StringBuilder();
         sb.AppendLine("using System.Text.Json.Serialization;");
-        sb.AppendLine("using Microsoft.Data.Sqlite;");
         sb.AppendLine();
         sb.AppendLine($"namespace {ns}.Models;");
         sb.AppendLine();
@@ -511,19 +513,6 @@ internal static partial class Templates
             sb.AppendLine($"    public {CSharpType(field)} {PropName(className, field)} {{ get; set; }}{DefaultFor(field)}");
         }
 
-        sb.AppendLine();
-        sb.AppendLine($"    public static {className} FromReader(SqliteDataReader reader)");
-        sb.AppendLine("    {");
-        sb.AppendLine($"        return new {className}");
-        sb.AppendLine("        {");
-        for (var i = 0; i < table.Fields.Count; i++)
-        {
-            var field = table.Fields[i];
-            sb.AppendLine($"            {PropName(className, field)} = {ReaderExpression(field, i)},");
-        }
-
-        sb.AppendLine("        };");
-        sb.AppendLine("    }");
         sb.AppendLine("}");
         return sb.ToString();
     }
@@ -538,6 +527,7 @@ internal static partial class Templates
         var userSuffix = owned ? ", " + userOnly : string.Empty;
         var owner = "user.Identity?.Name ?? string.Empty";
         var sb = new StringBuilder();
+        sb.AppendLine("using Dapper;");
         sb.AppendLine("using Microsoft.Data.Sqlite;");
         var mdApi = keys.Count > 0 ? MdLinks(table) : [];
         if (owned || mdApi.Count > 0)
@@ -571,17 +561,11 @@ internal static partial class Templates
         var listSql = "SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + (owned ? " WHERE " + OwnerCondition(table) : string.Empty);
         sb.AppendLine($"        group.MapGet(\"/\", async ({userOnly}) =>");
         sb.AppendLine("        {");
-        sb.AppendLine($"            var items = new List<{className}>();");
         sb.AppendLine("            await using var connection = new SqliteConnection(connectionString);");
         sb.AppendLine("            await connection.OpenAsync();");
-        sb.AppendLine("            await using var command = connection.CreateCommand();");
-        sb.AppendLine($"            command.CommandText = {Lit(listSql)};");
-        AppendOwnerParameter(sb, owned, "command", "            ");
-        sb.AppendLine("            await using var reader = await command.ExecuteReaderAsync();");
-        sb.AppendLine("            while (await reader.ReadAsync())");
-        sb.AppendLine("            {");
-        sb.AppendLine($"                items.Add({className}.FromReader(reader));");
-        sb.AppendLine("            }");
+        sb.AppendLine(owned ? "            var args = new DynamicParameters();" : "            var args = (object?)null;");
+        AppendOwnerParameter(sb, owned, "args", "            ");
+        sb.AppendLine($"            var items = (await connection.QueryAsync<{className}>({Lit(listSql)}, args)).AsList();");
         sb.AppendLine("            return Results.Ok(items);");
         sb.AppendLine("        })" + viewGuard + ";");
 
@@ -597,12 +581,11 @@ internal static partial class Templates
             sb.AppendLine("        {");
             sb.AppendLine("            await using var connection = new SqliteConnection(connectionString);");
             sb.AppendLine("            await connection.OpenAsync();");
-            sb.AppendLine("            await using var command = connection.CreateCommand();");
-            sb.AppendLine($"            command.CommandText = {Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + where)};");
+            sb.AppendLine("            var args = new DynamicParameters();");
             AppendKeyParameters(sb, table, "            ");
-            AppendOwnerParameter(sb, owned, "command", "            ");
-            sb.AppendLine("            await using var reader = await command.ExecuteReaderAsync();");
-            sb.AppendLine($"            return await reader.ReadAsync() ? Results.Ok({className}.FromReader(reader)) : Results.NotFound();");
+            AppendOwnerParameter(sb, owned, "args", "            ");
+            sb.AppendLine($"            var item = await connection.QueryFirstOrDefaultAsync<{className}>({Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + where)}, args);");
+            sb.AppendLine("            return item is null ? Results.NotFound() : Results.Ok(item);");
             sb.AppendLine("        })" + viewGuard + ";");
 
             var insertFields = InsertFields(table);
@@ -617,24 +600,7 @@ internal static partial class Templates
 
             sb.AppendLine("            await using var connection = new SqliteConnection(connectionString);");
             sb.AppendLine("            await connection.OpenAsync();");
-            sb.AppendLine("            await using var command = connection.CreateCommand();");
-            var identityInBatch = keys.Count == 1 && keys[0].IsAutoIncrement && Db.IdentityAfterInsert is not null;
-            sb.AppendLine($"            command.CommandText = {Lit(InsertSql(table, insertFields) + (identityInBatch ? Db.IdentityAfterInsert : string.Empty))};");
-            AppendParameters(sb, insertFields, "item", className, "            ");
-            if (identityInBatch)
-            {
-                sb.AppendLine($"            item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await command.ExecuteScalarAsync());");
-            }
-            else
-            {
-                sb.AppendLine("            await command.ExecuteNonQueryAsync();");
-            }
-
-            if (keys.Count == 1 && keys[0].IsAutoIncrement && !identityInBatch)
-            {
-                sb.AppendLine($"            command.CommandText = {Lit(Db.LastInsertId)};");
-                sb.AppendLine($"            item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await command.ExecuteScalarAsync());");
-            }
+            AppendInsertCall(sb, className, table, insertFields, "            ");
 
             sb.AppendLine($"            return Results.Created($\"/api/{route}/{keyPath}\", item);");
             sb.AppendLine("        })" + editGuard + ";");
@@ -650,19 +616,12 @@ internal static partial class Templates
                 if (owned)
                 {
                     // The row must belong to the caller. The UPDATE is keyed only, so the owner column is never written.
-                    sb.AppendLine("            await using (var check = connection.CreateCommand())");
+                    sb.AppendLine("            var check = new DynamicParameters();");
+                    AppendKeyParameters(sb, table, "            ", "check");
+                    AppendOwnerParameter(sb, true, "check", "            ");
+                    sb.AppendLine($"            if (await connection.ExecuteScalarAsync<long>({Lit("SELECT COUNT(*) FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + " AND " + OwnerCondition(table))}, check) == 0)");
                     sb.AppendLine("            {");
-                    sb.AppendLine($"                check.CommandText = {Lit("SELECT COUNT(*) FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + " AND " + OwnerCondition(table))};");
-                    foreach (var name in KeyNames(table))
-                    {
-                        sb.AppendLine($"                check.Parameters.AddWithValue(\"@{name}\", {name});");
-                    }
-
-                    AppendOwnerParameter(sb, true, "check", "                ");
-                    sb.AppendLine("                if (Convert.ToInt64(await check.ExecuteScalarAsync()) == 0)");
-                    sb.AppendLine("                {");
-                    sb.AppendLine("                    return Results.NotFound();");
-                    sb.AppendLine("                }");
+                    sb.AppendLine("                return Results.NotFound();");
                     sb.AppendLine("            }");
                     sb.AppendLine();
                 }
@@ -673,11 +632,10 @@ internal static partial class Templates
                 }
                 else
                 {
-                    sb.AppendLine("            await using var command = connection.CreateCommand();");
-                    sb.AppendLine($"            command.CommandText = {Lit(UpdateSql(table, updateFields))};");
+                    sb.AppendLine("            var args = new DynamicParameters();");
                     AppendParameters(sb, updateFields, "item", className, "            ");
                     AppendKeyParameters(sb, table, "            ");
-                    sb.AppendLine("            return await command.ExecuteNonQueryAsync() == 0 ? Results.NotFound() : Results.NoContent();");
+                    sb.AppendLine($"            return await connection.ExecuteAsync({Lit(UpdateSql(table, updateFields))}, args) == 0 ? Results.NotFound() : Results.NoContent();");
                 }
 
                 sb.AppendLine("        })" + editGuard + ";");
@@ -700,11 +658,10 @@ internal static partial class Templates
             }
             else
             {
-                sb.AppendLine("            await using var command = connection.CreateCommand();");
-                sb.AppendLine($"            command.CommandText = {Lit("DELETE FROM " + QuoteIdent(table.Name) + where)};");
+                sb.AppendLine("            var args = new DynamicParameters();");
                 AppendKeyParameters(sb, table, "            ");
-                AppendOwnerParameter(sb, owned, "command", "            ");
-                sb.AppendLine("            return await command.ExecuteNonQueryAsync() == 0 ? Results.NotFound() : Results.NoContent();");
+                AppendOwnerParameter(sb, owned, "args", "            ");
+                sb.AppendLine($"            return await connection.ExecuteAsync({Lit("DELETE FROM " + QuoteIdent(table.Name) + where)}, args) == 0 ? Results.NotFound() : Results.NoContent();");
             }
 
             sb.AppendLine("        })" + editGuard + ";");
@@ -739,6 +696,7 @@ internal static partial class Templates
         var sb = new StringBuilder();
         sb.AppendLine("using System.Globalization;");
         sb.AppendLine("using System.Text;");
+        sb.AppendLine("using Dapper;");
         sb.AppendLine("using Microsoft.AspNetCore.Antiforgery;");
         sb.AppendLine("using Microsoft.Data.Sqlite;");
         sb.AppendLine($"using {ns}.Models;");
@@ -907,7 +865,6 @@ internal static partial class Templates
 
         AppendForm(sb, className, table);
         AppendBindForm(sb, className, table);
-        AppendBindParameters(sb);
         sb.AppendLine("}");
         return sb.ToString();
     }
@@ -985,13 +942,8 @@ internal static partial class Templates
         sb.AppendLine("        await using var connection = new SqliteConnection(connectionString);");
         sb.AppendLine("        await connection.OpenAsync();");
         sb.AppendLine();
-        sb.AppendLine("        long total;");
-        sb.AppendLine("        await using (var count = connection.CreateCommand())");
-        sb.AppendLine("        {");
-        sb.AppendLine("            count.CommandText = \"SELECT COUNT(*) FROM \" + Table + where;");
-        sb.AppendLine("            BindParameters(count, parameters);");
-        sb.AppendLine("            total = Convert.ToInt64(await count.ExecuteScalarAsync());");
-        sb.AppendLine("        }");
+        sb.AppendLine("        var args = Db.Args(parameters);");
+        sb.AppendLine("        var total = await connection.ExecuteScalarAsync<long>(\"SELECT COUNT(*) FROM \" + Table + where, args);");
         sb.AppendLine();
         sb.AppendLine($"        var pageCount = Math.Max(1, (int)Math.Ceiling(total / (double){size}));");
         sb.AppendLine("        var page = Math.Clamp(requestedPage, 1, pageCount);");
@@ -1016,18 +968,11 @@ internal static partial class Templates
             sb.AppendLine();
         }
 
-        sb.AppendLine($"        var items = new List<{className}>();");
-        sb.AppendLine("        await using (var command = connection.CreateCommand())");
-        sb.AppendLine("        {");
+        sb.AppendLine($"        args.Add(\"@limit\", {size});");
+        sb.AppendLine($"        args.Add(\"@offset\", (page - 1) * {size});");
         sb.AppendLine(custom
-            ? $"            command.CommandText = \"SELECT \" + SelectColumns + \" FROM \" + Table + where + order + {Lit(Db.Page)};"
-            : $"            command.CommandText = \"SELECT \" + SelectColumns + \" FROM \" + Table + where + Order + {Lit(Db.Page)};");
-        sb.AppendLine("            BindParameters(command, parameters);");
-        sb.AppendLine($"            command.Parameters.AddWithValue(\"@limit\", {size});");
-        sb.AppendLine($"            command.Parameters.AddWithValue(\"@offset\", (page - 1) * {size});");
-        sb.AppendLine("            await using var reader = await command.ExecuteReaderAsync();");
-        sb.AppendLine($"            while (await reader.ReadAsync()) items.Add({className}.FromReader(reader));");
-        sb.AppendLine("        }");
+            ? $"        var items = (await connection.QueryAsync<{className}>(\"SELECT \" + SelectColumns + \" FROM \" + Table + where + order + {Lit(Db.Page)}, args)).AsList();"
+            : $"        var items = (await connection.QueryAsync<{className}>(\"SELECT \" + SelectColumns + \" FROM \" + Table + where + Order + {Lit(Db.Page)}, args)).AsList();");
         sb.AppendLine();
         if (custom)
         {
@@ -1337,17 +1282,15 @@ internal static partial class Templates
     {
         sb.AppendLine($"    private static async Task<{className}?> Find(SqliteConnection connection, {KeyParams(table)}{(IsOwned(table) ? ", string owner" : string.Empty)})");
         sb.AppendLine("    {");
-        sb.AppendLine("        await using var command = connection.CreateCommand();");
         var ownerSql = IsOwned(table) ? " + \" AND \" + OwnerColumn + \" = @owner\"" : string.Empty;
-        sb.AppendLine($"        command.CommandText = \"SELECT \" + SelectColumns + \" FROM \" + Table + \" WHERE \" + {KeyCondition(table)}{ownerSql};");
+        sb.AppendLine("        var args = new DynamicParameters();");
         AppendKeyParameters(sb, table, "        ");
         if (IsOwned(table))
         {
-            sb.AppendLine("        command.Parameters.AddWithValue(\"@owner\", owner);");
+            sb.AppendLine("        args.Add(\"@owner\", owner);");
         }
 
-        sb.AppendLine("        await using var reader = await command.ExecuteReaderAsync();");
-        sb.AppendLine($"        return await reader.ReadAsync() ? {className}.FromReader(reader) : null;");
+        sb.AppendLine($"        return await connection.QueryFirstOrDefaultAsync<{className}>(\"SELECT \" + SelectColumns + \" FROM \" + Table + \" WHERE \" + {KeyCondition(table)}{ownerSql}, args);");
         sb.AppendLine("    }");
         sb.AppendLine();
     }
@@ -1511,19 +1454,7 @@ internal static partial class Templates
         sb.AppendLine("        await InsertItem(connection, item);");
         if (MdShowOnAdd(table))
         {
-            // A new master record opens its edit page, so detail rows can be added right away.
-            var keys = table.PrimaryKeys;
-            // InsertItem already read the identity when the dialect returns it from the insert itself.
-            if (keys.Count == 1 && keys[0].IsAutoIncrement && Db.IdentityAfterInsert is null)
-            {
-                sb.AppendLine("        await using (var idCommand = connection.CreateCommand())");
-                sb.AppendLine("        {");
-                sb.AppendLine($"            idCommand.CommandText = {Lit(Db.LastInsertId)};");
-                sb.AppendLine($"            item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await idCommand.ExecuteScalarAsync());");
-                sb.AppendLine("        }");
-                sb.AppendLine();
-            }
-
+            // A new master record opens its edit page, so detail rows can be added right away. InsertItem stored the new key.
             sb.AppendLine($"        var editUrl = {KeyUrl("edit", KeyPropExprs(className, table))} + MasterDetailKit.Carry(context.Request, false);");
             sb.AppendLine(Designed(table)
                 ? $"        return PageKit.Done(context, editUrl, FlashCookie, {Lit(Has(DesignOf(table, "add").SuccessMessage) ? "add" : string.Empty)});"
@@ -1692,11 +1623,10 @@ internal static partial class Templates
                 sb.AppendLine("        {");
             }
 
-            sb.AppendLine($"{pad}        await using var command = connection.CreateCommand();");
-            sb.AppendLine($"{pad}        command.CommandText = {Lit(UpdateSql(table, updateFields))};");
+            sb.AppendLine($"{pad}        var args = new DynamicParameters();");
             AppendParameters(sb, updateFields, "item", className, pad + "        ");
             AppendKeyParameters(sb, table, pad + "        ");
-            sb.AppendLine($"{pad}        await command.ExecuteNonQueryAsync();");
+            sb.AppendLine($"{pad}        await connection.ExecuteAsync({Lit(UpdateSql(table, updateFields))}, args);");
             if (cascadeUpdate)
             {
                 sb.AppendLine($"            await ReferentialIntegrity.Update_{className}(connection, mdOld, mdNew);");
@@ -1817,10 +1747,9 @@ internal static partial class Templates
         }
         else
         {
-            sb.AppendLine("        await using var command = connection.CreateCommand();");
-            sb.AppendLine($"        command.CommandText = \"DELETE FROM \" + Table + \" WHERE \" + {KeyCondition(table)};");
+            sb.AppendLine("        var args = new DynamicParameters();");
             AppendKeyParameters(sb, table, "        ");
-            sb.AppendLine("        await command.ExecuteNonQueryAsync();");
+            sb.AppendLine($"        await connection.ExecuteAsync(\"DELETE FROM \" + Table + \" WHERE \" + {KeyCondition(table)}, args);");
         }
 
         sb.AppendLine(Designed(table) ? $"        return {DoneCall(table, "delete")};" : $"        return Results.Redirect({BackTarget(table)});");
@@ -1830,19 +1759,32 @@ internal static partial class Templates
 
     private static void AppendInsert(StringBuilder sb, string className, TableInfo table)
     {
-        var insertFields = InsertFields(table);
         sb.AppendLine($"    private static async Task InsertItem(SqliteConnection connection, {className} item)");
         sb.AppendLine("    {");
-        sb.AppendLine("        await using var command = connection.CreateCommand();");
-        var keys = table.PrimaryKeys;
-        var identityInBatch = keys.Count == 1 && keys[0].IsAutoIncrement && Db.IdentityAfterInsert is not null;
-        sb.AppendLine($"        command.CommandText = {Lit(InsertSql(table, insertFields) + (identityInBatch ? Db.IdentityAfterInsert : string.Empty))};");
-        AppendParameters(sb, insertFields, "item", className, "        ");
-        sb.AppendLine(identityInBatch
-            ? $"        item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await command.ExecuteScalarAsync());"
-            : "        await command.ExecuteNonQueryAsync();");
+        AppendInsertCall(sb, className, table, InsertFields(table), "        ");
         sb.AppendLine("    }");
         sb.AppendLine();
+    }
+
+    /// <summary>
+    /// Inserts <c>item</c> on <c>connection</c>. An identity key is read back by the same command (see
+    /// <see cref="SqlDialect.IdentityAfterInsert"/>) and stored in the item.
+    /// </summary>
+    private static void AppendInsertCall(StringBuilder sb, string className, TableInfo table, List<FieldInfo> insertFields, string indent)
+    {
+        var keys = table.PrimaryKeys;
+        sb.AppendLine($"{indent}var args = new DynamicParameters();");
+        AppendParameters(sb, insertFields, "item", className, indent);
+        if (keys.Count == 1 && keys[0].IsAutoIncrement)
+        {
+            var type = CSharpType(keys[0], forceNonNull: true);
+            var cast = type == "long" ? string.Empty : $"({type})";
+            sb.AppendLine($"{indent}item.{PropName(className, keys[0])} = {cast}await connection.ExecuteScalarAsync<long>({Lit(InsertSql(table, insertFields) + Db.IdentityAfterInsert)}, args);");
+        }
+        else
+        {
+            sb.AppendLine($"{indent}await connection.ExecuteAsync({Lit(InsertSql(table, insertFields))}, args);");
+        }
     }
 
     private static void AppendForm(StringBuilder sb, string className, TableInfo table)
@@ -1978,17 +1920,6 @@ internal static partial class Templates
         sb.AppendLine();
     }
 
-    private static void AppendBindParameters(StringBuilder sb)
-    {
-        sb.AppendLine("    private static void BindParameters(SqliteCommand command, List<KeyValuePair<string, object>> parameters)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        foreach (var parameter in parameters)");
-        sb.AppendLine("        {");
-        sb.AppendLine("            command.Parameters.AddWithValue(parameter.Key, parameter.Value);");
-        sb.AppendLine("        }");
-        sb.AppendLine("    }");
-    }
-
     // ---- owner (User ID security) helpers -------------------------------------------------------
 
     /// <summary>True when the table has record-level security. Only the generated copy sets OwnerField, and only when security is enabled.</summary>
@@ -2028,7 +1959,7 @@ internal static partial class Templates
     {
         if (owned)
         {
-            sb.AppendLine($"{indent}{variable}.Parameters.AddWithValue(\"@owner\", user.Identity?.Name ?? string.Empty);");
+            sb.AppendLine($"{indent}{variable}.Add(\"@owner\", user.Identity?.Name ?? string.Empty);");
         }
     }
 
@@ -2071,11 +2002,11 @@ internal static partial class Templates
     private static string KeyCondition(TableInfo table) => table.PrimaryKeys.Count > 1 ? "KeyWhere" : "PkColumn + \" = @id\"";
 
     /// <summary>Binds one parameter per key column. Parameter and variable names follow <see cref="KeyNames"/>.</summary>
-    private static void AppendKeyParameters(StringBuilder sb, TableInfo table, string indent)
+    private static void AppendKeyParameters(StringBuilder sb, TableInfo table, string indent, string variable = "args")
     {
         foreach (var name in KeyNames(table))
         {
-            sb.AppendLine($"{indent}command.Parameters.AddWithValue(\"@{name}\", {name});");
+            sb.AppendLine($"{indent}{variable}.Add(\"@{name}\", {name});");
         }
     }
 
@@ -2308,7 +2239,9 @@ internal static partial class Templates
     {
         for (var i = 0; i < fields.Count; i++)
         {
-            sb.AppendLine($"{indent}command.Parameters.AddWithValue(\"@p{i}\", {ParameterValue(fields[i], itemVariable, className)});");
+            // A binary null needs its type: SQL Server refuses an untyped null for a varbinary column.
+            var type = fields[i].Type == FieldType.Binary ? ", System.Data.DbType.Binary" : string.Empty;
+            sb.AppendLine($"{indent}args.Add(\"@p{i}\", {ParameterValue(fields[i], itemVariable, className)}{type});");
         }
     }
 
@@ -2331,8 +2264,12 @@ internal static partial class Templates
         return "UPDATE " + QuoteIdent(table.Name) + " SET " + sets + where;
     }
 
-    private static string SelectColumns(TableInfo table) =>
-        string.Join(", ", table.Fields.Select(f => QuoteIdent(f.Name)));
+    /// <summary>The columns of a table, each named after its model property so that Dapper maps it (e.g. "order date" AS "OrderDate").</summary>
+    private static string SelectColumns(TableInfo table)
+    {
+        var className = Identifier.Pascal(table.Name);
+        return string.Join(", ", table.Fields.Select(f => QuoteIdent(f.Name) + " AS " + QuoteIdent(PropName(className, f))));
+    }
 
     private static string OrderSql(TableInfo table)
     {
@@ -2447,23 +2384,9 @@ internal static partial class Templates
         };
     }
 
-    private static string ReaderExpression(FieldInfo field, int ordinal)
-    {
-        var getter = Db.Read(field.Type, ordinal);
-
-        return field.IsRequired ? getter : $"reader.IsDBNull({ordinal}) ? null : {getter}";
-    }
-
-    private static string ParameterValue(FieldInfo field, string itemVariable, string className)
-    {
-        var property = $"{itemVariable}.{PropName(className, field)}";
-        return field.Type switch
-        {
-            FieldType.Boolean => field.IsRequired
-                ? $"{property} ? 1L : 0L"
-                : $"{property} is null ? DBNull.Value : (object)({property}.Value ? 1L : 0L)",
-            FieldType.Binary when !field.IsRequired => $"(object?){property} ?? {Db.NullBinary}",
-            _ => field.IsRequired ? $"(object){property}" : $"(object?){property} ?? DBNull.Value",
-        };
-    }
+    /// <summary>
+    /// The value of a field as a parameter: the property itself. Dapper turns null into DBNull and sends a bool as a boolean,
+    /// which SQLite stores as 1 or 0, SQL Server as a bit and MySQL as TINYINT(1).
+    /// </summary>
+    private static string ParameterValue(FieldInfo field, string itemVariable, string className) => $"{itemVariable}.{PropName(className, field)}";
 }
