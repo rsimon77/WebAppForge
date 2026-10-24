@@ -157,7 +157,8 @@ public class UserLevelTests
             var auth = File.ReadAllText(Path.Combine(output, "Pages", "AuthPages.cs"));
 
             Assert.Contains("SELECT \\\"password_hash\\\", \\\"level\\\" FROM \\\"users\\\" WHERE \\\"username\\\" = @username", auth);
-            Assert.Contains("userLevel = reader.IsDBNull(1) ? 0 : Convert.ToInt32(reader.GetValue(1)", auth);
+            Assert.Contains("var (storedHash, level) = await connection.QueryFirstOrDefaultAsync<(string? Hash, long? Level)>(LookupSql, new { username = userName });", auth);
+            Assert.Contains("var userLevel = (int)(level ?? 0);", auth);
             Assert.Contains("claims.Add(new(Permissions.LevelClaimType, userLevel.ToString(System.Globalization.CultureInfo.InvariantCulture)));", auth);
         });
     }
@@ -170,7 +171,7 @@ public class UserLevelTests
             var auth = File.ReadAllText(Path.Combine(output, "Pages", "AuthPages.cs"));
 
             Assert.Contains("SELECT \\\"password_hash\\\" FROM \\\"users\\\" WHERE \\\"username\\\" = @username", auth);
-            Assert.Contains("var storedHash = await command.ExecuteScalarAsync() as string;", auth);
+            Assert.Contains("var storedHash = await connection.ExecuteScalarAsync<string?>(LookupSql, new { username = userName });", auth);
             Assert.DoesNotContain("LevelClaimType", auth);
         });
     }

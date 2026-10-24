@@ -80,6 +80,7 @@ public sealed class ProjectGenerator
             ["Program.cs"] = Templates.Program(ns, project.AspNet, tables, project.Security, project.Meta),
             ["appsettings.json"] = Templates.AppSettings(project.Database.GeneratedConnectionString(projectFolder), project.Meta),
             ["Web/Html.cs"] = Templates.HtmlHelper(ns, project.Meta, tables),
+            ["Web/Db.cs"] = Templates.DbRuntime(ns),
         };
 
         // The runtime for customized fields and tables is only part of sites that use it.

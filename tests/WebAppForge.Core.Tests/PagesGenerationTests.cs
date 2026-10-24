@@ -259,11 +259,11 @@ public class PagesGenerationTests
     private static string ReadPages(string output, string className) =>
         File.ReadAllText(Path.Combine(output, "Pages", $"{className}Pages.cs"));
 
-    /// <summary>The generated BindForm method, from its signature up to the next helper.</summary>
+    /// <summary>The generated BindForm method, from its signature up to the end of the class (it is the last method).</summary>
     private static string BindFormSection(string pages)
     {
         var start = pages.IndexOf("private static void BindForm(", StringComparison.Ordinal);
-        var end = pages.IndexOf("private static void BindParameters(", StringComparison.Ordinal);
+        var end = pages.LastIndexOf('}');
         Assert.True(start >= 0 && end > start, "BindForm method not found.");
         return pages[start..end];
     }

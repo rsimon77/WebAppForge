@@ -437,48 +437,24 @@ internal static partial class Templates
         }
 
         L($"        var requested = int.TryParse(request.Query[{Lit("dp" + i)}], out var parsed) ? parsed : 1;");
-        L("        void Bind(SqliteCommand command)");
-        L("        {");
+        L(tools ? "        var args = Db.Args(gridParameters);" : "        var args = new DynamicParameters();");
         for (var j = 0; j < md.Pairs.Count; j++)
         {
-            L($"            command.Parameters.AddWithValue(\"@m{j}\", {ParameterValue(md.Pairs[j].Master, "item", masterClass)});");
+            L($"        args.Add(\"@m{j}\", {ParameterValue(md.Pairs[j].Master, "item", masterClass)});");
         }
 
         if (owned)
         {
-            L("            command.Parameters.AddWithValue(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
+            L("        args.Add(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
         }
 
-        if (tools)
-        {
-            L("            foreach (var parameter in gridParameters)");
-            L("            {");
-            L("                command.Parameters.AddWithValue(parameter.Key, parameter.Value);");
-            L("            }");
-        }
-
-        L("        }");
-        L(string.Empty);
-        L("        long total;");
-        L("        await using (var count = connection.CreateCommand())");
-        L("        {");
-        L($"            count.CommandText = {Lit("SELECT COUNT(*) FROM " + QuoteIdent(d.Name))} + where;");
-        L("            Bind(count);");
-        L("            total = Convert.ToInt64(await count.ExecuteScalarAsync());");
-        L("        }");
+        L($"        var total = await connection.ExecuteScalarAsync<long>({Lit("SELECT COUNT(*) FROM " + QuoteIdent(d.Name))} + where, args);");
         L(string.Empty);
         L($"        var pageCount = Math.Max(1, (int)Math.Ceiling(total / (double)MdPageSize{i}));");
         L("        var page = Math.Clamp(requested, 1, pageCount);");
-        L($"        var rows = new List<{dClass}>();");
-        L("        await using (var command = connection.CreateCommand())");
-        L("        {");
-        L($"            command.CommandText = {Lit("SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name))} + where + {(tools ? "order" : Lit(OrderSql(d)))} + {Lit(Db.Page)};");
-        L("            Bind(command);");
-        L($"            command.Parameters.AddWithValue(\"@limit\", MdPageSize{i});");
-        L($"            command.Parameters.AddWithValue(\"@offset\", (page - 1) * MdPageSize{i});");
-        L("            await using var reader = await command.ExecuteReaderAsync();");
-        L($"            while (await reader.ReadAsync()) rows.Add({dClass}.FromReader(reader));");
-        L("        }");
+        L($"        args.Add(\"@limit\", MdPageSize{i});");
+        L($"        args.Add(\"@offset\", (page - 1) * MdPageSize{i});");
+        L($"        var rows = (await connection.QueryAsync<{dClass}>({Lit("SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name))} + where + {(tools ? "order" : Lit(OrderSql(d)))} + {Lit(Db.Page)}, args)).AsList();");
         L(string.Empty);
         foreach (var (field, _) in columns.Where(c => ShowsLookupText(c.Field)))
         {
@@ -647,23 +623,20 @@ internal static partial class Templates
                 where += " AND " + OwnerCondition(md.Master);
             }
 
-            L($"                await using (var check{n} = connection.CreateCommand())");
-            L("                {");
-            L($"                    check{n}.CommandText = {Lit("SELECT COUNT(*) FROM " + QuoteIdent(md.Master.Name) + " WHERE " + where)};");
+            L($"                var check{n} = new DynamicParameters();");
             for (var j = 0; j < md.Pairs.Count; j++)
             {
-                L($"                    check{n}.Parameters.AddWithValue(\"@p{j}\", pp{n}_{j});");
+                L($"                check{n}.Add(\"@p{j}\", pp{n}_{j});");
             }
 
             if (masterOwned)
             {
-                L($"                    check{n}.Parameters.AddWithValue(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
+                L($"                check{n}.Add(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
             }
 
-            L($"                    if (Convert.ToInt64(await check{n}.ExecuteScalarAsync()) == 0)");
-            L("                    {");
-            L("                        return null;");
-            L("                    }");
+            L($"                if (await connection.ExecuteScalarAsync<long>({Lit("SELECT COUNT(*) FROM " + QuoteIdent(md.Master.Name) + " WHERE " + where)}, check{n}) == 0)");
+            L("                {");
+            L("                    return null;");
             L("                }");
             L(string.Empty);
             for (var j = 0; j < md.Pairs.Count; j++)

@@ -115,23 +115,13 @@ internal static partial class Templates
     private static void AppendMdApiUpdate(StringBuilder sb, string className, TableInfo table, List<FieldInfo> updateFields, bool owned)
     {
         void L(string line) => sb.AppendLine(line);
-        L($"            {className} before;");
-        L("            await using (var read = connection.CreateCommand())");
+        L("            var read = new DynamicParameters();");
+        AppendKeyParameters(sb, table, "            ", "read");
+        AppendOwnerParameter(sb, owned, "read", "            ");
+        L($"            var before = await connection.QueryFirstOrDefaultAsync<{className}>({Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty))}, read);");
+        L("            if (before is null)");
         L("            {");
-        L($"                read.CommandText = {Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty))};");
-        foreach (var name in KeyNames(table))
-        {
-            L($"                read.Parameters.AddWithValue(\"@{name}\", {name});");
-        }
-
-        AppendOwnerParameter(sb, owned, "read", "                ");
-        L("                await using var reader = await read.ExecuteReaderAsync();");
-        L("                if (!await reader.ReadAsync())");
-        L("                {");
-        L("                    return Results.NotFound();");
-        L("                }");
-        L(string.Empty);
-        L($"                before = {className}.FromReader(reader);");
+        L("                return Results.NotFound();");
         L("            }");
         L(string.Empty);
         L($"            var mdOld = {MdOldNew(table, className, "before")};");
@@ -139,11 +129,10 @@ internal static partial class Templates
         L("            await ReferentialIntegrity.BeginAsync(connection);");
         L("            try");
         L("            {");
-        L("                await using var command = connection.CreateCommand();");
-        L($"                command.CommandText = {Lit(UpdateSql(table, updateFields))};");
+        L("                var args = new DynamicParameters();");
         AppendParameters(sb, updateFields, "item", className, "                ");
         AppendKeyParameters(sb, table, "                ");
-        L("                if (await command.ExecuteNonQueryAsync() == 0)");
+        L($"                if (await connection.ExecuteAsync({Lit(UpdateSql(table, updateFields))}, args) == 0)");
         L("                {");
         L("                    await ReferentialIntegrity.RollbackAsync(connection);");
         L("                    return Results.NotFound();");
@@ -190,19 +179,12 @@ internal static partial class Templates
 
         L("            await using var connection = new SqliteConnection(connectionString);");
         L("            await connection.OpenAsync();");
-        L("            await using (var check = connection.CreateCommand())");
+        L("            var check = new DynamicParameters();");
+        AppendKeyParameters(sb, table, "            ", "check");
+        AppendOwnerParameter(sb, owned, "check", "            ");
+        L($"            if (await connection.ExecuteScalarAsync<long>({Lit("SELECT COUNT(*) FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty))}, check) == 0)");
         L("            {");
-        L($"                check.CommandText = {Lit("SELECT COUNT(*) FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty))};");
-        foreach (var name in names)
-        {
-            L($"                check.Parameters.AddWithValue(\"@{name}\", {name});");
-        }
-
-        AppendOwnerParameter(sb, owned, "check", "                ");
-        L("                if (Convert.ToInt64(await check.ExecuteScalarAsync()) == 0)");
-        L("                {");
-        L("                    return Results.NotFound();");
-        L("                }");
+        L("                return Results.NotFound();");
         L("            }");
         L(string.Empty);
         var scope = "EXISTS (SELECT 1 FROM " + QuoteIdent(table.Name) + " t0 WHERE "
@@ -211,25 +193,14 @@ internal static partial class Templates
         var detailOwned = IsOwned(d);
         var sql = "SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name) + " WHERE " + scope
             + (detailOwned ? " AND " + QuoteIdent(d.OwnerField) + " = @downer" : string.Empty) + OrderSql(d);
-        L($"            var items = new List<{dClass}>();");
-        L("            await using var command = connection.CreateCommand();");
-        L($"            command.CommandText = {Lit(sql)};");
-        foreach (var name in names)
-        {
-            L($"            command.Parameters.AddWithValue(\"@{name}\", {name});");
-        }
-
+        L("            var args = new DynamicParameters();");
+        AppendKeyParameters(sb, table, "            ");
         if (detailOwned)
         {
-            L("            command.Parameters.AddWithValue(\"@downer\", user.Identity?.Name ?? string.Empty);");
+            L("            args.Add(\"@downer\", user.Identity?.Name ?? string.Empty);");
         }
 
-        L("            await using var reader = await command.ExecuteReaderAsync();");
-        L("            while (await reader.ReadAsync())");
-        L("            {");
-        L($"                items.Add({dClass}.FromReader(reader));");
-        L("            }");
-        L(string.Empty);
+        L($"            var items = (await connection.QueryAsync<{dClass}>({Lit(sql)}, args)).AsList();");
         L("            return Results.Ok(items);");
         L($"        }}){viewGuard};");
     }
@@ -237,6 +208,7 @@ internal static partial class Templates
     internal static string ReferentialIntegrityFile(string ns, IReadOnlyList<TableInfo> tables)
     {
         var sb = new StringBuilder();
+        sb.AppendLine("using Dapper;");
         sb.AppendLine("using Microsoft.Data.Sqlite;");
         if (Localized)
         {
@@ -326,32 +298,26 @@ internal static partial class Templates
                 }
             }
 
-            public static async Task ExecAsync(SqliteConnection connection, string sql, (string Name, object? Value)[] args)
-            {
-                await using var command = connection.CreateCommand();
-                command.CommandText = sql;
-                Bind(command, sql, args);
-                await command.ExecuteNonQueryAsync();
-            }
+            public static async Task ExecAsync(SqliteConnection connection, string sql, (string Name, object? Value)[] args) =>
+                await connection.ExecuteAsync(sql, Bind(sql, args));
 
-            private static void Bind(SqliteCommand command, string sql, (string Name, object? Value)[] args)
+            /// <summary>The arguments that <paramref name="sql"/> names.</summary>
+            private static DynamicParameters Bind(string sql, (string Name, object? Value)[] args)
             {
+                var parameters = new DynamicParameters();
                 foreach (var (name, value) in args)
                 {
                     if (sql.Contains(name, StringComparison.Ordinal))
                     {
-                        command.Parameters.AddWithValue(name, value ?? DBNull.Value);
+                        parameters.Add(name, value is DBNull ? null : value);
                     }
                 }
+
+                return parameters;
             }
 
-            private static async Task<long> ScalarAsync(SqliteConnection connection, string sql, (string Name, object? Value)[] args)
-            {
-                await using var command = connection.CreateCommand();
-                command.CommandText = sql;
-                Bind(command, sql, args);
-                return Convert.ToInt64(await command.ExecuteScalarAsync());
-            }
+            private static async Task<long> ScalarAsync(SqliteConnection connection, string sql, (string Name, object? Value)[] args) =>
+                await connection.ExecuteScalarAsync<long>(sql, Bind(sql, args));
 
             public static bool Changed(object?[] oldValues, object?[] newValues, params int[] indexes) =>
                 indexes.Any(i => !Equals(oldValues[i], newValues[i]));

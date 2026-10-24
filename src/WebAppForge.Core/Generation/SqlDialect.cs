@@ -38,20 +38,6 @@ internal abstract class SqlDialect
     /// <summary>The C# condition, on <c>ex</c> of the driver's exception type, that a unique or primary key constraint was violated.</summary>
     public abstract string UniqueViolation { get; }
 
-    /// <summary>C# expression that reads column <paramref name="ordinal"/> of <c>reader</c> as the field's C# type (not null).</summary>
-    public virtual string Read(FieldType type, int ordinal) => type switch
-    {
-        FieldType.Integer => $"Convert.ToInt64(reader.GetValue({ordinal}))",
-        FieldType.Decimal => $"Convert.ToDecimal(reader.GetValue({ordinal}))",
-        FieldType.Boolean => $"Convert.ToInt64(reader.GetValue({ordinal})) != 0",
-        FieldType.Date or FieldType.DateTime => $"(reader.GetValue({ordinal}) is DateTimeOffset dto{ordinal} ? dto{ordinal}.DateTime : Convert.ToDateTime(reader.GetValue({ordinal})))",
-        FieldType.Binary => $"(byte[])reader.GetValue({ordinal})",
-        _ => $"Convert.ToString(reader.GetValue({ordinal}), System.Globalization.CultureInfo.InvariantCulture)!",
-    };
-
-    /// <summary>C# expression of a null binary parameter value. SQL Server needs a typed null for varbinary columns.</summary>
-    public virtual string NullBinary => "DBNull.Value";
-
     // ---- identifiers and literals ----------------------------------------------------------------
 
     public abstract string Quote(string name);
@@ -75,6 +61,9 @@ internal abstract class SqlDialect
 
     /// <summary>SQL that returns the identity value of the last insert on the same connection.</summary>
     public abstract string LastInsertId { get; }
+
+    /// <summary>SQL appended to an INSERT so that the same command returns the new identity value.</summary>
+    public virtual string IdentityAfterInsert => "; " + LastInsertId;
 
     /// <summary>True when GROUP BY can name select-list positions and subqueries (not SQL Server).</summary>
     public virtual bool GroupsByPosition => true;
@@ -131,16 +120,6 @@ internal abstract class SqlDialect
         public override string PackageReferences => """    <PackageReference Include="Microsoft.Data.Sqlite" Version="@@SQLITE@@" />""";
 
         public override string UniqueViolation => "ex.SqliteErrorCode == 19";
-
-        public override string Read(FieldType type, int ordinal) => type switch
-        {
-            FieldType.Integer => $"reader.GetInt64({ordinal})",
-            FieldType.Decimal => $"reader.GetDecimal({ordinal})",
-            FieldType.Boolean => $"reader.GetInt64({ordinal}) != 0",
-            FieldType.Date or FieldType.DateTime => $"reader.GetDateTime({ordinal})",
-            FieldType.Binary => $"(byte[])reader.GetValue({ordinal})",
-            _ => $"reader.GetString({ordinal})",
-        };
 
         public override string Quote(string name)
         {
@@ -199,8 +178,6 @@ internal abstract class SqlDialect
         // 2627: violation of a PRIMARY KEY or UNIQUE constraint; 2601: duplicate key in a unique index.
         public override string UniqueViolation => "ex.Number is 2627 or 2601";
 
-        public override string NullBinary => "System.Data.SqlTypes.SqlBinary.Null";
-
         /// <summary>[name], or [schema].[table] for a name with a dot (tables outside dbo).</summary>
         public override string Quote(string name)
         {
@@ -223,8 +200,10 @@ internal abstract class SqlDialect
 
         public override string Limit(int rows) => string.Empty;
 
-        // @@IDENTITY, not SCOPE_IDENTITY(): the insert ran as an earlier command of the connection, so it is out of scope here.
-        public override string LastInsertId => "SELECT CAST(@@IDENTITY AS bigint)";
+        // SCOPE_IDENTITY() only sees the inserts of its own batch, which is why the insert and this run as one command. It ignores
+        // identity values that triggers create in other tables, unlike @@IDENTITY. OUTPUT INSERTED is not used, because SQL Server
+        // refuses it on a table with triggers.
+        public override string LastInsertId => "SELECT CAST(SCOPE_IDENTITY() AS bigint)";
 
         public override bool GroupsByPosition => false;
 

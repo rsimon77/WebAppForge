@@ -11,8 +11,9 @@ produce a Dockerfile and compose file.
 - Reads a SQLite, SQL Server, Azure SQL or MySQL database (tables, columns, keys, identity columns, foreign keys) and
   generates a server-rendered ASP.NET Core 10 site: list, view, add, copy, edit, delete and search pages, plus a JSON
   API. Every feature below works on all four. A server connection string can live in an environment variable, so it is
-  kept out of the project file, appsettings.json and the Docker image. Generated sites use ADO.NET with SQL written
-  for the chosen database; see [ADR 001](docs/adr-001-data-access.md) for why they do not use Entity Framework Core.
+  kept out of the project file, appsettings.json and the Docker image. Generated sites run SQL written for the chosen
+  database through Dapper's async API; see [ADR 001](docs/adr-001-data-access.md) for why Dapper and not Entity
+  Framework Core.
 - Customization per field (edit control, validation, lookups, formats, badges, styling), per table (menu, row
   styles) and per page (layouts, columns, modal and side-panel pages, custom CSS and script).
 - Optional grid tools on list pages, each a checkbox in the Pages tab: a filter and sort panel (conditions per column
@@ -69,6 +70,9 @@ export WEBAPPFORGE_SQLSERVER='Server=127.0.0.1,1433;User ID=sa;Password=Forge-Te
 export WEBAPPFORGE_MYSQL='Server=127.0.0.1;Port=3306;User ID=root;Password=forge-test-42'
 dotnet test WebAppForge.slnx
 ```
+
+The CI workflow in `.github/workflows/ci.yml` runs the strict build and the Core and Desktop tests, with Northwind, SQL
+Server and MySQL, on every push to and pull request into `develop` and `main`.
  The report tests generate a Northwind site with every
 report kind and check its numbers against the database. The FlaUI tests need Windows and a built desktop app. The browser tests in
 `tests/ui` need Node.js; see its README.

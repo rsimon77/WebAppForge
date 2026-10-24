@@ -162,8 +162,10 @@ public abstract class ReportSiteBase : IAsyncLifetime
             RedirectStandardError = true,
             Environment = { ["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}" },
         })!;
-        _ = _site.StandardOutput.ReadToEndAsync();
-        _ = _site.StandardError.ReadToEndAsync();
+        _site.OutputDataReceived += (_, e) => Log(e.Data);
+        _site.ErrorDataReceived += (_, e) => Log(e.Data);
+        _site.BeginOutputReadLine();
+        _site.BeginErrorReadLine();
         Client = new HttpClient(new HttpClientHandler { CookieContainer = new CookieContainer(), AllowAutoRedirect = false })
         {
             BaseAddress = new Uri($"http://127.0.0.1:{port}"),
@@ -199,6 +201,33 @@ public abstract class ReportSiteBase : IAsyncLifetime
         return Task.CompletedTask;
     }
 
+    private readonly System.Text.StringBuilder _output = new();
+
+    /// <summary>The last part of what the site wrote to its console, such as the exception behind a 500.</summary>
+    public string SiteOutput
+    {
+        get
+        {
+            lock (_output)
+            {
+                return _output.Length > 4000 ? _output.ToString(_output.Length - 4000, 4000) : _output.ToString();
+            }
+        }
+    }
+
+    private void Log(string? line)
+    {
+        if (line is null)
+        {
+            return;
+        }
+
+        lock (_output)
+        {
+            _output.AppendLine(line);
+        }
+    }
+
     /// <summary>Runs after the site has stopped, for example to drop a server database.</summary>
     protected virtual void CleanUp()
     {
@@ -211,7 +240,7 @@ public abstract class ReportSiteBase : IAsyncLifetime
     {
         using var response = await Client.GetAsync(url);
         var text = await response.Content.ReadAsStringAsync();
-        Assert.True(response.StatusCode == HttpStatusCode.OK, $"{url}: {(int)response.StatusCode} {text}");
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"{url}: {(int)response.StatusCode} {text}\n--- site output ---\n{SiteOutput}");
         return text;
     }
 

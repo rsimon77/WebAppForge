@@ -73,7 +73,7 @@ public class MasterDetailTextTests
         var lines = files["Pages/OrderLinesPages.cs"];
 
         Assert.Contains("const string where = \" WHERE \\\"order_id\\\" = @m0 AND \\\"line_no\\\" = @m1\";", lines);
-        Assert.Contains("command.Parameters.AddWithValue(\"@m1\"", lines);
+        Assert.Contains("args.Add(\"@m1\"", lines);
         Assert.Contains("t1.\\\"order_id\\\" = \\\"line_notes\\\".\\\"order_id\\\" AND t1.\\\"line_no\\\" = \\\"line_notes\\\".\\\"line_no\\\"", files["Web/ReferentialIntegrity.cs"]);
         Assert.Contains("/api/order-lines", files["Endpoints/OrderLinesEndpoints.cs"]);
         Assert.Contains("group.MapGet(\"/{k0}/{k1}/line-notes\"", files["Endpoints/OrderLinesEndpoints.cs"]);
