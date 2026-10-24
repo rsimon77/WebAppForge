@@ -20,6 +20,20 @@ public static class LocalizationKeys
     /// <summary>Key of the custom heading of the aggregate at <paramref name="index"/> of a summary report.</summary>
     public static string ReportMeasure(string report, int index) => "report." + report + ".m" + index;
 
+    /// <summary>Adds the fixed texts of a feature the site uses. A feature that is not used adds nothing, so its store stays as it was.</summary>
+    private static void AddGroup(List<SourceText> result, IReadOnlyList<UiString> group, bool used)
+    {
+        if (!used)
+        {
+            return;
+        }
+
+        foreach (var ui in group)
+        {
+            result.Add(new SourceText(ui.Key, ui.English, "en"));
+        }
+    }
+
     /// <summary>
     /// The fixed UI strings (English), then the caption of each generated table and each of its fields (default language).
     /// An empty caption stands for the name, as in the generated pages.
@@ -74,6 +88,12 @@ public static class LocalizationKeys
                 result.Add(new SourceText(ui.Key, ui.English, "en"));
             }
         }
+
+        var generated = project.Tables.Where(t => t.Generate).ToList();
+        AddGroup(result, UiStrings.PageKit, generated.Any(Generation.Templates.Designed) || Generation.Templates.UsesMasterDetail(generated));
+        AddGroup(result, UiStrings.FormPages, generated.Any(Generation.Templates.UsesFormPages));
+        AddGroup(result, UiStrings.Details, Generation.Templates.UsesMasterDetail(generated));
+        AddGroup(result, UiStrings.Denied, project.Security.HasUserLevels);
 
         var reports = project.Reports.Where(r => r.Generate).ToList();
         if (reports.Count > 0)

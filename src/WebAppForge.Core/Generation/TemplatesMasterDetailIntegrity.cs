@@ -243,7 +243,7 @@ internal static partial class Templates
         sb.AppendLine();
         sb.AppendLine($"namespace {ns}.Web;");
         sb.AppendLine();
-        sb.Append(Auditing is null ? IntegrityRuntimeHead : AuditedIntegrityHead());
+        sb.Append(LocalizedIntegrityHead(Auditing is null ? IntegrityRuntimeHead : AuditedIntegrityHead()));
         foreach (var table in tables)
         {
             var cls = Identifier.Pascal(table.Name);
@@ -304,6 +304,24 @@ internal static partial class Templates
 
         sb.AppendLine("}");
         return sb.ToString();
+    }
+
+    /// <summary>Localized, the delete notes are read per request in the visitor's language; the counts and captions are filled in.</summary>
+    private static string LocalizedIntegrityHead(string head)
+    {
+        if (!Localized)
+        {
+            return head;
+        }
+
+        head = ReplaceOnce(head, """string.Join(" ", blockers.Select(b => "Cannot delete: " + b.Count + " related " + b.Caption + " record(s) exist."));""",
+            """string.Join(" ", blockers.Select(b => Strings.F("ui.detailBlocked", "Cannot delete: {0} related {1} record(s) exist.", b.Count, b.Caption)));""");
+        head = ReplaceOnce(head, """role=\"alert\">Cannot delete: ").Append(b.Count).Append(" related ")""",
+            """role=\"alert\">").Append(Html.Encode(Strings.F("ui.detailBlocked", "Cannot delete: {0} related {1} record(s) exist.", b.Count, b.Caption)))""");
+        head = ReplaceOnce(head, """.Append(Html.Encode(b.Caption)).Append(" record(s) exist.</div>");""", """.Append("</div>");""");
+        head = ReplaceOnce(head, """role=\"status\">This will also delete ").Append(c.Count).Append(" record(s) in ")""",
+            """role=\"status\">").Append(Html.Encode(Strings.F("ui.detailAlsoDeletes", "This will also delete {0} record(s) in {1}.", c.Count, c.Caption)))""");
+        return ReplaceOnce(head, """.Append(Html.Encode(c.Caption)).Append(".</div>");""", """.Append("</div>");""");
     }
 
     private const string IntegrityRuntimeHead = """

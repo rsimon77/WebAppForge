@@ -354,7 +354,7 @@ internal static partial class Templates
             sb.AppendLine();
             sb.AppendLine($"        var grid = await DetailGrid{md.Index}(context, connection, item, true{MdToolsArg(md, false)});");
             sb.AppendLine("        return grid.Length == 0");
-            sb.AppendLine("            ? Results.Text(\"You do not have permission to view this table.\", \"text/plain; charset=utf-8\", statusCode: StatusCodes.Status403Forbidden)");
+            sb.AppendLine($"            ? Results.Text({Ui("deniedView")}, \"text/plain; charset=utf-8\", statusCode: StatusCodes.Status403Forbidden)");
             sb.AppendLine("            : Results.Content(\"<div data-partial=\\\"1\\\">\" + grid + \"</div>\", \"text/html; charset=utf-8\");");
             sb.AppendLine("    }");
             sb.AppendLine();
@@ -565,7 +565,7 @@ internal static partial class Templates
         L("            grid.Append(\"</tr>\");");
         L("        }");
         var width2 = columns.Count + (showActions ? 1 : 0);
-        L($"        if (rows.Count == 0) grid.Append(\"<tr><td colspan=\\\"{Math.Max(1, width2)}\\\" class=\\\"text-muted\\\">No records.</td></tr>\");");
+        L($"        if (rows.Count == 0) grid.Append(\"<tr><td colspan=\\\"{Math.Max(1, width2)}\\\" class=\\\"text-muted\\\">{UiInText("detailNoRecords")}</td></tr>\");");
         L("        grid.Append(\"</tbody></table></div>\");");
         var fragmentBase = $"Route + \"/details/{i}/\" + " + string.Join(" + \"/\" + ", KeyPropExprs(masterClass, md.Master).Select(v => $"Uri.EscapeDataString({v}.ToString())"));
         L($"        grid.Append(MasterDetailKit.Pager(request, {Lit("dp" + i)}, page, pageCount, fragment ? {fragmentBase} : null));");

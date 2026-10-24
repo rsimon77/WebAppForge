@@ -242,7 +242,42 @@ public static class UiStrings
         new("idError", "The change could not be saved."),
     ];
 
-    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).Concat(Audit).Concat(ImportExport).Concat(Identity).ToDictionary(s => s.Id);
+    /// <summary>Texts of designed pages: the confirmations before saving and deleting, the close button of modals and the page size.</summary>
+    public static IReadOnlyList<UiString> PageKit { get; } =
+    [
+        new("pageConfirmSave", "Save changes?"),
+        new("pageConfirmDelete", "Are you sure?"),
+        new("pageClose", "Close"),
+        new("pageRowsPerPage", "Rows per page"),
+    ];
+
+    /// <summary>Texts of multi-page forms: the wizard buttons, its step label and its progress bar.</summary>
+    public static IReadOnlyList<UiString> FormPages { get; } =
+    [
+        new("formPrevious", "Previous"),
+        new("formNext", "Next"),
+        new("formStep", "Step {0} of {1}"),
+        new("formProgress", "Progress"),
+    ];
+
+    /// <summary>Texts of detail grids and of the delete confirmation of a master with dependents.</summary>
+    public static IReadOnlyList<UiString> Details { get; } =
+    [
+        new("detailNoRecords", "No records."),
+        new("detailBlocked", "Cannot delete: {0} related {1} record(s) exist."),
+        new("detailAlsoDeletes", "This will also delete {0} record(s) in {1}."),
+    ];
+
+    /// <summary>The answers of a route that needs a higher user level.</summary>
+    public static IReadOnlyList<UiString> Denied { get; } =
+    [
+        new("deniedView", "You do not have permission to view this table."),
+        new("deniedEdit", "You do not have permission to change this table."),
+        new("deniedReport", "You do not have permission to view this report."),
+    ];
+
+    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).Concat(Audit).Concat(ImportExport).Concat(Identity)
+        .Concat(PageKit).Concat(FormPages).Concat(Details).Concat(Denied).ToDictionary(s => s.Id);
 
     /// <summary>The English text of a UI string. Throws for an unknown id, which is a bug in the generator.</summary>
     public static string English(string id) =>
