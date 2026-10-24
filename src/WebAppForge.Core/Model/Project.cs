@@ -14,6 +14,9 @@ public sealed class Project
 
     public SecuritySettings Security { get; set; } = new();
 
+    /// <summary>Audit trail of inserts, updates and deletes (off by default).</summary>
+    public AuditSettings Audit { get; set; } = new();
+
     /// <summary>Multi-language support of the generated site (off by default) and its stored translations.</summary>
     public LocalizationSettings Localization { get; set; } = new();
 
@@ -201,6 +204,9 @@ public sealed class TableInfo
 
     /// <summary>One design per page type (title, layout, columns, buttons, modal, CSS).</summary>
     public PageDesigns Designs { get; set; } = new();
+
+    /// <summary>Whether and how changes to this table are written to the audit trail.</summary>
+    public TableAudit Audit { get; set; } = new();
 
     /// <summary>Detail tables of this master table (master/detail and multiple master/detail).</summary>
     public List<DetailLink> Details { get; } = [];

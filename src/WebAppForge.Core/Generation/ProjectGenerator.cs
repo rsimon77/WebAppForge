@@ -30,6 +30,7 @@ public sealed class ProjectGenerator
         Templates.Db = SqlDialect.For(project.Database.Provider);
         Templates.ConnectionVariable = project.Database.IsServer ? project.Database.ConnectionStringVariable.Trim() : string.Empty;
         Templates.EntraAuth = UsesEntraAuth(project.Database);
+        Templates.Auditing = project.Audit.Enabled ? project.Audit : null;
         try
         {
             return Write(project, outputDirectory, projectFolder);
@@ -39,6 +40,7 @@ public sealed class ProjectGenerator
             Templates.Db = SqlDialect.Sqlite;
             Templates.ConnectionVariable = string.Empty;
             Templates.EntraAuth = false;
+            Templates.Auditing = null;
         }
     }
 
@@ -65,10 +67,14 @@ public sealed class ProjectGenerator
         }
 
         MasterDetailValidator.Validate(project.Tables);
+        if (Templates.AuditProblems(project) is [var auditProblem, ..])
+        {
+            throw new InvalidOperationException(auditProblem);
+        }
 
         Templates.Localized = localized;
         var ns = Identifier.Pascal(project.Name);
-        var tables = project.Tables.Where(t => t.Generate).ToList();
+        var tables = project.Tables.Where(t => t.Generate && !Templates.IsAuditLogOf(project, t)).ToList();
         var copies = tables.Select(t => GeneratedCopy(t, project.Security)).ToList();
         Templates.MdTables = copies;
         ReportValidator.Validate(project, copies);
@@ -116,6 +122,15 @@ public sealed class ProjectGenerator
         if (Templates.UsesReferentialIntegrity(copies))
         {
             files["Web/ReferentialIntegrity.cs"] = Templates.ReferentialIntegrityFile(ns, copies);
+        }
+
+        if (Templates.Auditing is not null)
+        {
+            files["Web/Audit.cs"] = Templates.AuditRuntime(ns);
+            if (project.Audit.ShowLogPage)
+            {
+                files["Pages/AuditTrailPages.cs"] = Templates.AuditPage(ns, copies, project.Security.Enabled && !string.IsNullOrEmpty(project.Security.UserLevelField));
+            }
         }
 
         if (Templates.EnvironmentName(project.Meta) is { } environment)

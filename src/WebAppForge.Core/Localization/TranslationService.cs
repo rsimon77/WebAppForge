@@ -34,7 +34,7 @@ public static class LocalizationKeys
             result.Add(new SourceText(ui.Key, ui.English, "en"));
         }
 
-        foreach (var table in project.Tables.Where(t => t.Generate))
+        foreach (var table in project.Tables.Where(t => t.Generate && !Generation.Templates.IsAuditLogOf(project, t)))
         {
             result.Add(new SourceText(Table(table.Name), string.IsNullOrEmpty(table.Caption) ? table.Name : table.Caption, defaultLanguage));
             foreach (var field in table.Fields)
@@ -46,6 +46,14 @@ public static class LocalizationKeys
         if (Generation.Templates.UsesGridKit(project.Tables.Where(t => t.Generate)))
         {
             foreach (var ui in UiStrings.Grid)
+            {
+                result.Add(new SourceText(ui.Key, ui.English, "en"));
+            }
+        }
+
+        if (project.Audit.Enabled)
+        {
+            foreach (var ui in UiStrings.Audit)
             {
                 result.Add(new SourceText(ui.Key, ui.English, "en"));
             }

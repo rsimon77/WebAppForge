@@ -113,6 +113,9 @@ internal abstract class SqlDialect
     /// <summary>Inserts or updates the login_attempts row of @username with @failures and @windowStart.</summary>
     public abstract string UpsertLoginAttempt { get; }
 
+    /// <summary>Creates the audit trail table <paramref name="name"/> (unquoted) when it does not exist.</summary>
+    public abstract string CreateAuditTable(string name);
+
     private sealed class SqliteDialect : SqlDialect
     {
         public override string Name => DatabaseProviders.Sqlite;
@@ -156,6 +159,10 @@ internal abstract class SqlDialect
         public override string UpsertLoginAttempt =>
             "INSERT INTO login_attempts (username, failures, window_start) VALUES (@username, @failures, @windowStart) "
             + "ON CONFLICT(username) DO UPDATE SET failures = excluded.failures, window_start = excluded.window_start";
+
+        public override string CreateAuditTable(string name) =>
+            $"CREATE TABLE IF NOT EXISTS {Quote(name)} (id INTEGER PRIMARY KEY, occurred_at TEXT NOT NULL, user_name TEXT, ip_address TEXT, "
+            + "table_name TEXT NOT NULL, action TEXT NOT NULL, record_key TEXT, changes TEXT)";
     }
 
     private sealed class SqlServerDialect : SqlDialect
@@ -242,6 +249,11 @@ internal abstract class SqlDialect
             "MERGE login_attempts WITH (HOLDLOCK) AS t USING (SELECT @username AS username) AS s ON t.username = s.username "
             + "WHEN MATCHED THEN UPDATE SET failures = @failures, window_start = @windowStart "
             + "WHEN NOT MATCHED THEN INSERT (username, failures, window_start) VALUES (@username, @failures, @windowStart);";
+
+        public override string CreateAuditTable(string name) =>
+            $"IF OBJECT_ID({Text(name)}, N'U') IS NULL CREATE TABLE {Quote(name)} (id bigint IDENTITY(1,1) PRIMARY KEY, occurred_at datetime2 NOT NULL, "
+            + "user_name nvarchar(256) NULL, ip_address nvarchar(64) NULL, table_name nvarchar(256) NOT NULL, action nvarchar(10) NOT NULL, "
+            + "record_key nvarchar(400) NULL, changes nvarchar(max) NULL)";
     }
 
     private sealed class MySqlDialect : SqlDialect
@@ -303,5 +315,9 @@ internal abstract class SqlDialect
         public override string UpsertLoginAttempt =>
             "INSERT INTO login_attempts (username, failures, window_start) VALUES (@username, @failures, @windowStart) "
             + "ON DUPLICATE KEY UPDATE failures = @failures, window_start = @windowStart";
+
+        public override string CreateAuditTable(string name) =>
+            $"CREATE TABLE IF NOT EXISTS {Quote(name)} (id BIGINT AUTO_INCREMENT PRIMARY KEY, occurred_at DATETIME(6) NOT NULL, user_name VARCHAR(256) NULL, "
+            + "ip_address VARCHAR(64) NULL, table_name VARCHAR(256) NOT NULL, action VARCHAR(10) NOT NULL, record_key VARCHAR(400) NULL, changes LONGTEXT NULL)";
     }
 }

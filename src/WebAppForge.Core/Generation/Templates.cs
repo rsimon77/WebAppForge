@@ -261,6 +261,12 @@ internal static partial class Templates
             }
         }
 
+        if (Auditing is { CreateTable: true })
+        {
+            // Creates the audit log table before any request is served. Idempotent, like the login attempts table.
+            sb.AppendLine("await Audit.EnsureTableAsync(connectionString);");
+        }
+
         if (meta.EnableHealthEndpoint)
         {
             // Anonymous on purpose: monitors call it without signing in. It only reports whether the database opens.
@@ -305,6 +311,13 @@ internal static partial class Templates
                     : $"    ({ReportText(report)}, {Lit(ReportRoute(report))}),");
             }
 
+            if (Auditing is { ShowLogPage: true })
+            {
+                sb.AppendLine(groupedMenu
+                    ? $"    (\"\", {Ui("auditTrail")}, {Lit(AuditRoute)}, \"\"),"
+                    : $"    ({Ui("auditTrail")}, {Lit(AuditRoute)}),");
+            }
+
             if (secure && security.AllowChangePassword)
             {
                 sb.AppendLine($"}}) + Html.Link(\"/changepassword\", {Ui("changePassword")}) + AuthPages.LogoutForm(context, antiforgery)));");
@@ -328,6 +341,11 @@ internal static partial class Templates
         foreach (var report in Reports)
         {
             sb.AppendLine($"{target}.Map{ReportClass(report)}(connectionString);");
+        }
+
+        if (Auditing is { ShowLogPage: true })
+        {
+            sb.AppendLine($"{target}.MapAuditTrailPages(connectionString);");
         }
 
         sb.AppendLine();
@@ -513,6 +531,7 @@ internal static partial class Templates
             sb.AppendLine($"    public {CSharpType(field)} {PropName(className, field)} {{ get; set; }}{DefaultFor(field)}");
         }
 
+        AppendAuditModelMembers(sb, className, table);
         sb.AppendLine("}");
         return sb.ToString();
     }
