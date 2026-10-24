@@ -23,6 +23,8 @@ public partial class App : Application
                 new AvaloniaDialogService(window),
                 new SettingsStore(SettingsStore.DefaultFilePath),
                 new AvaloniaAppearance(this));
+            main.ReportPreview = new CoreReportPreviewService(() => main.ProjectFolder);
+            main.ReportValidation = new CoreReportValidationService();
             window.DataContext = main;
             desktop.MainWindow = window;
             main.ReopenLastProject();
