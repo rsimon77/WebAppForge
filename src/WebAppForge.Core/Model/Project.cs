@@ -26,6 +26,9 @@ public sealed class Project
     public string OutputFolder { get; set; } = "generated";
 
     public List<TableInfo> Tables { get; } = [];
+
+    /// <summary>Summary, crosstab, chart, calendar and dashboard reports.</summary>
+    public List<ReportDef> Reports { get; } = [];
 }
 
 public sealed class DatabaseSettings

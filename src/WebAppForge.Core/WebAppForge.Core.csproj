@@ -11,6 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The report engine is compiled here and also embedded as text in generated sites that have reports. -->
+    <EmbeddedResource Include="Reports\Engine\ReportEngine.cs" LogicalName="ReportEngine.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />
   </ItemGroup>
 
