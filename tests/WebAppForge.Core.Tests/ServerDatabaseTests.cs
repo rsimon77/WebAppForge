@@ -91,6 +91,9 @@ public abstract class ServerSite : ReportSiteBase
 
     protected abstract string Schema { get; }
 
+    /// <summary>The site keeps an audit trail of orders, order lines and sales.</summary>
+    protected virtual bool Audited => false;
+
     private const string Data = """
         INSERT INTO regions (code, title) VALUES ('N', 'North'), ('S', 'South');
         INSERT INTO sales (owner, region, day, amount, paid, note, stamp) VALUES ('ann', 'N', '2024-05-02', 10.50, 1, 'a1', 1714651200);
@@ -173,6 +176,15 @@ public abstract class ServerSite : ReportSiteBase
         project.Reports.Add(new ReportInfo { Name = "grid", Kind = ReportKind.Crosstab, SourceTable = "sales", RowField = "region", ColumnField = "paid", ValueField = "amount", Function = AggregateFunction.Sum, DrillDown = true });
         project.Reports.Add(new ReportInfo { Name = "chart", Kind = ReportKind.Chart, ChartType = ChartType.Bar, SourceTable = "sales", RowField = "day", RowInterval = DateInterval.Month, ValueField = "amount", Function = AggregateFunction.Sum });
         project.Reports.Add(new ReportInfo { Name = "days", Kind = ReportKind.Calendar, SourceTable = "sales", DateField = "day", TitleField = "note" });
+        if (Audited)
+        {
+            project.Audit.Enabled = true;
+            foreach (var name in new[] { "orders", "order_lines", "sales" })
+            {
+                T(name).Audit.Enabled = true;
+            }
+        }
+
         Project = project;
         return project;
     }
@@ -223,7 +235,7 @@ public abstract class ServerSite : ReportSiteBase
     }
 }
 
-public sealed class SqlServerSite : ServerSite
+public class SqlServerSite : ServerSite
 {
     public override string Provider => DatabaseProviders.SqlServer;
 
@@ -241,7 +253,7 @@ public sealed class SqlServerSite : ServerSite
         """;
 }
 
-public sealed class MySqlSite : ServerSite
+public class MySqlSite : ServerSite
 {
     public override string Provider => DatabaseProviders.MySql;
 
@@ -257,6 +269,16 @@ public sealed class MySqlSite : ServerSite
         CREATE TABLE audit (id INT AUTO_INCREMENT PRIMARY KEY, what VARCHAR(50) NOT NULL) AUTO_INCREMENT = 1000;
         CREATE TRIGGER orders_audit AFTER INSERT ON orders FOR EACH ROW INSERT INTO audit (what) VALUES ('order')
         """;
+}
+
+public sealed class SqlServerAuditSite : SqlServerSite
+{
+    protected override bool Audited => true;
+}
+
+public sealed class MySqlAuditSite : MySqlSite
+{
+    protected override bool Audited => true;
 }
 
 /// <summary>The same checks on every server: schema reading, login and lockout, lists, grid tools, the JSON API, reports and master/detail.</summary>
@@ -556,3 +578,118 @@ public abstract class ServerSiteTests<TSite> where TSite : ServerSite
 public sealed class SqlServerSiteTests(SqlServerSite site) : ServerSiteTests<SqlServerSite>(site), IClassFixture<SqlServerSite>;
 
 public sealed class MySqlSiteTests(MySqlSite site) : ServerSiteTests<MySqlSite>(site), IClassFixture<MySqlSite>;
+
+/// <summary>The audit trail on a server: entries for pages, the API and cascades, written in the change's transaction, and the log page.</summary>
+public abstract class ServerAuditTests<TSite> where TSite : ServerSite
+{
+    private readonly TSite _site;
+
+    protected ServerAuditTests(TSite site) => _site = site;
+
+    private async Task<long> Count(string where) => Convert.ToInt64(await _site.Scalar("SELECT COUNT(*) FROM audit_trail WHERE " + where));
+
+    private async Task<string> Latest(string column, string table, string action) => Convert.ToString(await _site.Scalar(
+        $"SELECT {column} FROM audit_trail WHERE id = (SELECT MAX(id) FROM audit_trail WHERE table_name = '{table}' AND action = '{action}')")) ?? string.Empty;
+
+    [Fact]
+    public async Task PagesWriteEntriesWithTheUserAndTheValues()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        using var ann = await _site.SignInAsync("ann", 1);
+        using var added = await _site.PostFormAsync(ann, "/orders/add", "/orders/add", new() { ["customer"] = "Audit Co", ["placed"] = "2024-09-01T10:00" });
+        Assert.Equal(HttpStatusCode.Redirect, added.StatusCode);
+        var id = Convert.ToInt64(await _site.Scalar("SELECT MAX(id) FROM orders"));
+
+        // The insert trigger of the SQL Server and MySQL schemas writes to the audit table too; the entry must carry the order's own key.
+        Assert.Equal(id.ToString(), await Latest("record_key", "orders", "insert"));
+        Assert.Equal("ann", await Latest("user_name", "orders", "insert"));
+        Assert.Contains("Audit Co", await Latest("changes", "orders", "insert"));
+
+        using var edited = await _site.PostFormAsync(ann, $"/orders/edit/{id}", $"/orders/edit/{id}", new() { ["customer"] = "Audit Renamed", ["placed"] = "2024-09-01T10:00" });
+        Assert.Equal(HttpStatusCode.Redirect, edited.StatusCode);
+        Assert.Equal(1L, await Count($"table_name = 'orders' AND action = 'update' AND record_key = '{id}'"));
+        var update = await Latest("changes", "orders", "update");
+        Assert.Contains("Audit Co", update);
+        Assert.Contains("Audit Renamed", update);
+
+        using var deleted = await _site.PostFormAsync(ann, $"/orders/delete/{id}", $"/orders/delete/{id}", []);
+        Assert.Equal(HttpStatusCode.Redirect, deleted.StatusCode);
+        Assert.Equal(1L, await Count($"table_name = 'orders' AND action = 'delete' AND record_key = '{id}'"));
+        Assert.Equal(0L, Convert.ToInt64(await _site.Scalar($"SELECT COUNT(*) FROM orders WHERE id = {id}")));
+    }
+
+    [Fact]
+    public async Task TheApiWritesEntriesForPostPutAndDelete()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        using var ann = await _site.SignInAsync("ann", 1);
+        using var created = await ann.PostAsJsonAsync("/api/sales", new { owner = "x", region = "S", day = "2024-07-04", amount = 12.5m, paid = true, note = "audited", stamp = 1720094400, photo = (string?)null });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var id = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt64();
+        Assert.Equal(1L, await Count($"table_name = 'sales' AND action = 'insert' AND record_key = '{id}' AND user_name = 'ann'"));
+
+        using var updated = await ann.PutAsJsonAsync($"/api/sales/{id}", new { owner = "ann", region = "S", day = "2024-07-04", amount = 99m, paid = true, note = "audited", stamp = 1720094400, photo = (string?)null });
+        Assert.True(updated.IsSuccessStatusCode, await updated.Content.ReadAsStringAsync());
+        Assert.Equal(1L, await Count($"table_name = 'sales' AND action = 'update' AND record_key = '{id}'"));
+        Assert.Contains("amount", await Latest("changes", "sales", "update"));
+
+        using var deleted = await ann.DeleteAsync($"/api/sales/{id}");
+        Assert.True(deleted.IsSuccessStatusCode);
+        Assert.Equal(1L, await Count($"table_name = 'sales' AND action = 'delete' AND record_key = '{id}'"));
+    }
+
+    [Fact]
+    public async Task ACascadeDeleteRecordsTheOrderAndItsLines()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        using var ann = await _site.SignInAsync("ann", 1);
+        using var deleted = await _site.PostFormAsync(ann, "/orders/delete/1", "/orders/delete/1", []);
+        Assert.Equal(HttpStatusCode.Redirect, deleted.StatusCode);
+
+        Assert.Equal(1L, await Count("table_name = 'orders' AND action = 'delete' AND record_key = '1'"));
+        Assert.Equal(3L, await Count("table_name = 'order_lines' AND action = 'delete'"));
+        Assert.Equal(0L, Convert.ToInt64(await _site.Scalar("SELECT COUNT(*) FROM order_lines WHERE order_id = 1")));
+    }
+
+    [Fact]
+    public async Task TheLogPageListsAndFiltersTheEntries()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        using var ann = await _site.SignInAsync("ann", 1);
+        using var created = await ann.PostAsJsonAsync("/api/sales", new { owner = "ann", region = "N", day = "2024-07-05", amount = 1m, paid = false, note = "for the page", stamp = (long?)null, photo = (string?)null });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+
+        var all = await ann.GetStringAsync("/audit-trail");
+        Assert.Contains("ann", all);
+        Assert.Contains("for the page", all);
+
+        var inserts = await ann.GetStringAsync("/audit-trail?t=sales&a=insert&u=ann");
+        Assert.Contains("for the page", inserts);
+        Assert.Contains("text-bg-success", inserts);
+        Assert.DoesNotContain("text-bg-danger", inserts);
+
+        var none = await ann.GetStringAsync("/audit-trail?t=sales&u=nobody-like-this");
+        Assert.DoesNotContain("for the page", none);
+        Assert.Contains("<select", await ann.GetStringAsync("/audit-trail?page=99"));
+    }
+}
+
+public sealed class SqlServerAuditTests(SqlServerAuditSite site) : ServerAuditTests<SqlServerAuditSite>(site), IClassFixture<SqlServerAuditSite>;
+
+public sealed class MySqlAuditTests(MySqlAuditSite site) : ServerAuditTests<MySqlAuditSite>(site), IClassFixture<MySqlAuditSite>;

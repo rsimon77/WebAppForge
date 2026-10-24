@@ -94,6 +94,7 @@ public static class ProjectFile
 
             CustomizationXml.AppendTable(tableElement, table);
             MasterDetailXml.Append(tableElement, table);
+            AuditXml.AppendTable(tableElement, table.Audit);
             root.Add(tableElement);
         }
 
@@ -115,6 +116,7 @@ public static class ProjectFile
         LocalizationXml.Append(root, project.Localization);
         CustomizationXml.AppendMeta(root, project.Meta);
         ReportXml.Append(root, project.Reports);
+        AuditXml.AppendProject(root, project.Audit);
 
         return new XDocument(new XDeclaration("1.0", "utf-8", null), root);
     }
@@ -257,11 +259,13 @@ public static class ProjectFile
 
             CustomizationXml.ReadTable(tableElement, table);
             MasterDetailXml.Read(tableElement, table);
+            AuditXml.ReadTable(tableElement, table);
 
             project.Tables.Add(table);
         }
 
         ReportXml.Read(root, project.Reports);
+        project.Audit = AuditXml.ReadProject(root);
 
         return project;
     }

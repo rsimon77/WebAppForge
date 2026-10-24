@@ -124,7 +124,28 @@ public static class UiStrings
         new("gridNotEmpty", "is not empty"),
     ];
 
-    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).ToDictionary(s => s.Id);
+    /// <summary>Texts of the audit trail page, enumerated only when the project has an audit trail.</summary>
+    public static IReadOnlyList<UiString> Audit { get; } =
+    [
+        new("auditTrail", "Audit trail"),
+        new("auditWhen", "When"),
+        new("auditUser", "User"),
+        new("auditTable", "Table"),
+        new("auditAction", "Action"),
+        new("auditRecord", "Record"),
+        new("auditChanges", "Changes"),
+        new("auditInsert", "Added"),
+        new("auditUpdate", "Changed"),
+        new("auditDelete", "Deleted"),
+        new("auditAll", "(all)"),
+        new("auditApply", "Apply"),
+        new("auditClear", "Clear"),
+        new("auditFrom", "From"),
+        new("auditTo", "To"),
+        new("auditEmpty", "No entries match."),
+    ];
+
+    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).Concat(Audit).ToDictionary(s => s.Id);
 
     /// <summary>The English text of a UI string. Throws for an unknown id, which is a bug in the generator.</summary>
     public static string English(string id) =>

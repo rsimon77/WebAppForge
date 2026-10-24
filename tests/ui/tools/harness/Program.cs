@@ -1,5 +1,5 @@
 // UI test site harness. Builds a fresh SQLite database for a named scenario, then generates the ASP.NET Core
-// site for it with ProjectGenerator. Usage: harness <shop|secure|designed|relations|reports> <siteFolder> <passwordHashFile>
+// site for it with ProjectGenerator. Usage: harness <shop|secure|designed|relations|reports|audit> <siteFolder> <passwordHashFile>
 // The database is always recreated, so every run starts from the same seed data.
 using WebAppForge.Core.Generation;
 using WebAppForge.Core.Model;
@@ -8,7 +8,7 @@ using Microsoft.Data.Sqlite;
 
 if (args.Length != 3)
 {
-    Console.Error.WriteLine("usage: harness <shop|secure|designed|relations|reports> <siteFolder> <passwordHashFile>");
+    Console.Error.WriteLine("usage: harness <shop|secure|designed|relations|reports|audit> <siteFolder> <passwordHashFile>");
     return 2;
 }
 
@@ -32,6 +32,7 @@ Project project = scenario switch
     "designed" => BuildDesigned(db),
     "relations" => BuildRelations(db),
     "reports" => BuildReports(db),
+    "audit" => BuildAudit(db),
     _ => throw new ArgumentException($"unknown scenario '{scenario}'"),
 };
 
@@ -82,6 +83,19 @@ static Project BuildShop(string db)
     var project = new Project { Name = "shop" };
     project.Database.Path = db;
     project.Tables.AddRange(new SqliteSchemaReader().ReadTables($"Data Source={db}"));
+    return project;
+}
+
+// The shop with an audit trail on customers and orders.
+static Project BuildAudit(string db)
+{
+    var project = BuildShop(db);
+    project.Audit.Enabled = true;
+    foreach (var table in project.Tables)
+    {
+        table.Audit.Enabled = true;
+    }
+
     return project;
 }
 
