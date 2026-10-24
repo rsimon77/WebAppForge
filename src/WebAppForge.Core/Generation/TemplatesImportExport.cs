@@ -207,7 +207,7 @@ internal static partial class Templates
             sb.AppendLine($"            new DataExchange.Col({Lit(field.Name)}, {FieldText(field)}, {Lit(QuoteIdent(field.Name))}, {ExchangeKind(field.Type)}){initializer},");
         }
 
-        sb.AppendLine("        });");
+        AppendExchangeAudit(sb, table, fields);
         sb.AppendLine();
 
         if (!ExchangeExports(table))
@@ -248,5 +248,34 @@ internal static partial class Templates
         sb.AppendLine("        return await DataExchange.Export(ExchangeSpec(), format, connection, where, order, Db.Args(parameters));");
         sb.AppendLine("    }");
         sb.AppendLine();
+    }
+
+    /// <summary>
+    /// Closes the spec of <paramref name="table"/>. An audited table that imports also gets what the import needs for its entries;
+    /// a table without a key, or whose key the import cannot see, gets none.
+    /// </summary>
+    private static void AppendExchangeAudit(StringBuilder sb, TableInfo table, List<FieldInfo> fields)
+    {
+        var keys = table.PrimaryKeys;
+        var inserts = AuditsInserts(table);
+        var updates = AuditsUpdates(table) && table.ImportExport.ImportMode == ImportMode.Upsert;
+        if (!ExchangeImports(table) || (!inserts && !updates) || keys.Count == 0 || !keys.All(k => fields.Any(f => f.Name == k.Name)))
+        {
+            sb.AppendLine("        });");
+            return;
+        }
+
+        var kept = AuditFields(table);
+        var identity = keys.Count == 1 && keys[0].IsAutoIncrement ? Db.IdentityAfterInsert : string.Empty;
+        sb.AppendLine("        })");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        AuditTable = {Lit(table.Name)},");
+        sb.AppendLine($"        AuditInserts = {(inserts ? "true" : "false")},");
+        sb.AppendLine($"        AuditUpdates = {(updates ? "true" : "false")},");
+        sb.AppendLine($"        AuditColumns = {Lit(kept.Count == 0 ? "NULL AS __none" : string.Join(", ", kept.Select(f => QuoteIdent(f.Name))))},");
+        sb.AppendLine($"        AuditWhere = {Lit(string.Join(" AND ", keys.Select((k, i) => QuoteIdent(k.Name) + " = @a" + i)))},");
+        sb.AppendLine($"        AuditKeys = new[] {{ {string.Join(", ", keys.Select(k => Lit(k.Name)))} }},");
+        sb.AppendLine($"        AuditIdentity = {Lit(identity)},");
+        sb.AppendLine("    };");
     }
 }

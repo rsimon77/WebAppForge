@@ -17,7 +17,113 @@ internal static partial class Templates
             .Replace("@@NS@@", ns)
             .Replace("@@USING_LOCALIZATION@@", Localized ? $"using {ns}.Localization;" : string.Empty)
             .Replace("@@CONFIG@@", ConfigExpression(settings));
+        if (Auditing is not null)
+        {
+            text = AuditedExchange(text);
+        }
+
         return Regex.Replace(text, @"@@UI:(\w+)@@", m => Ui(m.Groups[1].Value));
+    }
+
+    /// <summary>
+    /// The import of a site with an audit trail: an added or updated row of an audited table gets its entry in the import
+    /// transaction. The values are read back from the table, before and after the change.
+    /// </summary>
+    private static string AuditedExchange(string text)
+    {
+        static string Swap(string text, string from, string to) =>
+            text.Contains(from, StringComparison.Ordinal) ? text.Replace(from, to, StringComparison.Ordinal) : throw new InvalidOperationException("The import runtime changed: " + from);
+
+        text = Swap(text, "string SelectTop, string LimitTail, Col[] Columns);", """
+            string SelectTop, string LimitTail, Col[] Columns)
+                {
+                    /// <summary>Name of the table in the audit trail.</summary>
+                    public string AuditTable { get; init; } = string.Empty;
+
+                    public bool AuditInserts { get; init; }
+
+                    public bool AuditUpdates { get; init; }
+
+                    /// <summary>The kept columns, the key condition (@a0, @a1, ...) and the key fields in key order.</summary>
+                    public string AuditColumns { get; init; } = string.Empty;
+
+                    public string AuditWhere { get; init; } = string.Empty;
+
+                    public string[] AuditKeys { get; init; } = Array.Empty<string>();
+
+                    /// <summary>The statement that reads the key an insert assigned; empty when the key comes from the file.</summary>
+                    public string AuditIdentity { get; init; } = string.Empty;
+                }
+            """);
+        text = Swap(text, "private static async Task InsertRow(Spec spec, SqliteConnection connection, int[] map, RowPlan plan, string owner)",
+            "private static async Task InsertRow(Spec spec, SqliteConnection connection, int[] map, RowPlan plan, string owner, HttpContext http)");
+        text = Swap(text, "private static async Task UpdateRow(Spec spec, SqliteConnection connection, int[] map, RowPlan plan, string owner)",
+            "private static async Task UpdateRow(Spec spec, SqliteConnection connection, int[] map, RowPlan plan, string owner, HttpContext http)");
+        text = Swap(text, "await InsertRow(spec, connection, map, plan, owner);", "await InsertRow(spec, connection, map, plan, owner, context);");
+        text = Swap(text, "await UpdateRow(spec, connection, map, plan, owner);", "await UpdateRow(spec, connection, map, plan, owner, context);");
+        text = Swap(text, """
+            await connection.ExecuteAsync("INSERT INTO " + spec.Table + " (" + string.Join(", ", names) + ") VALUES (" + string.Join(", ", marks) + ")", args);
+            """, """
+            var insert = "INSERT INTO " + spec.Table + " (" + string.Join(", ", names) + ") VALUES (" + string.Join(", ", marks) + ")";
+                    if (!spec.AuditInserts)
+                    {
+                        await connection.ExecuteAsync(insert, args);
+                        return;
+                    }
+
+                    object?[] keys;
+                    if (spec.AuditIdentity.Length > 0)
+                    {
+                        keys = [await connection.ExecuteScalarAsync<long>(insert + spec.AuditIdentity, args)];
+                    }
+                    else
+                    {
+                        await connection.ExecuteAsync(insert, args);
+                        keys = AuditKeyValues(spec, plan);
+                    }
+
+                    var (key, values) = await AuditRead(spec, connection, keys);
+                    await Audit.WriteAsync(connection, http, spec.AuditTable, "insert", key, null, values);
+            """);
+        text = Swap(text, """
+            await connection.ExecuteAsync("UPDATE " + spec.Table + " SET " + string.Join(", ", sets) + " WHERE " + string.Join(" AND ", where), args);
+                }
+            """, """
+            var update = "UPDATE " + spec.Table + " SET " + string.Join(", ", sets) + " WHERE " + string.Join(" AND ", where);
+                    if (!spec.AuditUpdates)
+                    {
+                        await connection.ExecuteAsync(update, args);
+                        return;
+                    }
+
+                    var keyValues = AuditKeyValues(spec, plan);
+                    var (recordKey, before) = await AuditRead(spec, connection, keyValues);
+                    if (await connection.ExecuteAsync(update, args) > 0)
+                    {
+                        var (_, after) = await AuditRead(spec, connection, keyValues);
+                        await Audit.WriteAsync(connection, http, spec.AuditTable, "update", recordKey, before, after);
+                    }
+                }
+
+                /// <summary>The key values of a row of the file, in key order.</summary>
+                private static object?[] AuditKeyValues(Spec spec, RowPlan plan) =>
+                    spec.AuditKeys.Select(name => plan.Values[Array.FindIndex(spec.Columns, c => c.Name == name)]).ToArray();
+
+                /// <summary>The record key and the kept values of a row, read in the import transaction; null values when the row is not there.</summary>
+                private static async Task<(string Key, Dictionary<string, object?>? Values)> AuditRead(Spec spec, SqliteConnection connection, object?[] keys)
+                {
+                    var args = new DynamicParameters();
+                    for (var i = 0; i < keys.Length; i++)
+                    {
+                        args.Add("@a" + i, keys[i]);
+                    }
+
+                    var row = await connection.QueryFirstOrDefaultAsync("SELECT " + spec.AuditColumns + " FROM " + spec.Table + " WHERE " + spec.AuditWhere, args) as IDictionary<string, object>;
+                    var key = string.Join("/", keys.Select(k => Convert.ToString(k, CultureInfo.InvariantCulture)));
+                    return (key, row?.Where(p => !p.Key.StartsWith("__", StringComparison.Ordinal)).ToDictionary(p => p.Key, p => (object?)p.Value));
+                }
+            """);
+        return text;
     }
 
     private static string ConfigExpression(ImportExportSettings s)

@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WebAppForge.Desktop.Views.ImportExportView">
+    <Grid DataContext="{Binding ImportExport}" RowDefinitions="Auto,*" Margin="12">
+        <Border Grid.Row="0" Classes="card" MaxWidth="900" HorizontalAlignment="Left" Margin="0,0,0,8">
+            <StackPanel Spacing="8">
+                <CheckBox Content="Let users export list rows and import files into tables" IsChecked="{Binding Enabled}"
+                          AutomationProperties.AutomationId="ImportExportEnabledCheckBox" />
+                <Grid IsEnabled="{Binding Enabled}" ColumnDefinitions="Auto,24,*">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="File formats" FontWeight="SemiBold" />
+                        <ItemsControl ItemsSource="{Binding Formats}" AutomationProperties.AutomationId="ImportExportFormats">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="120,90,90">
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" />
+                                        <CheckBox Grid.Column="1" Content="Export" IsChecked="{Binding Export}" />
+                                        <CheckBox Grid.Column="2" Content="Import" IsChecked="{Binding Import}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <WrapPanel Grid.Column="2" Orientation="Horizontal">
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+                            <TextBlock Text="Column headers" />
+                            <ComboBox ItemsSource="{Binding HeaderStyleChoices}" SelectedItem="{Binding HeaderStyle}" HorizontalAlignment="Stretch" />
+                            <CheckBox Content="Write a header row" IsChecked="{Binding IncludeHeader}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+                            <TextBlock Text="CSV delimiter (one character or tab)" TextWrapping="Wrap" />
+                            <TextBox Text="{Binding CsvDelimiter}" AutomationProperties.AutomationId="ImportExportDelimiterBox" />
+                        </StackPanel>
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+                            <TextBlock Text="Date format" />
+                            <TextBox Text="{Binding DateFormat}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+                            <TextBlock Text="Export file name ({table}, {date}, {datetime})" TextWrapping="Wrap" />
+                            <TextBox Text="{Binding FileNamePattern}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+                            <TextBlock Text="Largest upload (MB)" />
+                            <TextBox Text="{Binding MaxUploadText}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+                            <TextBlock Text="Lowest user level to export" />
+                            <TextBox Text="{Binding ExportMinLevelText}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+                            <TextBlock Text="Lowest user level to import" />
+                            <TextBox Text="{Binding ImportMinLevelText}" />
+                        </StackPanel>
+                    </WrapPanel>
+                </Grid>
+                <TextBlock IsVisible="{Binding HasInputMessage}" Text="{Binding InputMessage}" Foreground="#B3261E" TextWrapping="Wrap" />
+                <Border IsVisible="{Binding HasValidationMessage}" Padding="8" BorderThickness="1" BorderBrush="#B3261E" CornerRadius="4">
+                    <TextBlock Text="{Binding ValidationMessage}" Foreground="#B3261E" TextWrapping="Wrap" />
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <DockPanel Grid.Row="1" IsEnabled="{Binding Enabled}">
+            <TextBlock DockPanel.Dock="Top" Classes="hint" TextWrapping="Wrap" Margin="0,0,0,6"
+                       Text="Choose per table whether it exports and imports. Upsert updates rows whose key is already there. Excluded fields (comma separated) are left out of both; password and secret fields always are." />
+            <DataGrid ItemsSource="{Binding Rows}" AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single"
+                      HorizontalScrollBarVisibility="Auto" AutomationProperties.AutomationId="ImportExportTablesGrid">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Table" Binding="{Binding Name}" IsReadOnly="True" Width="Auto" MinWidth="140" />
+                    <DataGridCheckBoxColumn Header="Export" Binding="{Binding Export}" Width="Auto" MinWidth="70" />
+                    <DataGridCheckBoxColumn Header="Import" Binding="{Binding Import}" Width="Auto" MinWidth="70" />
+                    <DataGridTemplateColumn Header="Import mode" Width="Auto" MinWidth="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding ModeChoices}"
+                                          SelectedItem="{Binding ImportMode}" HorizontalAlignment="Stretch" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Most export rows (0 = all)" Binding="{Binding ExportMaxRowsText}" Width="Auto" MinWidth="120" />
+                    <DataGridTextColumn Header="Excluded fields" Binding="{Binding ExcludedText}" Width="*" MinWidth="160" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </Grid>
+</UserControl>

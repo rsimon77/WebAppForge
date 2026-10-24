@@ -291,3 +291,15 @@ existing projects generate identical output.
 
 Not verified: audited sites on SQL Server and MySQL (only SQLite is exercised by tests); the audit-trail page itself has
 no browser test.
+
+## Import and export (2026-10-24)
+
+Generated sites export list rows (current search, filters and sort) as CSV, XLSX, JSON, XML or Word, and import them
+through upload, column mapping, a validated preview and one transaction (insert, or upsert by primary key). Settings:
+Project.ImportExport and TableInfo.ImportExport, edited on the desktop "Import/Export" tab after "Audit trail". XLSX and
+Word use DocumentFormat.OpenXml, referenced only by sites that offer them. Imports into audited tables write audit
+entries in the import transaction. Off by default, so existing projects generate identical output.
+
+Limits: Word import reads the first table only; composite foreign keys are not checked on import; at most 50,000 rows
+per file, held in memory; imports into tables without a primary key write no audit entries; imported audit values are
+the stored database values. SQL Server and MySQL sites are generated and compiled in tests but not run.

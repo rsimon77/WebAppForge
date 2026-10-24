@@ -407,7 +407,7 @@ public class ImportExportGenerationTests
 /// A secured shop that exports and imports: items owned per user with a lookup and a secret column, parts with a text key that update
 /// on import and a unique label, and a table without import. Users ann (level 1), bob and cat (level 9) sign in through the site.
 /// </summary>
-public sealed class ExchangeSite : ReportSiteBase
+public class ExchangeSite : ReportSiteBase
 {
     public const string Password = "Correct-horse-42";
 
@@ -515,11 +515,11 @@ public class ImportExportSiteTests : IClassFixture<ExchangeSite>
         return await response.Content.ReadAsByteArrayAsync();
     }
 
-    private static string Field(string html, string name) =>
+    internal static string Field(string html, string name) =>
         Regex.Match(html, $"name=\"{name}\" value=\"([^\"]+)\"").Groups[1].Value;
 
     /// <summary>Uploads a file to the import page of <paramref name="route"/> and returns the page that shows the mapping.</summary>
-    private static async Task<string> UploadAsync(HttpClient client, string route, string fileName, byte[] bytes, bool header = true, bool withToken = true)
+    internal static async Task<string> UploadAsync(HttpClient client, string route, string fileName, byte[] bytes, bool header = true, bool withToken = true)
     {
         var token = Regex.Match(await client.GetStringAsync(route + "/import"), "name=\"__RequestVerificationToken\" value=\"([^\"]+)\"").Groups[1].Value;
         using var content = new MultipartFormDataContent();
@@ -539,7 +539,7 @@ public class ImportExportSiteTests : IClassFixture<ExchangeSite>
     }
 
     /// <summary>Posts the mapping of a preview page as it is shown (or with <paramref name="map"/> on top) and returns the next page.</summary>
-    private static async Task<string> ApplyAsync(HttpClient client, string route, string preview, string action, bool skip = false, Dictionary<int, int>? map = null)
+    internal static async Task<string> ApplyAsync(HttpClient client, string route, string preview, string action, bool skip = false, Dictionary<int, int>? map = null)
     {
         var form = new Dictionary<string, string>
         {
@@ -564,15 +564,15 @@ public class ImportExportSiteTests : IClassFixture<ExchangeSite>
         return WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
     }
 
-    private static string Page(string uploaded)
+    internal static string Page(string uploaded)
     {
         Assert.StartsWith("200|", uploaded);
         return uploaded[4..];
     }
 
-    private static string Text(string html) => Regex.Replace(WebUtility.HtmlDecode(Regex.Replace(html, "<[^>]+>", " ")), "\\s+", " ");
+    internal static string Text(string html) => Regex.Replace(WebUtility.HtmlDecode(Regex.Replace(html, "<[^>]+>", " ")), "\\s+", " ");
 
-    private static byte[] Csv(string text) => Encoding.UTF8.GetBytes(text);
+    internal static byte[] Csv(string text) => Encoding.UTF8.GetBytes(text);
 
     [Theory]
     [InlineData("Csv", ".csv")]
