@@ -96,7 +96,39 @@
 
                     <StackPanel Spacing="8" IsVisible="{Binding HasField}">
 
-                        <Expander Header="Basic" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <!-- Live preview: the field as the generated form and list show it. -->
+                        <Border Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
+                                CornerRadius="8" Padding="12,10" AutomationProperties.AutomationId="FieldPreview">
+                            <StackPanel Spacing="6">
+                                <TextBlock Classes="section" Text="PREVIEW ON THE SITE" />
+                                <TextBlock Text="{Binding PreviewLabel}" FontWeight="Medium" IsVisible="{Binding !PreviewIsCheck}"
+                                           AutomationProperties.AutomationId="FieldPreviewLabel" />
+                                <TextBox IsVisible="{Binding PreviewIsInput}" IsReadOnly="True" Focusable="False" PlaceholderText="{Binding PreviewPlaceholder}"
+                                         AutomationProperties.AutomationId="FieldPreviewInput" />
+                                <TextBox IsVisible="{Binding PreviewIsArea}" IsReadOnly="True" Focusable="False" AcceptsReturn="True" MinHeight="56"
+                                         PlaceholderText="{Binding PreviewPlaceholder}" />
+                                <ComboBox IsVisible="{Binding PreviewIsChoice}" IsEnabled="False" PlaceholderText="Choose..." HorizontalAlignment="Stretch" />
+                                <CheckBox IsVisible="{Binding PreviewIsCheck}" Content="{Binding PreviewLabel}" IsHitTestVisible="False" Focusable="False" />
+                                <TextBlock IsVisible="{Binding PreviewIsHidden}" Classes="hint" Text="{Binding PreviewHiddenText}" />
+                                <TextBlock IsVisible="{Binding PreviewHasHelp}" Classes="hint" Text="{Binding HelpText}" />
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding FormatPreview}" />
+                                    <TextBlock Classes="hint" Text="In the list" />
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Inner tabs: one section of settings at a time. -->
+                        <ListBox Classes="segmented" ItemsSource="{x:Static vm:FieldDesignerViewModel.Sections}" SelectedItem="{Binding Section}"
+                                 AutomationProperties.AutomationId="FieldSectionTabs">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                        </ListBox>
+
+                        <Expander Header="Basic" IsExpanded="True" HorizontalAlignment="Stretch" IsVisible="{Binding ShowGeneral}">
                             <StackPanel Spacing="4" Margin="0,4,0,0">
                                 <TextBlock Classes="label" Text="Caption" />
                                 <TextBox Text="{Binding Caption}" AutomationProperties.AutomationId="FieldCaptionBox" />
@@ -122,7 +154,7 @@
                             </StackPanel>
                         </Expander>
 
-                        <Expander Header="Edit control" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <Expander Header="Edit control" IsExpanded="True" HorizontalAlignment="Stretch" IsVisible="{Binding ShowEditing}">
                             <StackPanel Spacing="4" Margin="0,4,0,0">
                                 <TextBlock Classes="label" Text="Control" />
                                 <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.EditControls}" SelectedItem="{Binding Control}"
@@ -148,7 +180,7 @@
                             </StackPanel>
                         </Expander>
 
-                        <Expander Header="Options" IsExpanded="True" IsVisible="{Binding ShowOptions}" HorizontalAlignment="Stretch">
+                        <Expander Header="Options" IsExpanded="True" IsVisible="{Binding ShowOptionsSection}" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="6" Margin="0,4,0,0">
                                 <TextBlock Classes="hint" Text="Fixed choices for a drop-down or radio group. Leave empty when the choices come from a lookup." />
                                 <DataGrid HorizontalScrollBarVisibility="Auto" x:Name="OptionsGrid" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption, Mode=TwoWay}"
@@ -167,7 +199,7 @@
                             </StackPanel>
                         </Expander>
 
-                        <Expander Header="Lookup" IsVisible="{Binding ShowOptions}" HorizontalAlignment="Stretch">
+                        <Expander Header="Lookup" IsExpanded="True" IsVisible="{Binding ShowOptionsSection}" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="4" Margin="0,4,0,0">
                                 <TextBlock Classes="label" Text="Table" />
                                 <ComboBox ItemsSource="{Binding LookupTables}" SelectedItem="{Binding LookupTable}" MinWidth="220"
@@ -190,7 +222,7 @@
                             </StackPanel>
                         </Expander>
 
-                        <Expander Header="Validation" HorizontalAlignment="Stretch">
+                        <Expander Header="Validation" IsExpanded="True" HorizontalAlignment="Stretch" IsVisible="{Binding ShowValidation}">
                             <StackPanel Spacing="4" Margin="0,4,0,0">
                                 <StackPanel Orientation="Horizontal" Spacing="16">
                                     <StackPanel Spacing="2">
@@ -229,7 +261,7 @@
                             </StackPanel>
                         </Expander>
 
-                        <Expander Header="Display" HorizontalAlignment="Stretch">
+                        <Expander Header="Display" IsExpanded="True" HorizontalAlignment="Stretch" IsVisible="{Binding ShowDisplay}">
                             <StackPanel Spacing="4" Margin="0,4,0,0">
                                 <TextBlock Classes="label" Text="Format" />
                                 <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.ViewFormats}" SelectedItem="{Binding Format}" MinWidth="200"
@@ -288,7 +320,7 @@
                             </StackPanel>
                         </Expander>
 
-                        <Expander Header="Style" HorizontalAlignment="Stretch">
+                        <Expander Header="Style" IsExpanded="True" HorizontalAlignment="Stretch" IsVisible="{Binding ShowStyle}">
                             <StackPanel Spacing="4" Margin="0,4,0,0">
                                 <StackPanel Orientation="Horizontal" Spacing="16">
                                     <StackPanel Spacing="2">

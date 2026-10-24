@@ -28,6 +28,25 @@ public partial class TablesView : UserControl
         }
     }
 
+    /// <summary>
+    /// The tables are plain model objects, so after an edit in the inspector the grid row of the table is bound again to show
+    /// the new caption, pages and category.
+    /// </summary>
+    private void OnInspectorEdited(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is not Control { DataContext: TableInfo table })
+        {
+            return;
+        }
+
+        foreach (var row in TablesGrid.GetVisualDescendants().OfType<DataGridRow>().Where(r => r.DataContext == table))
+        {
+            row.DataContext = null;
+            row.DataContext = table;
+            ApplyRowCategory(row);
+        }
+    }
+
     private static void ApplyRowCategory(DataGridRow row)
     {
         if (row.DataContext is not TableInfo table)

@@ -270,4 +270,13 @@ mockup first and approved before the build:
   by name.
 
 Not done yet from the mockup: inner tabs on the Fields inspector, the live field and report previews, and the side
-inspector on the Tables screen (it is still a wide grid).
+inspector on the Tables screen (it is still a wide grid). (Done since, see below.)
+
+Follow-up, the rest of the mockup:
+- Tables: a summary grid (Table, Generate, Caption, Key, Pages, Fields) and an inspector with General (caption, filter,
+  generate), Pages (the seven page switches, rows per page) and Access (owner field, view and edit level).
+- Fields: a live preview of the field as the site shows it (label, control, placeholder, help text, list format) and inner
+  tabs General, Editing, Validation, Display and Style, one section at a time.
+- Reports: a Preview button runs the selected report on the project's SQLite file (`ReportPreview` in Core, the same
+  group, date and lookup SQL as the generated page) and shows its first rows, with bars for charts. Owner fields and user
+  levels are not applied in the preview.

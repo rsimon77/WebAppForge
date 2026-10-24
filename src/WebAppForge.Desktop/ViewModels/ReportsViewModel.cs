@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using WebAppForge.Core.Generation;
 using WebAppForge.Core.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -155,6 +156,12 @@ public sealed class ReportFieldRow : ReportPartRow
     }
 
     internal void OnFieldsChanged() => OnPropertyChanged(nameof(Field));
+}
+
+/// <summary>One row of the report preview: its cells, and for a chart the bar length in pixels.</summary>
+public sealed record PreviewRow(IReadOnlyList<string> Cells, double BarWidth)
+{
+    public bool HasBar => BarWidth > 0;
 }
 
 /// <summary>One report on a dashboard.</summary>
@@ -664,6 +671,106 @@ public partial class ReportsViewModel : EditorViewModelBase
         set => Edit(Report?.WeekStartsMonday, value, (r, v) => r.WeekStartsMonday = v);
     }
 
+    // ---- preview --------------------------------------------------------------------------------
+
+    /// <summary>Longest preview bar, in pixels.</summary>
+    public const double MaxBarWidth = 160;
+
+    private string _previewMessage = "Preview runs the selected report on the connected database.";
+    private bool _isPreviewing;
+
+    public ObservableCollection<string> PreviewHeaders { get; } = [];
+
+    public ObservableCollection<PreviewRow> PreviewRows { get; } = [];
+
+    public string PreviewMessage
+    {
+        get => _previewMessage;
+        private set => SetProperty(ref _previewMessage, value);
+    }
+
+    public bool IsPreviewing
+    {
+        get => _isPreviewing;
+        private set => SetProperty(ref _isPreviewing, value);
+    }
+
+    /// <summary>
+    /// Runs the selected report on the project's SQLite file and shows its first rows. Owner fields and user levels are not
+    /// applied: the editor has no signed-in user.
+    /// </summary>
+    [RelayCommand]
+    private async Task Preview()
+    {
+        if (Report is not { } report)
+        {
+            return;
+        }
+
+        var database = _main.Current.Database.Path;
+        var folder = _main.ProjectFolder;
+        string? problem = null;
+        string? path = null;
+        if (string.IsNullOrWhiteSpace(database))
+        {
+            problem = "Connect a database on the Database section first.";
+        }
+        else if (!System.IO.Path.IsPathRooted(database) && folder is null)
+        {
+            problem = "Save the project first, so the database path can be found.";
+        }
+        else
+        {
+            path = System.IO.Path.IsPathRooted(database) ? database : System.IO.Path.GetFullPath(System.IO.Path.Combine(folder!, database));
+            if (!System.IO.File.Exists(path))
+            {
+                problem = $"The database file was not found: {path}";
+            }
+        }
+
+        ClearPreview();
+        if (problem is not null)
+        {
+            PreviewMessage = problem;
+            return;
+        }
+
+        IsPreviewing = true;
+        PreviewMessage = "Running the report...";
+        try
+        {
+            var project = _main.Current;
+            var result = await Task.Run(() => ReportPreview.Run(project, report, $"Data Source={path};Mode=ReadOnly"));
+            if (!ReferenceEquals(report, Report))
+            {
+                return;
+            }
+
+            foreach (var header in result.Headers)
+            {
+                PreviewHeaders.Add(header);
+            }
+
+            for (var i = 0; i < result.Rows.Count; i++)
+            {
+                var bar = result.Bars is { } bars && i < bars.Count ? Math.Round(bars[i] * MaxBarWidth) : 0;
+                PreviewRows.Add(new PreviewRow(result.Rows[i], bar));
+            }
+
+            PreviewMessage = result.Message;
+        }
+        finally
+        {
+            IsPreviewing = false;
+        }
+    }
+
+    private void ClearPreview()
+    {
+        PreviewHeaders.Clear();
+        PreviewRows.Clear();
+    }
+
     // ---- commands -------------------------------------------------------------------------------
 
     [RelayCommand]
@@ -918,6 +1025,8 @@ public partial class ReportsViewModel : EditorViewModelBase
     {
         ForgetRawText();
         Message = string.Empty;
+        ClearPreview();
+        PreviewMessage = "Preview runs the selected report on the connected database.";
         Groups.Clear();
         Aggregates.Clear();
         Items.Clear();
@@ -1075,6 +1184,10 @@ public partial class ReportsViewModel : EditorViewModelBase
     {
         SelectedRow?.Refresh();
         RefreshProblems();
+        if (PreviewRows.Count > 0)
+        {
+            PreviewMessage = "The settings changed. Preview again to see the result.";
+        }
     }
 
     /// <summary>Writes a text of the selected report when it differs. A null value (a picker being rebuilt) is ignored.</summary>

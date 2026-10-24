@@ -577,3 +577,74 @@ public class NorthwindReportTests : IClassFixture<NorthwindReportSite>
         Assert.Contains("<h2 class=\"h5 mt-4\">Stock</h2>", home);
     }
 }
+
+/// <summary>The editor's preview: the first rows of a report from the project's SQLite file.</summary>
+public class ReportPreviewTests : IDisposable
+{
+    private readonly string _root = MdSupport.TempFolder();
+
+    private string Db => Path.Combine(_root, "preview.db");
+
+    public ReportPreviewTests()
+    {
+        Directory.CreateDirectory(_root);
+        MdSupport.Exec(Db, SecureReportSite.Schema);
+    }
+
+    public void Dispose() => MdSupport.TryDelete(_root);
+
+    private Project Project()
+    {
+        var project = ReportSupport.ProjectOn("Preview", Db);
+        project.Tables.Single(t => t.Name == "sales").Fields.Single(f => f.Name == "region").Ui.Lookup =
+            new FieldLookup { Table = "regions", KeyField = "code", DisplayField = "title" };
+        return project;
+    }
+
+    private ReportPreviewResult Run(Project project, ReportInfo report) => ReportPreview.Run(project, report, $"Data Source={Db}");
+
+    [Fact]
+    public void ASummaryShowsItsGroupsWithLookupTextAndTotalsOfEveryOwner()
+    {
+        var report = new ReportInfo { Name = "r", SourceTable = "sales" };
+        report.Groups.Add(ReportSupport.Group("region"));
+        report.Aggregates.Add(ReportSupport.Aggregate(AggregateFunction.Sum, "amount", "Amount"));
+        var result = Run(Project(), report);
+        Assert.Equal(["region", "Amount"], result.Headers);
+        Assert.Equal([["(empty)", "7"], ["North", "1,014.75"], ["South", "2,100"]], result.Rows);
+        Assert.Equal("First 3 groups.", result.Message);
+    }
+
+    [Fact]
+    public void AChartOrdersByValueAndSizesItsBars()
+    {
+        var report = new ReportInfo { Name = "c", Kind = ReportKind.Chart, SourceTable = "sales", RowField = "region", ValueField = "amount", Function = AggregateFunction.Sum, ChartOrder = ChartOrder.ValueDescending, TopCount = 2 };
+        var result = Run(Project(), report);
+        Assert.Equal([["South", "2,100"], ["North", "1,014.75"]], result.Rows);
+        Assert.Equal(1, result.Bars![0]);
+        Assert.Equal(1014.75 / 2100, result.Bars[1], 6);
+    }
+
+    [Fact]
+    public void ACrosstabIsPivotedAndACalendarListsTheLatestEntries()
+    {
+        var grid = Run(Project(), new ReportInfo { Name = "g", Kind = ReportKind.Crosstab, SourceTable = "sales", RowField = "owner", ColumnField = "paid" });
+        Assert.Equal(["owner", "0", "1"], grid.Headers);
+        Assert.Equal([["ann", "1", "3"], ["bob", "1", "1"]], grid.Rows);
+
+        var calendar = Run(Project(), new ReportInfo { Name = "d", Kind = ReportKind.Calendar, SourceTable = "sales", DateField = "day", TitleField = "note" });
+        Assert.Equal(["2024-06-01", "a4 <b>"], calendar.Rows[0]);
+        Assert.Equal(6, calendar.Rows.Count);
+    }
+
+    [Fact]
+    public void ProblemsDashboardsAndRefusedQueriesBecomeAMessage()
+    {
+        var project = Project();
+        Assert.Equal("Report x: choose the table it reads.", Run(project, new ReportInfo { Name = "x" }).Message);
+        Assert.StartsWith("A dashboard shows other reports", Run(project, new ReportInfo { Name = "b", Kind = ReportKind.Dashboard }).Message);
+        var refused = Run(project, new ReportInfo { Name = "f", SourceTable = "sales", Filter = "no_such_column = 1" });
+        Assert.StartsWith("The database refused the query:", refused.Message);
+        Assert.Empty(refused.Rows);
+    }
+}

@@ -38,10 +38,10 @@ internal static partial class Templates
     /// <summary>Reports listed on the home page and in the navigation menu.</summary>
     private static List<ReportInfo> MenuReports() => Reports.Where(r => r.ShowInMenu).ToList();
 
-    private static FieldInfo ReportField(TableInfo table, string name) =>
+    internal static FieldInfo ReportField(TableInfo table, string name) =>
         table.Fields.First(f => string.Equals(f.Name, name.Trim(), StringComparison.OrdinalIgnoreCase));
 
-    private static FieldInfo? OptionalReportField(TableInfo table, string name) =>
+    internal static FieldInfo? OptionalReportField(TableInfo table, string name) =>
         name.Trim().Length == 0 ? null : ReportField(table, name);
 
     private static string ColumnSql(TableInfo table, FieldInfo field) => QuoteIdent(table.Name) + "." + QuoteIdent(field.Name);
@@ -50,7 +50,7 @@ internal static partial class Templates
     /// SQL expression of a date field as ISO text (yyyy-MM-dd HH:mm:ss or yyyy-MM-dd). Number columns that hold Unix time or Julian day
     /// numbers are converted with SQLite's datetime().
     /// </summary>
-    private static string DateTextSql(TableInfo table, FieldInfo field)
+    internal static string DateTextSql(TableInfo table, FieldInfo field)
     {
         var column = ColumnSql(table, field);
         return field.DateStorage switch
@@ -66,7 +66,7 @@ internal static partial class Templates
     /// SQL expression of a group value of <paramref name="table"/>: the leading part of the ISO date text for a date interval, the display
     /// text of a lookup or of a static option when the field has one, else the column.
     /// </summary>
-    private static string GroupSql(TableInfo table, FieldInfo field, DateInterval interval)
+    internal static string GroupSql(TableInfo table, FieldInfo field, DateInterval interval)
     {
         var column = ColumnSql(table, field);
         if (ReportValidator.IsDateField(field) && interval != DateInterval.None)
@@ -546,7 +546,7 @@ internal static partial class Templates
     }
 
     /// <summary>The text of a calendar entry: the title field, else the first visible text field that is not a key, else the first key.</summary>
-    private static FieldInfo? CalendarTitle(ReportInfo report, TableInfo table) =>
+    internal static FieldInfo? CalendarTitle(ReportInfo report, TableInfo table) =>
         OptionalReportField(table, report.TitleField)
         ?? table.Fields.FirstOrDefault(f => f.Type == FieldType.Text && !f.IsPrimaryKey && !f.IsSecret && f.ShowInList)
         ?? table.PrimaryKeys.FirstOrDefault();
