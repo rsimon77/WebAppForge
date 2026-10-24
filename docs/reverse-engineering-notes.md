@@ -309,6 +309,6 @@ the stored database values. SQL Server and MySQL sites are generated and compile
 Security can use ASP.NET Core Identity instead of a project user table: standard AspNet* tables with Dapper stores (no
 EF Core) on every dialect, created at site startup when missing and from the editor's Security tab ("Create missing
 tables"). The first admin is seeded from an environment variable (default WEBAPPFORGE_ADMIN_PASSWORD); roles carry
-numeric user levels, so table levels, owner rows and the audit trail keep working. Generated /users and /roles pages
+numeric user levels, so table levels, owner rows and the audit trail keep working. Generated /admin/users and /admin/roles pages
 manage accounts and roles. Not done: e-mail sending, password reset tokens, 2FA, external logins, migration from a
 project user table. SQL Server and MySQL Identity sites are generated and compiled in tests but not run.

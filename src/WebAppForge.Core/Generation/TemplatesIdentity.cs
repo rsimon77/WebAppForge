@@ -1054,8 +1054,8 @@ internal static partial class Templates
         /// </summary>
         public static class UserAdminPages
         {
-            private const string UsersRoute = "/users";
-            private const string RolesRoute = "/roles";
+            private const string UsersRoute = "/admin/users";
+            private const string RolesRoute = "/admin/roles";
             private const int PageSize = 20;
             private const string CountSql = @@COUNT_SQL@@;
             private const string PageSql = @@PAGE_SQL@@;

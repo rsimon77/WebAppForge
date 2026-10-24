@@ -11,11 +11,16 @@ namespace WebAppForge.Core.Tests;
 /// <summary>The ASP.NET Core Identity user store: settings, rules, schema and the generated files.</summary>
 public class IdentityTests
 {
-    /// <summary>A shop with an owned table, a table for level 5 and up, and an AspNetUsers table left over in the database.</summary>
+    /// <summary>
+    /// A shop with an owned table, a table for level 5 and up, and tables named users and roles, whose pages must not clash with the
+    /// user and role administration.
+    /// </summary>
     internal const string Schema = """
         CREATE TABLE sales (id INTEGER PRIMARY KEY AUTOINCREMENT, owner TEXT NOT NULL, note TEXT);
         CREATE TABLE secrets (id INTEGER PRIMARY KEY AUTOINCREMENT, body TEXT);
         INSERT INTO secrets (body) VALUES ('the plan');
+        CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT);
+        CREATE TABLE roles (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT);
         """;
 
     internal static Project Sample(string dbPath)
@@ -298,9 +303,9 @@ public class IdentitySiteTests : IClassFixture<IdentitySite>
             new("username", user), new("password", IdentitySite.Password), new("confirm", IdentitySite.Password), new("level", level.ToString()),
         };
         fields.AddRange(roles.Select(r => new KeyValuePair<string, string>("roles", r)));
-        var token = await IdentitySite.TokenAsync(admin, "/users/add");
+        var token = await IdentitySite.TokenAsync(admin, "/admin/users/add");
         fields.Add(new("__RequestVerificationToken", token));
-        using var response = await admin.PostAsync("/users/add", new FormUrlEncodedContent(fields));
+        using var response = await admin.PostAsync("/admin/users/add", new FormUrlEncodedContent(fields));
         Assert.True(response.StatusCode == HttpStatusCode.Redirect, await response.Content.ReadAsStringAsync());
     }
 
@@ -311,8 +316,8 @@ public class IdentitySiteTests : IClassFixture<IdentitySite>
         using var admin = await _site.SignedInAsync("admin", IdentitySite.AdminPassword);
 
         var home = await admin.GetStringAsync("/");
-        Assert.Contains("href=\"/users\"", home);
-        Assert.Contains("admin", await admin.GetStringAsync("/users"));
+        Assert.Contains("href=\"/admin/users\"", home);
+        Assert.Contains("admin", await admin.GetStringAsync("/admin/users"));
         Assert.Equal("100", Convert.ToString(await _site.Scalar(
             "SELECT ClaimValue FROM AspNetUserClaims WHERE ClaimType = 'user_level' AND UserId = (SELECT Id FROM AspNetUsers WHERE UserName = 'admin')")));
     }
@@ -321,7 +326,7 @@ public class IdentitySiteTests : IClassFixture<IdentitySite>
     public async Task LevelsComeFromTheUserAndTheirRoles()
     {
         using var admin = await _site.SignedInAsync("admin", IdentitySite.AdminPassword);
-        using (var role = await IdentitySite.PostAsync(admin, "/roles", "/roles/add", new() { ["name"] = "Managers", ["level"] = "5" }))
+        using (var role = await IdentitySite.PostAsync(admin, "/admin/roles", "/admin/roles/add", new() { ["name"] = "Managers", ["level"] = "5" }))
         {
             Assert.Equal(HttpStatusCode.Redirect, role.StatusCode);
         }
@@ -337,12 +342,12 @@ public class IdentitySiteTests : IClassFixture<IdentitySite>
             Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
         }
 
-        using (var notAdmin = await dave.GetAsync("/users"))
+        using (var notAdmin = await dave.GetAsync("/admin/users"))
         {
             Assert.Equal(HttpStatusCode.Forbidden, notAdmin.StatusCode);
         }
 
-        Assert.DoesNotContain("href=\"/users\"", await dave.GetStringAsync("/"));
+        Assert.DoesNotContain("href=\"/admin/users\"", await dave.GetStringAsync("/"));
     }
 
     [Fact]
@@ -420,7 +425,7 @@ public class IdentitySiteTests : IClassFixture<IdentitySite>
         Assert.Contains("Too many failed attempts.", await locked.Content.ReadAsStringAsync());
 
         var id = await _site.UserId("gina");
-        using (var unlocked = await IdentitySite.PostAsync(admin, "/users/edit?id=" + id, "/users/unlock", new() { ["id"] = id }))
+        using (var unlocked = await IdentitySite.PostAsync(admin, "/admin/users/edit?id=" + id, "/admin/users/unlock", new() { ["id"] = id }))
         {
             Assert.Equal(HttpStatusCode.Redirect, unlocked.StatusCode);
         }
@@ -433,14 +438,14 @@ public class IdentitySiteTests : IClassFixture<IdentitySite>
     {
         using var admin = await _site.SignedInAsync("admin", IdentitySite.AdminPassword);
         var self = await _site.UserId("admin");
-        using (var refused = await IdentitySite.PostAsync(admin, "/users/edit?id=" + self, "/users/delete", new() { ["id"] = self }))
+        using (var refused = await IdentitySite.PostAsync(admin, "/admin/users/edit?id=" + self, "/admin/users/delete", new() { ["id"] = self }))
         {
             Assert.Contains("You cannot do this to your own account.", await refused.Content.ReadAsStringAsync());
         }
 
         await AddUserAsync(admin, "hank", 0);
         var id = await _site.UserId("hank");
-        using (var deleted = await IdentitySite.PostAsync(admin, "/users/edit?id=" + id, "/users/delete", new() { ["id"] = id }))
+        using (var deleted = await IdentitySite.PostAsync(admin, "/admin/users/edit?id=" + id, "/admin/users/delete", new() { ["id"] = id }))
         {
             Assert.Equal(HttpStatusCode.Redirect, deleted.StatusCode);
         }
@@ -454,7 +459,7 @@ public class IdentitySiteTests : IClassFixture<IdentitySite>
     public async Task ThePagesNeedAnAntiforgeryToken()
     {
         using var admin = await _site.SignedInAsync("admin", IdentitySite.AdminPassword);
-        using var response = await admin.PostAsync("/users/add", new FormUrlEncodedContent(new Dictionary<string, string> { ["username"] = "x" }));
+        using var response = await admin.PostAsync("/admin/users/add", new FormUrlEncodedContent(new Dictionary<string, string> { ["username"] = "x" }));
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }
