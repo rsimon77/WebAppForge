@@ -129,6 +129,9 @@ public partial class MainViewModel : ViewModelBase
 
     public IDialogService Dialogs => _dialogs;
 
+    /// <summary>Reads and creates the ASP.NET Core Identity tables for the Security tab. Tests replace it with a fake.</summary>
+    public IIdentityTableService IdentityTables { get; set; } = new CoreIdentityTableService();
+
     /// <summary>The machine services the Options dialog uses (environment variables, tool detection, opening a folder).</summary>
     public OptionsEnvironment OptionsEnvironment { get; init; } = new();
 
