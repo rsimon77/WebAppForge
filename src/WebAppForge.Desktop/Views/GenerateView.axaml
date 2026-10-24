@@ -61,7 +61,7 @@
             </Grid>
 
             <WrapPanel>
-                <Button Content="Generate" Command="{Binding Generate.GenerateCommand}" Margin="0,0,8,4"
+                <Button Content="Generate" Classes="primary" Command="{Binding Generate.GenerateCommand}" Margin="0,0,8,4"
                         AutomationProperties.AutomationId="GenerateButton">
                     <Button.IsEnabled>
                         <MultiBinding Converter="{x:Static BoolConverters.And}">

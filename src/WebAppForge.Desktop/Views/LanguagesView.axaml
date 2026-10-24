@@ -38,8 +38,7 @@
                 <StackPanel Spacing="6" Margin="0,4,0,0">
                     <CheckBox Content="Enable multi-language support in the generated site" IsChecked="{Binding Enabled}"
                               AutomationProperties.AutomationId="LocalizationEnabledCheck" />
-                    <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
-                            BorderBrush="{DynamicResource ValidationBrush}">
+                    <Border IsVisible="{Binding HasMessage}" Classes="banner error">
                         <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="LanguagesMessageText" />
                     </Border>
 

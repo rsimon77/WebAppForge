@@ -1,0 +1,200 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Design tokens of the editor ("Graphite"): surfaces, text, borders and status colours for light and dark, and the
+        Fluent theme keys that take them over. The accent comes from the palette chosen in Options (AvaloniaAppearance sets
+        SystemAccentColor and AppAccentBrush after this dictionary). Sizes: controls 28px, radius 6 on controls, 10 on panels.
+    -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="WindowBackgroundBrush">#F7F8FA</SolidColorBrush>
+            <SolidColorBrush x:Key="SurfaceBrush">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="SidebarBrush">#F1F3F6</SolidColorBrush>
+            <SolidColorBrush x:Key="ControlFillBrush">#F3F4F6</SolidColorBrush>
+            <SolidColorBrush x:Key="ControlFillHoverBrush">#E9ECF0</SolidColorBrush>
+            <SolidColorBrush x:Key="AppBorderBrush">#E5E7EB</SolidColorBrush>
+            <SolidColorBrush x:Key="SubtleBorderBrush">#F0F1F3</SolidColorBrush>
+            <SolidColorBrush x:Key="InputBorderBrush">#D1D5DB</SolidColorBrush>
+            <SolidColorBrush x:Key="InputBorderHoverBrush">#9CA3AF</SolidColorBrush>
+            <SolidColorBrush x:Key="TextBrush">#111827</SolidColorBrush>
+            <SolidColorBrush x:Key="LabelTextBrush">#374151</SolidColorBrush>
+            <SolidColorBrush x:Key="MutedTextBrush">#6B7280</SolidColorBrush>
+            <SolidColorBrush x:Key="SuccessBrush">#16A34A</SolidColorBrush>
+            <SolidColorBrush x:Key="WarningBrush">#B45309</SolidColorBrush>
+            <SolidColorBrush x:Key="InfoBannerBackground">#EFF4FF</SolidColorBrush>
+            <SolidColorBrush x:Key="InfoBannerBorder">#C7D7FE</SolidColorBrush>
+            <SolidColorBrush x:Key="ErrorBannerBackground">#FEF3F2</SolidColorBrush>
+            <SolidColorBrush x:Key="ErrorBannerBorder">#FECDCA</SolidColorBrush>
+            <SolidColorBrush x:Key="ShadowBrush">#14101828</SolidColorBrush>
+
+            <!-- Shared brushes the views already use. -->
+            <SolidColorBrush x:Key="RowMutedBackground">#F3F4F6</SolidColorBrush>
+            <SolidColorBrush x:Key="RowWarningBackground">#FEF3C7</SolidColorBrush>
+            <SolidColorBrush x:Key="ValidationBrush">#B42318</SolidColorBrush>
+            <SolidColorBrush x:Key="PanelBackground">#F9FAFB</SolidColorBrush>
+
+            <!-- Fluent keys. -->
+            <SolidColorBrush x:Key="ButtonBackground">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">#F3F4F6</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundPressed">#E5E7EB</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundDisabled">#F9FAFB</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBorderBrush">#D1D5DB</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBorderBrushPointerOver">#C4C9D1</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBorderBrushPressed">#B8BEC8</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBorderBrushDisabled">#E5E7EB</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonForeground">#111827</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonForegroundPointerOver">#111827</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonForegroundPressed">#111827</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonForegroundDisabled">#9CA3AF</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBackground">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBackgroundPointerOver">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBackgroundFocused">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBackgroundDisabled">#F9FAFB</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBorderBrush">#D1D5DB</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver">#9CA3AF</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBorderBrushDisabled">#E5E7EB</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBackground">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBackgroundPressed">#F3F4F6</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBackgroundDisabled">#F9FAFB</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBorderBrush">#D1D5DB</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver">#9CA3AF</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed">#9CA3AF</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushDisabled">#E5E7EB</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush">#E5E7EB</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver">#F3F4F6</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed">#E9ECF0</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrush">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderContentBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderContentBorderBrush">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="MenuFlyoutPresenterBackground">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush">#E5E7EB</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush">#6B7280</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridColumnHeaderHoveredBackgroundBrush">#F9FAFB</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridGridLinesBrush">#F0F1F3</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridRowBackgroundBrush">Transparent</SolidColorBrush>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="WindowBackgroundBrush">#111317</SolidColorBrush>
+            <SolidColorBrush x:Key="SurfaceBrush">#181B20</SolidColorBrush>
+            <SolidColorBrush x:Key="SidebarBrush">#15181C</SolidColorBrush>
+            <SolidColorBrush x:Key="ControlFillBrush">#22262D</SolidColorBrush>
+            <SolidColorBrush x:Key="ControlFillHoverBrush">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="AppBorderBrush">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="SubtleBorderBrush">#23272E</SolidColorBrush>
+            <SolidColorBrush x:Key="InputBorderBrush">#3A404A</SolidColorBrush>
+            <SolidColorBrush x:Key="InputBorderHoverBrush">#555D69</SolidColorBrush>
+            <SolidColorBrush x:Key="TextBrush">#E6E8EB</SolidColorBrush>
+            <SolidColorBrush x:Key="LabelTextBrush">#C9CED6</SolidColorBrush>
+            <SolidColorBrush x:Key="MutedTextBrush">#8B93A1</SolidColorBrush>
+            <SolidColorBrush x:Key="SuccessBrush">#22C55E</SolidColorBrush>
+            <SolidColorBrush x:Key="WarningBrush">#FBBF24</SolidColorBrush>
+            <SolidColorBrush x:Key="InfoBannerBackground">#1A2333</SolidColorBrush>
+            <SolidColorBrush x:Key="InfoBannerBorder">#2A3A5A</SolidColorBrush>
+            <SolidColorBrush x:Key="ErrorBannerBackground">#2D1A1A</SolidColorBrush>
+            <SolidColorBrush x:Key="ErrorBannerBorder">#5A2A2A</SolidColorBrush>
+            <SolidColorBrush x:Key="ShadowBrush">#40000000</SolidColorBrush>
+
+            <SolidColorBrush x:Key="RowMutedBackground">#1E2228</SolidColorBrush>
+            <SolidColorBrush x:Key="RowWarningBackground">#3D3212</SolidColorBrush>
+            <SolidColorBrush x:Key="ValidationBrush">#FF8A80</SolidColorBrush>
+            <SolidColorBrush x:Key="PanelBackground">#14171B</SolidColorBrush>
+
+            <SolidColorBrush x:Key="ButtonBackground">#22262D</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundPressed">#323843</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundDisabled">#1B1E24</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBorderBrush">#3A404A</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBorderBrushPointerOver">#4A515D</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBorderBrushPressed">#555D69</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBorderBrushDisabled">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonForeground">#E6E8EB</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonForegroundPointerOver">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonForegroundPressed">#FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonForegroundDisabled">#5F6773</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBackground">#16191E</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBackgroundPointerOver">#16191E</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBackgroundFocused">#16191E</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBackgroundDisabled">#1B1E24</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBorderBrush">#3A404A</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver">#555D69</SolidColorBrush>
+            <SolidColorBrush x:Key="TextControlBorderBrushDisabled">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBackground">#16191E</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver">#16191E</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBackgroundPressed">#22262D</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBackgroundDisabled">#1B1E24</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBorderBrush">#3A404A</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver">#555D69</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed">#555D69</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushDisabled">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground">#1B1E24</SolidColorBrush>
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver">#22262D</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrush">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderContentBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ExpanderContentBorderBrush">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="MenuFlyoutPresenterBackground">#1B1E24</SolidColorBrush>
+            <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush">#2A2F37</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush">#181B20</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush">#8B93A1</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridColumnHeaderHoveredBackgroundBrush">#1E2228</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridGridLinesBrush">#23272E</SolidColorBrush>
+            <SolidColorBrush x:Key="DataGridRowBackgroundBrush">Transparent</SolidColorBrush>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- Accent shades; AvaloniaAppearance replaces them from the chosen palette. The subtle ones are see-through, so they suit light and dark. -->
+    <SolidColorBrush x:Key="AccentHoverBrush">#0A58CA</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentPressedBrush">#084298</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentSubtleBrush">#240D6EFD</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentSubtleHoverBrush">#380D6EFD</SolidColorBrush>
+
+    <!-- Grid selection uses the subtle accent at full opacity, so text keeps its contrast. -->
+    <StaticResource x:Key="DataGridRowSelectedBackgroundBrush" ResourceKey="AccentSubtleBrush" />
+    <StaticResource x:Key="DataGridRowSelectedUnfocusedBackgroundBrush" ResourceKey="AccentSubtleBrush" />
+    <StaticResource x:Key="DataGridRowSelectedHoveredBackgroundBrush" ResourceKey="AccentSubtleHoverBrush" />
+    <StaticResource x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundBrush" ResourceKey="AccentSubtleHoverBrush" />
+    <x:Double x:Key="DataGridRowSelectedBackgroundOpacity">1</x:Double>
+    <x:Double x:Key="DataGridRowSelectedUnfocusedBackgroundOpacity">1</x:Double>
+    <x:Double x:Key="DataGridRowSelectedHoveredBackgroundOpacity">1</x:Double>
+    <x:Double x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundOpacity">1</x:Double>
+    <x:Double x:Key="TabItemHeaderFontSize">13</x:Double>
+
+    <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="PanelCornerRadius">10</CornerRadius>
+    <Thickness x:Key="ButtonPadding">12,4,12,4</Thickness>
+    <Thickness x:Key="ExpanderHeaderPadding">8,0,8,0</Thickness>
+    <Thickness x:Key="ExpanderContentPadding">8,4,8,12</Thickness>
+    <x:Double x:Key="ExpanderMinHeight">34</x:Double>
+    <x:Double x:Key="ControlContentThemeFontSize">13</x:Double>
+    <x:Double x:Key="MenuBarHeight">32</x:Double>
+    <FontFamily x:Key="CodeFontFamily">Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace</FontFamily>
+
+    <!-- Sidebar icons, 16 x 16 strokes, looked up by section name (NavIconConverter). -->
+    <StreamGeometry x:Key="Nav.Project">M2,4.5 H6 L7.5,6 H14 V13.5 H2 Z</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Database">M3,4 C3,2 13,2 13,4 V12 C13,14 3,14 3,12 Z M3,4 C3,6 13,6 13,4 M3,8 C3,10 13,10 13,8</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Tables">M1.5,2.5 H14.5 V13.5 H1.5 Z M1.5,6 H14.5 M1.5,9.5 H14.5 M6,6 V13.5</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Fields">M2,4 H14 M2,8 H10 M2,12 H12</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Relations">M1.5,2 H6.5 V6 H1.5 Z M9.5,10 H14.5 V14 H9.5 Z M4,6 V9 C4,10.5 5,12 7,12 H9.5</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Home page">M2,7.5 L8,2.5 L14,7.5 M3.5,6.5 V13.5 H12.5 V6.5 M6.5,13.5 V9.5 H9.5 V13.5</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Pages">M2.5,1.5 H13.5 V14.5 H2.5 Z M5,5 H11 M5,8 H11 M5,11 H8</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Reports">M2.5,13.5 H13.5 M4,11 V7 M8,11 V3.5 M12,11 V5.5</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Security">M3,7 H13 V14 H3 Z M5,7 V5 C5,1 11,1 11,5 V7</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Languages">M8,2 C11.3,2 14,4.7 14,8 C14,11.3 11.3,14 8,14 C4.7,14 2,11.3 2,8 C2,4.7 4.7,2 8,2 Z M2,8 H14 M8,2 C10,4 10,12 8,14 M8,2 C6,4 6,12 8,14</StreamGeometry>
+    <StreamGeometry x:Key="Nav.Generate">M4,2.5 L13,8 L4,13.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconSearch">M7,2.5 C9.5,2.5 11.5,4.5 11.5,7 C11.5,9.5 9.5,11.5 7,11.5 C4.5,11.5 2.5,9.5 2.5,7 C2.5,4.5 4.5,2.5 7,2.5 Z M10.5,10.5 L14,14</StreamGeometry>
+    <StreamGeometry x:Key="IconUp">M8,13 V3 M4,7 L8,3 L12,7</StreamGeometry>
+    <StreamGeometry x:Key="IconDown">M8,3 V13 M4,9 L8,13 L12,9</StreamGeometry>
+    <StreamGeometry x:Key="IconRemove">M3,4.5 H13 M6.5,4.5 V3 H9.5 V4.5 M4.5,4.5 L5.2,13.5 H10.8 L11.5,4.5</StreamGeometry>
+    <StreamGeometry x:Key="IconLogo">M3,4 L8,12 L13,4</StreamGeometry>
+</ResourceDictionary>

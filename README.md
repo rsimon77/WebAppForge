@@ -22,7 +22,8 @@ produce a Dockerfile and compose file.
 - Multi-language sites with opt-in translation through Google Cloud Translation or the Claude API
   (keys are read from the `GOOGLE_TRANSLATE_API_KEY` and `ANTHROPIC_API_KEY` environment variables only).
 - Build, publish and Docker generation, with a build console in the editor.
-- A cross-platform desktop editor built with Avalonia.
+- A cross-platform desktop editor built with Avalonia: a sidebar of sections in workflow order (Setup, Data, Site,
+  Build), an app bar with project search (Ctrl+K) and Generate, compact controls, and light and dark themes.
 
 ## Layout
 

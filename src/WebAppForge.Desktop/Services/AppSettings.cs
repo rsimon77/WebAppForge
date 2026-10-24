@@ -53,7 +53,7 @@ public sealed class AppSettings
     public const int MinAutosaveMinutes = 0;
     public const int MaxAutosaveMinutes = 120;
 
-    public const int DefaultUiFontSize = 14;
+    public const int DefaultUiFontSize = 13;
     public const int MinUiFontSize = 10;
     public const int MaxUiFontSize = 20;
 

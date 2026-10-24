@@ -94,7 +94,7 @@ public class OptionsTests
         Assert.Equal(10, loaded.RecentFilesLength);
         Assert.True(loaded.ConfirmOnExit);
         Assert.Equal(0, loaded.AutosaveMinutes);
-        Assert.Equal(14, loaded.UiFontSize);
+        Assert.Equal(13, loaded.UiFontSize);
         Assert.False(loaded.CompactTables);
         Assert.Equal("generated", loaded.DefaultOutputFolderPattern);
         Assert.Equal(20, loaded.DefaultPageSize);

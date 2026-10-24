@@ -1137,7 +1137,7 @@ public class CustomizationTests
         settings.ShowSecurityTabCommand.Execute(null);
         Assert.Equal("Security", MainViewModel.TabNames[main.ActiveTabIndex]);
 
-        main.ActiveTabIndex = 0;
+        main.ActiveTabIndex = MainViewModel.TabNames.ToList().IndexOf("Database");
         settings.ShowLocalizationTabCommand.Execute(null);
         Assert.Equal("Languages", MainViewModel.TabNames[main.ActiveTabIndex]);
     }

@@ -41,7 +41,7 @@ public class RelationsTests
     public void TheTabIsAppendedAndTheBreadcrumbShowsMasterAndDetail()
     {
         var (main, _) = Setup();
-        Assert.Equal(["Relations", "Reports"], MainViewModel.TabNames.TakeLast(2));
+        Assert.Equal(["Fields", "Relations", "Home page"], MainViewModel.TabNames.Skip(MainViewModel.TabNames.ToList().IndexOf("Fields")).Take(3));
         main.ActiveTabIndex = MainViewModel.TabNames.ToList().IndexOf("Relations");
         Assert.EndsWith("> Relations > Customers", main.Breadcrumb);
 

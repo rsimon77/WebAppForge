@@ -48,282 +48,285 @@
                     </ListBox.ItemsPanel>
                 </ListBox>
             </StackPanel>
-            <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
-                    BorderBrush="{DynamicResource ValidationBrush}">
+            <Border IsVisible="{Binding HasMessage}" Classes="banner error">
                 <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="PageMessageText" />
             </Border>
         </StackPanel>
 
         <!-- Left: the editors. -->
-        <ScrollViewer Grid.Row="1" Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="8" Margin="0,0,8,0" IsEnabled="{Binding HasTable}">
+        <Border Classes="card" Padding="12,10" Grid.Row="1" Grid.Column="0">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="8" Margin="0,0,8,0" IsEnabled="{Binding HasTable}">
 
-                <Expander Header="Table UI" IsExpanded="True" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="4" Margin="0,4,0,0">
-                        <TextBlock Classes="label" Text="Description" />
-                        <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="50"
-                                 AutomationProperties.AutomationId="TableDescriptionBox" />
-                        <TextBlock Classes="label" Text="Icon (Bootstrap Icons name, pick one or type any)" />
-                        <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Icons}" Text="{Binding Icon}" IsEditable="True"
-                                  MinWidth="240" AutomationProperties.AutomationId="TableIconCombo" />
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <StackPanel Spacing="2">
-                                <TextBlock Classes="label" Text="Menu group" />
-                                <TextBox Text="{Binding MenuGroup}" Width="200" AutomationProperties.AutomationId="MenuGroupBox" />
+                    <Expander Header="Table UI" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="4" Margin="0,4,0,0">
+                            <TextBlock Classes="label" Text="Description" />
+                            <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="50"
+                                     AutomationProperties.AutomationId="TableDescriptionBox" />
+                            <TextBlock Classes="label" Text="Icon (Bootstrap Icons name, pick one or type any)" />
+                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Icons}" Text="{Binding Icon}" IsEditable="True"
+                                      MinWidth="240" AutomationProperties.AutomationId="TableIconCombo" />
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Classes="label" Text="Menu group" />
+                                    <TextBox Text="{Binding MenuGroup}" Width="200" AutomationProperties.AutomationId="MenuGroupBox" />
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Classes="label" Text="Menu order" />
+                                    <TextBox Text="{Binding MenuOrderText}" Width="100" AutomationProperties.AutomationId="MenuOrderBox" />
+                                </StackPanel>
                             </StackPanel>
-                            <StackPanel Spacing="2">
-                                <TextBlock Classes="label" Text="Menu order" />
-                                <TextBox Text="{Binding MenuOrderText}" Width="100" AutomationProperties.AutomationId="MenuOrderBox" />
+                            <CheckBox Content="Show in menu" IsChecked="{Binding ShowInMenu}" AutomationProperties.AutomationId="ShowInMenuCheck" />
+                            <TextBlock Classes="label" Text="CSS class" />
+                            <TextBox Text="{Binding TableCssClass}" AutomationProperties.AutomationId="TableCssClassBox" />
+                            <TextBlock Classes="label" Text="Row style rules" />
+                            <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding RowStyles}" SelectedItem="{Binding SelectedRowStyle, Mode=TwoWay}"
+                                      AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="200"
+                                      AutomationProperties.AutomationId="RowStyleGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Field" Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PageDesigner.FieldNames}"
+                                                          SelectedItem="{Binding Field}" Margin="2,0" MinWidth="130" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Operator" Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Operators}" SelectedItem="{Binding Operator}"
+                                                          Margin="2,0" MinWidth="130" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" MinWidth="120" />
+                                    <DataGridTemplateColumn Header="Style" Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{x:Static vm:ContextStyles.Names}" SelectedItem="{Binding Style}"
+                                                          ItemTemplate="{StaticResource StyleItemTemplate}" Margin="2,0" MinWidth="130" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Add rule" Command="{Binding AddRowStyleCommand}" AutomationProperties.AutomationId="AddRowStyleButton" />
+                                <Button Classes="icon ghost" ToolTip.Tip="Remove rule" AutomationProperties.Name="Remove rule" Margin="0,0,2,4" Command="{Binding RemoveRowStyleCommand}" AutomationProperties.AutomationId="RemoveRowStyleButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
                             </StackPanel>
                         </StackPanel>
-                        <CheckBox Content="Show in menu" IsChecked="{Binding ShowInMenu}" AutomationProperties.AutomationId="ShowInMenuCheck" />
-                        <TextBlock Classes="label" Text="CSS class" />
-                        <TextBox Text="{Binding TableCssClass}" AutomationProperties.AutomationId="TableCssClassBox" />
-                        <TextBlock Classes="label" Text="Row style rules" />
-                        <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding RowStyles}" SelectedItem="{Binding SelectedRowStyle, Mode=TwoWay}"
-                                  AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="200"
-                                  AutomationProperties.AutomationId="RowStyleGrid">
-                            <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Field" Width="Auto">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PageDesigner.FieldNames}"
-                                                      SelectedItem="{Binding Field}" Margin="2,0" MinWidth="130" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Operator" Width="Auto">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Operators}" SelectedItem="{Binding Operator}"
-                                                      Margin="2,0" MinWidth="130" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" MinWidth="120" />
-                                <DataGridTemplateColumn Header="Style" Width="Auto">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ComboBox ItemsSource="{x:Static vm:ContextStyles.Names}" SelectedItem="{Binding Style}"
-                                                      ItemTemplate="{StaticResource StyleItemTemplate}" Margin="2,0" MinWidth="130" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button Content="Add rule" Command="{Binding AddRowStyleCommand}" AutomationProperties.AutomationId="AddRowStyleButton" />
-                            <Button Content="Remove rule" Command="{Binding RemoveRowStyleCommand}" AutomationProperties.AutomationId="RemoveRowStyleButton" />
+                    </Expander>
+
+                    <Expander Header="Page" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="4" Margin="0,4,0,0">
+                            <TextBlock Classes="label" Text="Title (empty: the generated heading)" />
+                            <TextBox Text="{Binding Title}" AutomationProperties.AutomationId="PageTitleBox" />
+                            <TextBlock Classes="label" Text="Subtitle" />
+                            <TextBox Text="{Binding Subtitle}" AutomationProperties.AutomationId="PageSubtitleBox" />
+                            <TextBlock Classes="label" Text="CSS class" />
+                            <TextBox Text="{Binding PageCssClass}" AutomationProperties.AutomationId="PageCssClassBox" />
+                            <TextBlock Classes="label" Text="Container (how the page opens from the list)" />
+                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Containers}" SelectedItem="{Binding Container}"
+                                      IsEnabled="{Binding IsContainerEnabled}" MinWidth="200" AutomationProperties.AutomationId="PageContainerCombo" />
+                            <TextBlock Classes="label" Text="Header HTML (written into the page as it is)" />
+                            <TextBox Classes="code" Text="{Binding HeaderHtml}" Height="90" AutomationProperties.AutomationId="PageHeaderHtmlBox" />
+                            <TextBlock Classes="label" Text="Footer HTML" />
+                            <TextBox Classes="code" Text="{Binding FooterHtml}" Height="90" AutomationProperties.AutomationId="PageFooterHtmlBox" />
+                            <TextBlock Classes="label" Text="Custom CSS" />
+                            <TextBox Classes="code" Text="{Binding CustomCss}" Height="110" AutomationProperties.AutomationId="PageCustomCssBox" />
+                            <TextBlock Classes="label" Text="Custom script" />
+                            <TextBox Classes="code" Text="{Binding CustomScript}" Height="110" AutomationProperties.AutomationId="PageCustomScriptBox" />
                         </StackPanel>
-                    </StackPanel>
-                </Expander>
+                    </Expander>
 
-                <Expander Header="Page" IsExpanded="True" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="4" Margin="0,4,0,0">
-                        <TextBlock Classes="label" Text="Title (empty: the generated heading)" />
-                        <TextBox Text="{Binding Title}" AutomationProperties.AutomationId="PageTitleBox" />
-                        <TextBlock Classes="label" Text="Subtitle" />
-                        <TextBox Text="{Binding Subtitle}" AutomationProperties.AutomationId="PageSubtitleBox" />
-                        <TextBlock Classes="label" Text="CSS class" />
-                        <TextBox Text="{Binding PageCssClass}" AutomationProperties.AutomationId="PageCssClassBox" />
-                        <TextBlock Classes="label" Text="Container (how the page opens from the list)" />
-                        <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Containers}" SelectedItem="{Binding Container}"
-                                  IsEnabled="{Binding IsContainerEnabled}" MinWidth="200" AutomationProperties.AutomationId="PageContainerCombo" />
-                        <TextBlock Classes="label" Text="Header HTML (written into the page as it is)" />
-                        <TextBox Classes="code" Text="{Binding HeaderHtml}" Height="90" AutomationProperties.AutomationId="PageHeaderHtmlBox" />
-                        <TextBlock Classes="label" Text="Footer HTML" />
-                        <TextBox Classes="code" Text="{Binding FooterHtml}" Height="90" AutomationProperties.AutomationId="PageFooterHtmlBox" />
-                        <TextBlock Classes="label" Text="Custom CSS" />
-                        <TextBox Classes="code" Text="{Binding CustomCss}" Height="110" AutomationProperties.AutomationId="PageCustomCssBox" />
-                        <TextBlock Classes="label" Text="Custom script" />
-                        <TextBox Classes="code" Text="{Binding CustomScript}" Height="110" AutomationProperties.AutomationId="PageCustomScriptBox" />
-                    </StackPanel>
-                </Expander>
-
-                <Expander Header="Form" IsExpanded="True" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="4" Margin="0,4,0,0" IsEnabled="{Binding IsFormPage}">
-                        <TextBlock Classes="hint" Text="Applies to the Add, Copy, Edit and Search pages." />
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <StackPanel Spacing="2">
-                                <TextBlock Classes="label" Text="Form layout" />
-                                <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.FormLayouts}" SelectedItem="{Binding FormLayout}"
-                                          MinWidth="160" AutomationProperties.AutomationId="FormLayoutCombo" />
+                    <Expander Header="Form" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="4" Margin="0,4,0,0" IsEnabled="{Binding IsFormPage}">
+                            <TextBlock Classes="hint" Text="Applies to the Add, Copy, Edit and Search pages." />
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Classes="label" Text="Form layout" />
+                                    <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.FormLayouts}" SelectedItem="{Binding FormLayout}"
+                                              MinWidth="160" AutomationProperties.AutomationId="FormLayoutCombo" />
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Classes="label" Text="Button placement" />
+                                    <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.ButtonPlacements}" SelectedItem="{Binding ButtonPlacement}"
+                                              MinWidth="140" AutomationProperties.AutomationId="ButtonPlacementCombo" />
+                                </StackPanel>
                             </StackPanel>
-                            <StackPanel Spacing="2">
-                                <TextBlock Classes="label" Text="Button placement" />
-                                <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.ButtonPlacements}" SelectedItem="{Binding ButtonPlacement}"
-                                          MinWidth="140" AutomationProperties.AutomationId="ButtonPlacementCombo" />
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Classes="label" Text="Submit text" />
+                                    <TextBox Text="{Binding SubmitText}" Width="180" AutomationProperties.AutomationId="SubmitTextBox" />
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Classes="label" Text="Cancel text" />
+                                    <TextBox Text="{Binding CancelText}" Width="180" AutomationProperties.AutomationId="CancelTextBox" />
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Classes="label" Text="Submit button CSS class" />
+                            <TextBox Text="{Binding SubmitCssClass}" AutomationProperties.AutomationId="SubmitCssClassBox" />
+                            <TextBlock Classes="label" Text="Success message" />
+                            <TextBox Text="{Binding SuccessMessage}" AutomationProperties.AutomationId="SuccessMessageBox" />
+                            <CheckBox Content="Show cancel button" IsChecked="{Binding ShowCancel}" AutomationProperties.AutomationId="ShowCancelCheck" />
+                            <CheckBox Content="Ask for confirmation before saving" IsChecked="{Binding ConfirmBeforeSave}"
+                                      AutomationProperties.AutomationId="ConfirmBeforeSaveCheck" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="Multi-page forms" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="4" Margin="0,4,0,0" DataContext="{Binding FormPages}">
+                            <TextBlock Classes="hint" Text="Split the View, Add, Copy and Edit pages of this table into pages (tabs, pills, accordion or wizard). Fields choose their page below; a field without a page goes on the first page." />
+                            <ItemsControl ItemsSource="{Binding Warnings}" IsVisible="{Binding HasWarnings}"
+                                          AutomationProperties.AutomationId="FormPageWarnings">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Classes="error" Text="{Binding}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Classes="error" IsVisible="{Binding HasMessage}" Text="{Binding Message}"
+                                       AutomationProperties.AutomationId="FormPagesMessageText" />
+
+                            <TextBlock Classes="label" Text="Form pages" />
+                            <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
+                                      AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="200"
+                                      AutomationProperties.AutomationId="FormPagesGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" MinWidth="120" />
+                                    <DataGridTextColumn Header="Caption" Binding="{Binding Caption}" Width="*" MinWidth="120" />
+                                    <DataGridTextColumn Header="Icon" Binding="{Binding Icon}" Width="Auto" />
+                                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="2*" MinWidth="160" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <WrapPanel>
+                                <Button Content="Add page" Margin="0,0,6,6" Command="{Binding AddPageCommand}" AutomationProperties.AutomationId="AddFormPageButton" />
+                                <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemovePageCommand}" AutomationProperties.AutomationId="RemoveFormPageButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                                <Button Classes="icon ghost" ToolTip.Tip="Move up" AutomationProperties.Name="Move up" Margin="0,0,2,4" Command="{Binding MovePageUpCommand}" AutomationProperties.AutomationId="MoveFormPageUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
+                                <Button Classes="icon ghost" ToolTip.Tip="Move down" AutomationProperties.Name="Move down" Margin="0,0,2,4" Command="{Binding MovePageDownCommand}" AutomationProperties.AutomationId="MoveFormPageDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
+                            </WrapPanel>
+
+                            <TextBlock Classes="label" Text="Page mode of each page type" />
+                            <WrapPanel>
+                                <StackPanel Spacing="2" Margin="0,0,12,6">
+                                    <TextBlock Text="View" />
+                                    <ComboBox ItemsSource="{x:Static vm:FormPagesViewModel.Modes}" SelectedItem="{Binding ViewMode}" MinWidth="120"
+                                              AutomationProperties.AutomationId="ViewModeCombo" />
+                                </StackPanel>
+                                <StackPanel Spacing="2" Margin="0,0,12,6">
+                                    <TextBlock Text="Add" />
+                                    <ComboBox ItemsSource="{x:Static vm:FormPagesViewModel.Modes}" SelectedItem="{Binding AddMode}" MinWidth="120"
+                                              AutomationProperties.AutomationId="AddModeCombo" />
+                                </StackPanel>
+                                <StackPanel Spacing="2" Margin="0,0,12,6">
+                                    <TextBlock Text="Copy" />
+                                    <ComboBox ItemsSource="{x:Static vm:FormPagesViewModel.Modes}" SelectedItem="{Binding CopyMode}" MinWidth="120"
+                                              AutomationProperties.AutomationId="CopyModeCombo" />
+                                </StackPanel>
+                                <StackPanel Spacing="2" Margin="0,0,12,6">
+                                    <TextBlock Text="Edit" />
+                                    <ComboBox ItemsSource="{x:Static vm:FormPagesViewModel.Modes}" SelectedItem="{Binding EditMode}" MinWidth="120"
+                                              AutomationProperties.AutomationId="EditModeCombo" />
+                                </StackPanel>
+                            </WrapPanel>
+
+                            <TextBlock Classes="label" Text="Fields on pages" />
+                            <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding FieldRows}" AutoGenerateColumns="False" GridLinesVisibility="All"
+                                      SelectionMode="Single" MinHeight="120" MaxHeight="260"
+                                      AutomationProperties.AutomationId="FieldPagesGrid">
+                                <DataGrid.Columns>
+                                    <DataGridCheckBoxColumn Header="Pick" Binding="{Binding IsSelected}" />
+                                    <DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" Width="*" MinWidth="120" />
+                                    <DataGridTextColumn Header="Type" Binding="{Binding TypeText}" IsReadOnly="True" Width="Auto" />
+                                    <DataGridTemplateColumn Header="Page" Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PageDesigner.FormPages.PageChoices}"
+                                                          SelectedItem="{Binding PageChoice}" Margin="2,0" MinWidth="140" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <WrapPanel>
+                                <Button Content="Pick all" Margin="0,0,6,6" Command="{Binding SelectAllFieldsCommand}" AutomationProperties.AutomationId="PickAllFieldsButton" />
+                                <Button Content="Clear picks" Margin="0,0,6,6" Command="{Binding ClearFieldSelectionCommand}" AutomationProperties.AutomationId="ClearFieldPicksButton" />
+                                <Button Content="Move to previous page" Margin="0,0,6,6" Command="{Binding MoveSelectedUpCommand}" AutomationProperties.AutomationId="MoveFieldsUpButton" />
+                                <Button Content="Move to next page" Margin="0,0,6,6" Command="{Binding MoveSelectedDownCommand}" AutomationProperties.AutomationId="MoveFieldsDownButton" />
+                            </WrapPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <ComboBox ItemsSource="{Binding PageChoices}" SelectedItem="{Binding BulkTarget}" MinWidth="160"
+                                          AutomationProperties.AutomationId="BulkPageCombo" />
+                                <Button Content="Put picked fields on this page" Command="{Binding AssignSelectedCommand}"
+                                        AutomationProperties.AutomationId="AssignFieldsButton" />
                             </StackPanel>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <StackPanel Spacing="2">
-                                <TextBlock Classes="label" Text="Submit text" />
-                                <TextBox Text="{Binding SubmitText}" Width="180" AutomationProperties.AutomationId="SubmitTextBox" />
-                            </StackPanel>
-                            <StackPanel Spacing="2">
-                                <TextBlock Classes="label" Text="Cancel text" />
-                                <TextBox Text="{Binding CancelText}" Width="180" AutomationProperties.AutomationId="CancelTextBox" />
-                            </StackPanel>
+                    </Expander>
+
+                    <Expander Header="List" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="4" Margin="0,4,0,0" IsEnabled="{Binding IsListPage}">
+                            <TextBlock Classes="hint" Text="Applies to the List page." />
+                            <TextBlock Classes="label" Text="List layout" />
+                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.ListLayouts}" SelectedItem="{Binding ListLayout}"
+                                      MinWidth="160" AutomationProperties.AutomationId="ListLayoutCombo" />
+                            <WrapPanel>
+                                <CheckBox Content="Row numbers" Margin="0,0,16,0" IsChecked="{Binding ShowRowNumbers}" AutomationProperties.AutomationId="ShowRowNumbersCheck" />
+                                <CheckBox Content="Pager" Margin="0,0,16,0" IsChecked="{Binding ShowPager}" AutomationProperties.AutomationId="ShowPagerCheck" />
+                                <CheckBox Content="Sticky header" Margin="0,0,16,0" IsChecked="{Binding StickyHeader}" AutomationProperties.AutomationId="StickyHeaderCheck" />
+                                <CheckBox Content="Striped" Margin="0,0,16,0" IsChecked="{Binding Striped}" AutomationProperties.AutomationId="StripedCheck" />
+                                <CheckBox Content="Hover" Margin="0,0,16,0" IsChecked="{Binding Hover}" AutomationProperties.AutomationId="HoverCheck" />
+                                <CheckBox Content="Bordered" Margin="0,0,16,0" IsChecked="{Binding Bordered}" AutomationProperties.AutomationId="BorderedCheck" />
+                                <CheckBox Content="Actions first" IsChecked="{Binding ShowActionsFirst}" AutomationProperties.AutomationId="ActionsFirstCheck" />
+                            </WrapPanel>
+                            <TextBlock Classes="label" Text="Page size options (comma list, for example 10, 25, 50)" />
+                            <TextBox Text="{Binding PageSizeOptionsText}" AutomationProperties.AutomationId="PageSizeOptionsBox" />
+                            <TextBlock Classes="label" Text="Add button text" />
+                            <TextBox Text="{Binding AddButtonText}" AutomationProperties.AutomationId="AddButtonTextBox" />
+                            <TextBlock Classes="label" Text="Text for an empty list" />
+                            <TextBox Text="{Binding EmptyText}" AutomationProperties.AutomationId="EmptyTextBox" />
+
+                            <TextBlock Classes="label" Text="Columns (none: every field marked 'show in list')" />
+                            <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Columns}" SelectedItem="{Binding SelectedColumn, Mode=TwoWay}"
+                                      AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="220"
+                                      AutomationProperties.AutomationId="ColumnsGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Field" Width="*" MinWidth="120">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PageDesigner.FieldNames}"
+                                                          SelectedItem="{Binding Field}" Margin="2,0" MinWidth="130" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridCheckBoxColumn Header="Visible" Binding="{Binding Visible}" />
+                                    <DataGridTextColumn Header="Width" Binding="{Binding Width}" Width="Auto" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <WrapPanel>
+                                <Button Content="Add column" Margin="0,0,6,6" Command="{Binding AddColumnCommand}" AutomationProperties.AutomationId="AddColumnButton" />
+                                <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveColumnCommand}" AutomationProperties.AutomationId="RemoveColumnButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                                <Button Classes="icon ghost" ToolTip.Tip="Move up" AutomationProperties.Name="Move up" Margin="0,0,2,4" Command="{Binding MoveColumnUpCommand}" AutomationProperties.AutomationId="MoveColumnUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
+                                <Button Classes="icon ghost" ToolTip.Tip="Move down" AutomationProperties.Name="Move down" Margin="0,0,2,4" Command="{Binding MoveColumnDownCommand}" AutomationProperties.AutomationId="MoveColumnDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
+                                <Button Content="Use list fields" Margin="0,0,6,6" Command="{Binding UseListFieldsCommand}" AutomationProperties.AutomationId="UseListFieldsButton" />
+                                <Button Content="Clear columns" Margin="0,0,6,6" Command="{Binding ClearColumnsCommand}" AutomationProperties.AutomationId="ClearColumnsButton" />
+                            </WrapPanel>
                         </StackPanel>
-                        <TextBlock Classes="label" Text="Submit button CSS class" />
-                        <TextBox Text="{Binding SubmitCssClass}" AutomationProperties.AutomationId="SubmitCssClassBox" />
-                        <TextBlock Classes="label" Text="Success message" />
-                        <TextBox Text="{Binding SuccessMessage}" AutomationProperties.AutomationId="SuccessMessageBox" />
-                        <CheckBox Content="Show cancel button" IsChecked="{Binding ShowCancel}" AutomationProperties.AutomationId="ShowCancelCheck" />
-                        <CheckBox Content="Ask for confirmation before saving" IsChecked="{Binding ConfirmBeforeSave}"
-                                  AutomationProperties.AutomationId="ConfirmBeforeSaveCheck" />
-                    </StackPanel>
-                </Expander>
-
-                <Expander Header="Multi-page forms" IsExpanded="True" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="4" Margin="0,4,0,0" DataContext="{Binding FormPages}">
-                        <TextBlock Classes="hint" Text="Split the View, Add, Copy and Edit pages of this table into pages (tabs, pills, accordion or wizard). Fields choose their page below; a field without a page goes on the first page." />
-                        <ItemsControl ItemsSource="{Binding Warnings}" IsVisible="{Binding HasWarnings}"
-                                      AutomationProperties.AutomationId="FormPageWarnings">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Classes="error" Text="{Binding}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Classes="error" IsVisible="{Binding HasMessage}" Text="{Binding Message}"
-                                   AutomationProperties.AutomationId="FormPagesMessageText" />
-
-                        <TextBlock Classes="label" Text="Form pages" />
-                        <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
-                                  AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="200"
-                                  AutomationProperties.AutomationId="FormPagesGrid">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" MinWidth="120" />
-                                <DataGridTextColumn Header="Caption" Binding="{Binding Caption}" Width="*" MinWidth="120" />
-                                <DataGridTextColumn Header="Icon" Binding="{Binding Icon}" Width="Auto" />
-                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="2*" MinWidth="160" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                        <WrapPanel>
-                            <Button Content="Add page" Margin="0,0,6,6" Command="{Binding AddPageCommand}" AutomationProperties.AutomationId="AddFormPageButton" />
-                            <Button Content="Remove" Margin="0,0,6,6" Command="{Binding RemovePageCommand}" AutomationProperties.AutomationId="RemoveFormPageButton" />
-                            <Button Content="Move up" Margin="0,0,6,6" Command="{Binding MovePageUpCommand}" AutomationProperties.AutomationId="MoveFormPageUpButton" />
-                            <Button Content="Move down" Margin="0,0,6,6" Command="{Binding MovePageDownCommand}" AutomationProperties.AutomationId="MoveFormPageDownButton" />
-                        </WrapPanel>
-
-                        <TextBlock Classes="label" Text="Page mode of each page type" />
-                        <WrapPanel>
-                            <StackPanel Spacing="2" Margin="0,0,12,6">
-                                <TextBlock Text="View" />
-                                <ComboBox ItemsSource="{x:Static vm:FormPagesViewModel.Modes}" SelectedItem="{Binding ViewMode}" MinWidth="120"
-                                          AutomationProperties.AutomationId="ViewModeCombo" />
-                            </StackPanel>
-                            <StackPanel Spacing="2" Margin="0,0,12,6">
-                                <TextBlock Text="Add" />
-                                <ComboBox ItemsSource="{x:Static vm:FormPagesViewModel.Modes}" SelectedItem="{Binding AddMode}" MinWidth="120"
-                                          AutomationProperties.AutomationId="AddModeCombo" />
-                            </StackPanel>
-                            <StackPanel Spacing="2" Margin="0,0,12,6">
-                                <TextBlock Text="Copy" />
-                                <ComboBox ItemsSource="{x:Static vm:FormPagesViewModel.Modes}" SelectedItem="{Binding CopyMode}" MinWidth="120"
-                                          AutomationProperties.AutomationId="CopyModeCombo" />
-                            </StackPanel>
-                            <StackPanel Spacing="2" Margin="0,0,12,6">
-                                <TextBlock Text="Edit" />
-                                <ComboBox ItemsSource="{x:Static vm:FormPagesViewModel.Modes}" SelectedItem="{Binding EditMode}" MinWidth="120"
-                                          AutomationProperties.AutomationId="EditModeCombo" />
-                            </StackPanel>
-                        </WrapPanel>
-
-                        <TextBlock Classes="label" Text="Fields on pages" />
-                        <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding FieldRows}" AutoGenerateColumns="False" GridLinesVisibility="All"
-                                  SelectionMode="Single" MinHeight="120" MaxHeight="260"
-                                  AutomationProperties.AutomationId="FieldPagesGrid">
-                            <DataGrid.Columns>
-                                <DataGridCheckBoxColumn Header="Pick" Binding="{Binding IsSelected}" />
-                                <DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" Width="*" MinWidth="120" />
-                                <DataGridTextColumn Header="Type" Binding="{Binding TypeText}" IsReadOnly="True" Width="Auto" />
-                                <DataGridTemplateColumn Header="Page" Width="Auto">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PageDesigner.FormPages.PageChoices}"
-                                                      SelectedItem="{Binding PageChoice}" Margin="2,0" MinWidth="140" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                        <WrapPanel>
-                            <Button Content="Pick all" Margin="0,0,6,6" Command="{Binding SelectAllFieldsCommand}" AutomationProperties.AutomationId="PickAllFieldsButton" />
-                            <Button Content="Clear picks" Margin="0,0,6,6" Command="{Binding ClearFieldSelectionCommand}" AutomationProperties.AutomationId="ClearFieldPicksButton" />
-                            <Button Content="Move to previous page" Margin="0,0,6,6" Command="{Binding MoveSelectedUpCommand}" AutomationProperties.AutomationId="MoveFieldsUpButton" />
-                            <Button Content="Move to next page" Margin="0,0,6,6" Command="{Binding MoveSelectedDownCommand}" AutomationProperties.AutomationId="MoveFieldsDownButton" />
-                        </WrapPanel>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <ComboBox ItemsSource="{Binding PageChoices}" SelectedItem="{Binding BulkTarget}" MinWidth="160"
-                                      AutomationProperties.AutomationId="BulkPageCombo" />
-                            <Button Content="Put picked fields on this page" Command="{Binding AssignSelectedCommand}"
-                                    AutomationProperties.AutomationId="AssignFieldsButton" />
-                        </StackPanel>
-                    </StackPanel>
-                </Expander>
-
-                <Expander Header="List" IsExpanded="True" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="4" Margin="0,4,0,0" IsEnabled="{Binding IsListPage}">
-                        <TextBlock Classes="hint" Text="Applies to the List page." />
-                        <TextBlock Classes="label" Text="List layout" />
-                        <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.ListLayouts}" SelectedItem="{Binding ListLayout}"
-                                  MinWidth="160" AutomationProperties.AutomationId="ListLayoutCombo" />
-                        <WrapPanel>
-                            <CheckBox Content="Row numbers" Margin="0,0,16,0" IsChecked="{Binding ShowRowNumbers}" AutomationProperties.AutomationId="ShowRowNumbersCheck" />
-                            <CheckBox Content="Pager" Margin="0,0,16,0" IsChecked="{Binding ShowPager}" AutomationProperties.AutomationId="ShowPagerCheck" />
-                            <CheckBox Content="Sticky header" Margin="0,0,16,0" IsChecked="{Binding StickyHeader}" AutomationProperties.AutomationId="StickyHeaderCheck" />
-                            <CheckBox Content="Striped" Margin="0,0,16,0" IsChecked="{Binding Striped}" AutomationProperties.AutomationId="StripedCheck" />
-                            <CheckBox Content="Hover" Margin="0,0,16,0" IsChecked="{Binding Hover}" AutomationProperties.AutomationId="HoverCheck" />
-                            <CheckBox Content="Bordered" Margin="0,0,16,0" IsChecked="{Binding Bordered}" AutomationProperties.AutomationId="BorderedCheck" />
-                            <CheckBox Content="Actions first" IsChecked="{Binding ShowActionsFirst}" AutomationProperties.AutomationId="ActionsFirstCheck" />
-                        </WrapPanel>
-                        <TextBlock Classes="label" Text="Page size options (comma list, for example 10, 25, 50)" />
-                        <TextBox Text="{Binding PageSizeOptionsText}" AutomationProperties.AutomationId="PageSizeOptionsBox" />
-                        <TextBlock Classes="label" Text="Add button text" />
-                        <TextBox Text="{Binding AddButtonText}" AutomationProperties.AutomationId="AddButtonTextBox" />
-                        <TextBlock Classes="label" Text="Text for an empty list" />
-                        <TextBox Text="{Binding EmptyText}" AutomationProperties.AutomationId="EmptyTextBox" />
-
-                        <TextBlock Classes="label" Text="Columns (none: every field marked 'show in list')" />
-                        <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Columns}" SelectedItem="{Binding SelectedColumn, Mode=TwoWay}"
-                                  AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="220"
-                                  AutomationProperties.AutomationId="ColumnsGrid">
-                            <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Field" Width="*" MinWidth="120">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PageDesigner.FieldNames}"
-                                                      SelectedItem="{Binding Field}" Margin="2,0" MinWidth="130" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridCheckBoxColumn Header="Visible" Binding="{Binding Visible}" />
-                                <DataGridTextColumn Header="Width" Binding="{Binding Width}" Width="Auto" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                        <WrapPanel>
-                            <Button Content="Add column" Margin="0,0,6,6" Command="{Binding AddColumnCommand}" AutomationProperties.AutomationId="AddColumnButton" />
-                            <Button Content="Remove" Margin="0,0,6,6" Command="{Binding RemoveColumnCommand}" AutomationProperties.AutomationId="RemoveColumnButton" />
-                            <Button Content="Move up" Margin="0,0,6,6" Command="{Binding MoveColumnUpCommand}" AutomationProperties.AutomationId="MoveColumnUpButton" />
-                            <Button Content="Move down" Margin="0,0,6,6" Command="{Binding MoveColumnDownCommand}" AutomationProperties.AutomationId="MoveColumnDownButton" />
-                            <Button Content="Use list fields" Margin="0,0,6,6" Command="{Binding UseListFieldsCommand}" AutomationProperties.AutomationId="UseListFieldsButton" />
-                            <Button Content="Clear columns" Margin="0,0,6,6" Command="{Binding ClearColumnsCommand}" AutomationProperties.AutomationId="ClearColumnsButton" />
-                        </WrapPanel>
-                    </StackPanel>
-                </Expander>
-            </StackPanel>
-        </ScrollViewer>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
 
         <GridSplitter Grid.Row="1" Grid.Column="1" ResizeDirection="Columns" />
 
         <!-- Right: the schematic preview. -->
-        <DockPanel Grid.Row="1" Grid.Column="2">
-            <TextBlock DockPanel.Dock="Top" Classes="label" Text="Preview (schematic)" Margin="0,0,0,6" />
-            <ScrollViewer>
-                <views:SchematicPreview Schematic="{Binding Schematic}" AutomationProperties.AutomationId="SchematicPreview" />
-            </ScrollViewer>
-        </DockPanel>
+        <Border Classes="card" Padding="12,10" Grid.Row="1" Grid.Column="2">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Classes="label" Text="Preview (schematic)" Margin="0,0,0,6" />
+                <ScrollViewer>
+                    <views:SchematicPreview Schematic="{Binding Schematic}" AutomationProperties.AutomationId="SchematicPreview" />
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>

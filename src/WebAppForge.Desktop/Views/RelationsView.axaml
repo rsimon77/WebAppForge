@@ -26,180 +26,183 @@
                        AutomationProperties.AutomationId="SuggestMessageText" />
             <TextBlock Classes="hint" Text="{Binding MasterNote}" IsVisible="{Binding HasMasterNote}"
                        AutomationProperties.AutomationId="MasterNoteText" />
-            <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
-                    BorderBrush="{DynamicResource ValidationBrush}">
+            <Border IsVisible="{Binding HasMessage}" Classes="banner error">
                 <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="RelationsMessageText" />
             </Border>
         </StackPanel>
 
         <!-- Left: the detail links of the master table, the overview of all links and the validation list. -->
-        <ScrollViewer Grid.Row="1" Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="8" Margin="0,0,8,0" IsEnabled="{Binding HasTable}">
-                <TextBlock Classes="label" Text="Detail links of the master table" />
-                <ListBox ItemsSource="{Binding Links}" SelectedItem="{Binding SelectedLink, Mode=TwoWay}" MinHeight="90" MaxHeight="220"
-                         AutomationProperties.AutomationId="DetailLinkList">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Text}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <WrapPanel>
-                    <Button Content="Add link" Margin="0,0,6,6" Command="{Binding AddLinkCommand}" AutomationProperties.AutomationId="AddLinkButton" />
-                    <Button Content="Remove" Margin="0,0,6,6" Command="{Binding RemoveLinkCommand}" AutomationProperties.AutomationId="RemoveLinkButton" />
-                    <Button Content="Move up" Margin="0,0,6,6" Command="{Binding MoveLinkUpCommand}" AutomationProperties.AutomationId="MoveLinkUpButton" />
-                    <Button Content="Move down" Margin="0,0,6,6" Command="{Binding MoveLinkDownCommand}" AutomationProperties.AutomationId="MoveLinkDownButton" />
-                </WrapPanel>
+        <Border Classes="card" Padding="12,10" Grid.Row="1" Grid.Column="0">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="8" Margin="0,0,8,0" IsEnabled="{Binding HasTable}">
+                    <TextBlock Classes="label" Text="Detail links of the master table" />
+                    <ListBox ItemsSource="{Binding Links}" SelectedItem="{Binding SelectedLink, Mode=TwoWay}" MinHeight="90" MaxHeight="220"
+                             AutomationProperties.AutomationId="DetailLinkList">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Text}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <WrapPanel>
+                        <Button Content="Add link" Margin="0,0,6,6" Command="{Binding AddLinkCommand}" AutomationProperties.AutomationId="AddLinkButton" />
+                        <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveLinkCommand}" AutomationProperties.AutomationId="RemoveLinkButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                        <Button Classes="icon ghost" ToolTip.Tip="Move up" AutomationProperties.Name="Move up" Margin="0,0,2,4" Command="{Binding MoveLinkUpCommand}" AutomationProperties.AutomationId="MoveLinkUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
+                        <Button Classes="icon ghost" ToolTip.Tip="Move down" AutomationProperties.Name="Move down" Margin="0,0,2,4" Command="{Binding MoveLinkDownCommand}" AutomationProperties.AutomationId="MoveLinkDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
+                    </WrapPanel>
 
-                <Expander Header="Relations overview" IsExpanded="True" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="4" Margin="0,4,0,0">
-                        <TextBlock Classes="hint" Text="Every link of the project: master -> detail, key pairs and rules. Double-click a line to open it." />
-                        <ListBox ItemsSource="{Binding Overview}" SelectedItem="{Binding SelectedOverview, Mode=TwoWay}" MinHeight="70" MaxHeight="200"
-                                 DoubleTapped="OnOverviewDoubleTapped" AutomationProperties.AutomationId="RelationsOverviewList">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </StackPanel>
-                </Expander>
+                    <Expander Header="Relations overview" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="4" Margin="0,4,0,0">
+                            <TextBlock Classes="hint" Text="Every link of the project: master -> detail, key pairs and rules. Double-click a line to open it." />
+                            <ListBox ItemsSource="{Binding Overview}" SelectedItem="{Binding SelectedOverview, Mode=TwoWay}" MinHeight="70" MaxHeight="200"
+                                     DoubleTapped="OnOverviewDoubleTapped" AutomationProperties.AutomationId="RelationsOverviewList">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Expander>
 
-                <Expander Header="Validation" IsExpanded="True" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="4" Margin="0,4,0,0">
-                        <TextBlock Classes="hint" Text="{Binding IssueSummary}" AutomationProperties.AutomationId="RelationIssueSummaryText" />
-                        <ItemsControl ItemsSource="{Binding Issues}" AutomationProperties.AutomationId="RelationIssueList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Classes.error="{Binding IsError}" Text="{Binding Text}" TextWrapping="Wrap" Margin="0,0,0,2" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Expander>
-            </StackPanel>
-        </ScrollViewer>
+                    <Expander Header="Validation" IsExpanded="True" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="4" Margin="0,4,0,0">
+                            <TextBlock Classes="hint" Text="{Binding IssueSummary}" AutomationProperties.AutomationId="RelationIssueSummaryText" />
+                            <ItemsControl ItemsSource="{Binding Issues}" AutomationProperties.AutomationId="RelationIssueList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Classes.error="{Binding IsError}" Text="{Binding Text}" TextWrapping="Wrap" Margin="0,0,0,2" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
 
         <GridSplitter Grid.Row="1" Grid.Column="1" ResizeDirection="Columns" />
 
         <!-- Right: the selected link. -->
-        <ScrollViewer Grid.Row="1" Grid.Column="2" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="4" Margin="0,0,8,0" IsEnabled="{Binding HasLink}">
-                <TextBlock Classes="label" Text="Detail table" />
-                <ComboBox ItemsSource="{Binding DetailTableNames}" SelectedItem="{Binding DetailTable}" MinWidth="240"
-                          AutomationProperties.AutomationId="DetailTableCombo" />
-                <TextBlock Classes="hint" Text="The master itself is allowed (a self link, such as a tree). Changing the table starts the key links over." />
+        <Border Classes="card" Padding="12,10" Grid.Row="1" Grid.Column="2">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="4" Margin="0,0,8,0" IsEnabled="{Binding HasLink}">
+                    <TextBlock Classes="label" Text="Detail table" />
+                    <ComboBox ItemsSource="{Binding DetailTableNames}" SelectedItem="{Binding DetailTable}" MinWidth="240"
+                              AutomationProperties.AutomationId="DetailTableCombo" />
+                    <TextBlock Classes="hint" Text="The master itself is allowed (a self link, such as a tree). Changing the table starts the key links over." />
 
-                <TextBlock Classes="label" Text="Key links (master field = detail field)" />
-                <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding KeyPairs}" SelectedItem="{Binding SelectedKeyPair, Mode=TwoWay}"
-                          AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="180"
-                          AutomationProperties.AutomationId="KeyPairsGrid">
-                    <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Master field" Width="*" MinWidth="120">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Relations.MasterFieldNames}"
-                                              SelectedItem="{Binding MasterField}" Margin="2,0" MinWidth="130" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Type" Binding="{Binding MasterType}" IsReadOnly="True" Width="Auto" />
-                        <DataGridTemplateColumn Header="Detail field" Width="*" MinWidth="120">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Relations.DetailFieldNames}"
-                                              SelectedItem="{Binding DetailField}" Margin="2,0" MinWidth="130" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Type" Binding="{Binding DetailType}" IsReadOnly="True" Width="Auto" />
-                        <DataGridTextColumn Header="Note" Binding="{Binding TypeNote}" IsReadOnly="True" Width="Auto" />
-                    </DataGrid.Columns>
-                </DataGrid>
-                <WrapPanel>
-                    <Button Content="Add key link" Margin="0,0,6,6" Command="{Binding AddKeyPairCommand}" AutomationProperties.AutomationId="AddKeyPairButton" />
-                    <Button Content="Remove" Margin="0,0,6,6" Command="{Binding RemoveKeyPairCommand}" AutomationProperties.AutomationId="RemoveKeyPairButton" />
-                </WrapPanel>
-                <ItemsControl ItemsSource="{Binding LinkIssues}" IsVisible="{Binding HasLinkIssues}"
-                              AutomationProperties.AutomationId="LinkIssuesList">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Classes="error" Text="{Binding}" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    <TextBlock Classes="label" Text="Key links (master field = detail field)" />
+                    <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding KeyPairs}" SelectedItem="{Binding SelectedKeyPair, Mode=TwoWay}"
+                              AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="180"
+                              AutomationProperties.AutomationId="KeyPairsGrid">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Master field" Width="*" MinWidth="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Relations.MasterFieldNames}"
+                                                  SelectedItem="{Binding MasterField}" Margin="2,0" MinWidth="130" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Type" Binding="{Binding MasterType}" IsReadOnly="True" Width="Auto" />
+                            <DataGridTemplateColumn Header="Detail field" Width="*" MinWidth="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Relations.DetailFieldNames}"
+                                                  SelectedItem="{Binding DetailField}" Margin="2,0" MinWidth="130" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Type" Binding="{Binding DetailType}" IsReadOnly="True" Width="Auto" />
+                            <DataGridTextColumn Header="Note" Binding="{Binding TypeNote}" IsReadOnly="True" Width="Auto" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <WrapPanel>
+                        <Button Content="Add key link" Margin="0,0,6,6" Command="{Binding AddKeyPairCommand}" AutomationProperties.AutomationId="AddKeyPairButton" />
+                        <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveKeyPairCommand}" AutomationProperties.AutomationId="RemoveKeyPairButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                    </WrapPanel>
+                    <ItemsControl ItemsSource="{Binding LinkIssues}" IsVisible="{Binding HasLinkIssues}"
+                                  AutomationProperties.AutomationId="LinkIssuesList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Classes="error" Text="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-                <TextBlock Classes="label" Text="Caption (empty: the detail table's caption)" />
-                <TextBox Text="{Binding Caption}" AutomationProperties.AutomationId="LinkCaptionBox" />
-                <WrapPanel Margin="0,4,0,0">
-                    <CheckBox Content="Show on view" Margin="0,0,16,0" IsChecked="{Binding ShowOnView}" AutomationProperties.AutomationId="ShowOnViewCheck" />
-                    <CheckBox Content="Show on edit" Margin="0,0,16,0" IsChecked="{Binding ShowOnEdit}" AutomationProperties.AutomationId="ShowOnEditCheck" />
-                    <CheckBox Content="After add go to edit" IsChecked="{Binding AfterAddGoToEdit}" AutomationProperties.AutomationId="AfterAddGoToEditCheck" />
-                </WrapPanel>
+                    <TextBlock Classes="label" Text="Caption (empty: the detail table's caption)" />
+                    <TextBox Text="{Binding Caption}" AutomationProperties.AutomationId="LinkCaptionBox" />
+                    <WrapPanel Margin="0,4,0,0">
+                        <CheckBox Content="Show on view" Margin="0,0,16,0" IsChecked="{Binding ShowOnView}" AutomationProperties.AutomationId="ShowOnViewCheck" />
+                        <CheckBox Content="Show on edit" Margin="0,0,16,0" IsChecked="{Binding ShowOnEdit}" AutomationProperties.AutomationId="ShowOnEditCheck" />
+                        <CheckBox Content="After add go to edit" IsChecked="{Binding AfterAddGoToEdit}" AutomationProperties.AutomationId="AfterAddGoToEditCheck" />
+                    </WrapPanel>
 
-                <TextBlock Classes="label" Text="Preview on the master's list" />
-                <ComboBox ItemsSource="{Binding PreviewChoices}" SelectedItem="{Binding PreviewChoice}" MinWidth="200"
-                          AutomationProperties.AutomationId="PreviewModeCombo" />
+                    <TextBlock Classes="label" Text="Preview on the master's list" />
+                    <ComboBox ItemsSource="{Binding PreviewChoices}" SelectedItem="{Binding PreviewChoice}" MinWidth="200"
+                              AutomationProperties.AutomationId="PreviewModeCombo" />
 
-                <TextBlock Classes="label" Text="On delete of a master record" />
-                <ComboBox ItemsSource="{Binding DeleteRuleOptions}" SelectedItem="{Binding OnDeleteOption}" MinWidth="200"
-                          AutomationProperties.AutomationId="OnDeleteCombo">
-                    <ComboBox.Styles>
-                        <Style Selector="ComboBoxItem">
-                            <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
-                        </Style>
-                    </ComboBox.Styles>
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Label}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <TextBlock Classes="hint" Text="{Binding OnDeleteExplanation}" AutomationProperties.AutomationId="OnDeleteExplanationText" />
-                <TextBlock Classes="error" Text="{Binding SetNullNote}" IsVisible="{Binding HasSetNullNote}"
-                           AutomationProperties.AutomationId="SetNullNoteText" />
+                    <TextBlock Classes="label" Text="On delete of a master record" />
+                    <ComboBox ItemsSource="{Binding DeleteRuleOptions}" SelectedItem="{Binding OnDeleteOption}" MinWidth="200"
+                              AutomationProperties.AutomationId="OnDeleteCombo">
+                        <ComboBox.Styles>
+                            <Style Selector="ComboBoxItem">
+                                <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+                            </Style>
+                        </ComboBox.Styles>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Label}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Classes="hint" Text="{Binding OnDeleteExplanation}" AutomationProperties.AutomationId="OnDeleteExplanationText" />
+                    <TextBlock Classes="error" Text="{Binding SetNullNote}" IsVisible="{Binding HasSetNullNote}"
+                               AutomationProperties.AutomationId="SetNullNoteText" />
 
-                <TextBlock Classes="label" Text="On update of a linked master field" />
-                <ComboBox ItemsSource="{Binding UpdateChoices}" SelectedItem="{Binding UpdateChoice}" MinWidth="200"
-                          AutomationProperties.AutomationId="OnUpdateCombo" />
-                <TextBlock Classes="error" Text="{Binding UpdateNote}" IsVisible="{Binding HasUpdateNote}"
-                           AutomationProperties.AutomationId="UpdateNoteText" />
+                    <TextBlock Classes="label" Text="On update of a linked master field" />
+                    <ComboBox ItemsSource="{Binding UpdateChoices}" SelectedItem="{Binding UpdateChoice}" MinWidth="200"
+                              AutomationProperties.AutomationId="OnUpdateCombo" />
+                    <TextBlock Classes="error" Text="{Binding UpdateNote}" IsVisible="{Binding HasUpdateNote}"
+                               AutomationProperties.AutomationId="UpdateNoteText" />
 
-                <TextBlock Classes="label" Text="Detail grid columns (none: the detail fields marked 'show in list')" />
-                <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Columns}" SelectedItem="{Binding SelectedColumn, Mode=TwoWay}"
-                          AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="200"
-                          AutomationProperties.AutomationId="DetailColumnsGrid">
-                    <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Field" Width="*" MinWidth="120">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Relations.DetailFieldNames}"
-                                              SelectedItem="{Binding Field}" Margin="2,0" MinWidth="160" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-                <WrapPanel>
-                    <Button Content="Add column" Margin="0,0,6,6" Command="{Binding AddColumnCommand}" AutomationProperties.AutomationId="AddDetailColumnButton" />
-                    <Button Content="Remove" Margin="0,0,6,6" Command="{Binding RemoveColumnCommand}" AutomationProperties.AutomationId="RemoveDetailColumnButton" />
-                    <Button Content="Move up" Margin="0,0,6,6" Command="{Binding MoveColumnUpCommand}" AutomationProperties.AutomationId="MoveDetailColumnUpButton" />
-                    <Button Content="Move down" Margin="0,0,6,6" Command="{Binding MoveColumnDownCommand}" AutomationProperties.AutomationId="MoveDetailColumnDownButton" />
-                </WrapPanel>
+                    <TextBlock Classes="label" Text="Detail grid columns (none: the detail fields marked 'show in list')" />
+                    <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Columns}" SelectedItem="{Binding SelectedColumn, Mode=TwoWay}"
+                              AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="200"
+                              AutomationProperties.AutomationId="DetailColumnsGrid">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Field" Width="*" MinWidth="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Relations.DetailFieldNames}"
+                                                  SelectedItem="{Binding Field}" Margin="2,0" MinWidth="160" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <WrapPanel>
+                        <Button Content="Add column" Margin="0,0,6,6" Command="{Binding AddColumnCommand}" AutomationProperties.AutomationId="AddDetailColumnButton" />
+                        <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveColumnCommand}" AutomationProperties.AutomationId="RemoveDetailColumnButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                        <Button Classes="icon ghost" ToolTip.Tip="Move up" AutomationProperties.Name="Move up" Margin="0,0,2,4" Command="{Binding MoveColumnUpCommand}" AutomationProperties.AutomationId="MoveDetailColumnUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
+                        <Button Classes="icon ghost" ToolTip.Tip="Move down" AutomationProperties.Name="Move down" Margin="0,0,2,4" Command="{Binding MoveColumnDownCommand}" AutomationProperties.AutomationId="MoveDetailColumnDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
+                    </WrapPanel>
 
-                <TextBlock Classes="label" Text="Page size (1 to 200)" />
-                <TextBox Text="{Binding PageSizeText}" Width="100" HorizontalAlignment="Left" AutomationProperties.AutomationId="DetailPageSizeBox" />
-                <WrapPanel Margin="0,4,0,0">
-                    <CheckBox Content="Allow add" Margin="0,0,16,0" IsChecked="{Binding AllowAdd}" AutomationProperties.AutomationId="AllowAddCheck" />
-                    <CheckBox Content="Allow edit" Margin="0,0,16,0" IsChecked="{Binding AllowEdit}" AutomationProperties.AutomationId="AllowEditCheck" />
-                    <CheckBox Content="Allow delete" IsChecked="{Binding AllowDelete}" AutomationProperties.AutomationId="AllowDeleteCheck" />
-                </WrapPanel>
+                    <TextBlock Classes="label" Text="Page size (1 to 200)" />
+                    <TextBox Text="{Binding PageSizeText}" Width="100" HorizontalAlignment="Left" AutomationProperties.AutomationId="DetailPageSizeBox" />
+                    <WrapPanel Margin="0,4,0,0">
+                        <CheckBox Content="Allow add" Margin="0,0,16,0" IsChecked="{Binding AllowAdd}" AutomationProperties.AutomationId="AllowAddCheck" />
+                        <CheckBox Content="Allow edit" Margin="0,0,16,0" IsChecked="{Binding AllowEdit}" AutomationProperties.AutomationId="AllowEditCheck" />
+                        <CheckBox Content="Allow delete" IsChecked="{Binding AllowDelete}" AutomationProperties.AutomationId="AllowDeleteCheck" />
+                    </WrapPanel>
 
-                <TextBlock Classes="label" Text="Form page that holds the grid" />
-                <ComboBox ItemsSource="{Binding FormPageChoices}" SelectedItem="{Binding FormPageChoice}" MinWidth="200"
-                          AutomationProperties.AutomationId="LinkFormPageCombo" />
-                <TextBlock Classes="hint" Text="Form pages are defined on the Pages tab. They only apply when the master's page uses a multi-page mode." />
-            </StackPanel>
-        </ScrollViewer>
+                    <TextBlock Classes="label" Text="Form page that holds the grid" />
+                    <ComboBox ItemsSource="{Binding FormPageChoices}" SelectedItem="{Binding FormPageChoice}" MinWidth="200"
+                              AutomationProperties.AutomationId="LinkFormPageCombo" />
+                    <TextBlock Classes="hint" Text="Form pages are defined on the Pages tab. They only apply when the master's page uses a multi-page mode." />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
     </Grid>
 </UserControl>
