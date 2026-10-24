@@ -11,6 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Built-in translations of the fixed UI strings, read by TranslationPacks. -->
+    <EmbeddedResource Include="Localization\Packs\*.json" LogicalName="WebAppForge.Core.Localization.Packs.%(Filename).json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
     <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="7.1.1" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />

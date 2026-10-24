@@ -210,8 +210,11 @@ public class LocalizationTests
             Assert.Equal("Add", en.GetProperty("ui.add").GetString());
             Assert.Equal("Ügyfelek", hu.GetProperty("table.customers").GetString());
             Assert.Equal("Név", hu.GetProperty("field.customers.name").GetString());
-            // Not translated yet: the key is absent, so the page falls back to the English text.
-            Assert.False(hu.TryGetProperty("ui.add", out _));
+            // Not translated by the project: Hungarian comes from the built-in pack; Arabic has no pack, so the key is absent
+            // and the page falls back to the English text.
+            Assert.Equal("Hozzáadás", hu.GetProperty("ui.add").GetString());
+            var ar = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "Localization", "strings.ar.json"))).RootElement;
+            Assert.False(ar.TryGetProperty("ui.add", out _));
             Assert.Equal("Delete this record? This cannot be undone.", en.GetProperty("ui.confirmDelete").GetString());
 
             var helper = File.ReadAllText(Path.Combine(output, "Localization", "Strings.cs"));
@@ -320,11 +323,15 @@ public class LocalizationTests
         Assert.Equal("Ügyfelek", settings.Find("table.customers", "hu")!.Text);
         Assert.Equal(TranslationSource.Manual, settings.Find("table.customers", "hu")!.Source);
         Assert.Equal(3, result.Protected);
-        Assert.Equal("hu:Edit", settings.Find("ui.edit", "hu")!.Text);
-        var made = settings.Find("ui.edit", "hu")!;
+        // Fixed texts covered by the built-in Hungarian pack are not sent and get no entry.
+        Assert.Null(settings.Find("ui.edit", "hu"));
+        Assert.True(result.BuiltIn > 0);
+        Assert.DoesNotContain(provider.Calls.SelectMany(c => c.Texts), t => t == "Edit");
+        var made = settings.Find("field.customers.active", "hu")!;
+        Assert.Equal("hu:active", made.Text);
         Assert.Equal(TranslationSource.Google, made.Source);
         Assert.False(made.Reviewed);
-        Assert.Equal(TranslationEntry.HashOf("Edit"), made.SourceHash);
+        Assert.Equal(TranslationEntry.HashOf("active"), made.SourceHash);
 
         // UI strings are English; table and field captions are in the default language (also English here). One call per source language.
         Assert.All(provider.Calls, call => Assert.Equal("en", call.From));

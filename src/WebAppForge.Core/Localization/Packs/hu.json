@@ -1,0 +1,853 @@
+{
+  "language": "hu",
+  "entries": {
+    "add": {
+      "text": "Hozzáadás",
+      "source": "9fd728c66c9a256b"
+    },
+    "edit": {
+      "text": "Szerkesztés",
+      "source": "464c4ffd019e1e96"
+    },
+    "delete": {
+      "text": "Törlés",
+      "source": "e2d0a54968ead24e"
+    },
+    "search": {
+      "text": "Keresés",
+      "source": "49c266baaaa70981"
+    },
+    "save": {
+      "text": "Mentés",
+      "source": "1509f561f2416598"
+    },
+    "cancel": {
+      "text": "Mégse",
+      "source": "19766ed6ccb2f4a3"
+    },
+    "view": {
+      "text": "Megtekintés",
+      "source": "dcc839a4015c4b7d"
+    },
+    "copy": {
+      "text": "Másolás",
+      "source": "e21f935f11d7e966"
+    },
+    "backToList": {
+      "text": "Vissza a listához",
+      "source": "5da8f7fbc29dcda9"
+    },
+    "quickSearch": {
+      "text": "Gyorskeresés",
+      "source": "7d186b29779eee7f"
+    },
+    "home": {
+      "text": "Kezdőlap",
+      "source": "3a78695388b38b5c"
+    },
+    "yes": {
+      "text": "Igen",
+      "source": "85a39ab345d672ff"
+    },
+    "no": {
+      "text": "Nem",
+      "source": "1ea442a134b2a184"
+    },
+    "confirmDelete": {
+      "text": "Törli ezt a rekordot? A művelet nem vonható vissza.",
+      "source": "f9f1e2016272ceb1"
+    },
+    "required": {
+      "text": "{0} megadása kötelező.",
+      "source": "8eac00b5ce37cf66"
+    },
+    "notNumber": {
+      "text": "{0} értékének számnak kell lennie.",
+      "source": "45f2e242cc2d3980"
+    },
+    "notDate": {
+      "text": "{0} nem érvényes dátum.",
+      "source": "fc501ac27a000149"
+    },
+    "logIn": {
+      "text": "Bejelentkezés",
+      "source": "c189840cf7e2d6f6"
+    },
+    "logOut": {
+      "text": "Kijelentkezés",
+      "source": "49616145514e9abf"
+    },
+    "register": {
+      "text": "Regisztráció",
+      "source": "bb7234ec12451361"
+    },
+    "userName": {
+      "text": "Felhasználónév",
+      "source": "b82e11da3bc16786"
+    },
+    "password": {
+      "text": "Jelszó",
+      "source": "e7cf3ef4f17c3999"
+    },
+    "confirmPassword": {
+      "text": "Jelszó megerősítése",
+      "source": "5ac265f396a2c586"
+    },
+    "backToLogIn": {
+      "text": "Vissza a bejelentkezéshez",
+      "source": "30a8b4cdec886421"
+    },
+    "changePassword": {
+      "text": "Jelszó módosítása",
+      "source": "3f9c991f63a9a376"
+    },
+    "currentPassword": {
+      "text": "Jelenlegi jelszó",
+      "source": "72ed2bd767cef627"
+    },
+    "newPassword": {
+      "text": "Új jelszó",
+      "source": "3dd9df4441fb348f"
+    },
+    "confirmNewPassword": {
+      "text": "Új jelszó megerősítése",
+      "source": "bf000421aeb39493"
+    },
+    "invalidLogin": {
+      "text": "Hibás felhasználónév vagy jelszó.",
+      "source": "45b71fe98efe5f53"
+    },
+    "tooManyAttempts": {
+      "text": "Túl sok sikertelen próbálkozás. Próbálja újra később.",
+      "source": "98da5b6c3160c054"
+    },
+    "registrationComplete": {
+      "text": "A regisztráció sikerült. Most már bejelentkezhet.",
+      "source": "00cc5262501b70c4"
+    },
+    "manualSignUp": {
+      "text": "Ehhez a táblához ezen a webhelyen kézi regisztráció szükséges.",
+      "source": "c7e0387df0777081"
+    },
+    "enterUserName": {
+      "text": "Adjon meg egy felhasználónevet.",
+      "source": "f94c3645e22b7495"
+    },
+    "userNameTaken": {
+      "text": "Ez a felhasználónév már foglalt.",
+      "source": "ee23ace911d5759d"
+    },
+    "enterPassword": {
+      "text": "Adjon meg egy jelszót.",
+      "source": "f88a41ed96a3bc47"
+    },
+    "passwordTooShort": {
+      "text": "A jelszónak legalább {0} karakterből kell állnia.",
+      "source": "504992004a8e3c74"
+    },
+    "passwordsDiffer": {
+      "text": "A két jelszó nem egyezik.",
+      "source": "f694aaa8da2c0516"
+    },
+    "enterCurrentPassword": {
+      "text": "Adja meg a jelenlegi jelszavát.",
+      "source": "cf4d205e451da03c"
+    },
+    "currentPasswordWrong": {
+      "text": "A jelenlegi jelszó nem helyes.",
+      "source": "16c6d362c9429432"
+    },
+    "passwordChanged": {
+      "text": "A jelszavát módosítottuk.",
+      "source": "00e34a98f6598c0f"
+    },
+    "reportTotal": {
+      "text": "Összesen",
+      "source": "c9b3c38247f744e1"
+    },
+    "reportGrandTotal": {
+      "text": "Mindösszesen",
+      "source": "d88867c4bac7af92"
+    },
+    "reportEmpty": {
+      "text": "(üres)",
+      "source": "d29a0939bcb51176"
+    },
+    "reportNoData": {
+      "text": "Nincs adat.",
+      "source": "5118ec56d3b0c4c6"
+    },
+    "reportMoreColumns": {
+      "text": "Csak az első {0} oszlop látható; az összegek minden oszlopot tartalmaznak.",
+      "source": "5982ce41a3f4f43f"
+    },
+    "reportMoreRows": {
+      "text": "Csak az első {0} sor látható; az összegek minden sort tartalmaznak.",
+      "source": "fbcf75f0f70364a5"
+    },
+    "reportPrevious": {
+      "text": "Előző",
+      "source": "a57b08a480b822a0"
+    },
+    "reportNext": {
+      "text": "Következő",
+      "source": "1ff57a29d7c9d11b"
+    },
+    "reportThisMonth": {
+      "text": "Ez a hónap",
+      "source": "fd787ef3d46c9b82"
+    },
+    "reportValue": {
+      "text": "Érték",
+      "source": "8e37953d23daca5f"
+    },
+    "reportCount": {
+      "text": "Darabszám",
+      "source": "37bac4952becf21a"
+    },
+    "reportSum": {
+      "text": "Összeg",
+      "source": "a21d7df04c33f507"
+    },
+    "reportAverage": {
+      "text": "Átlag",
+      "source": "b38ae2c5b84529e8"
+    },
+    "reportMin": {
+      "text": "Minimum",
+      "source": "dea79332147ffe1f"
+    },
+    "reportMax": {
+      "text": "Maximum",
+      "source": "a1a5936d3b0f8a69"
+    },
+    "reportOf": {
+      "text": "{0} / {1}",
+      "source": "9fea8201753aa74d"
+    },
+    "reports": {
+      "text": "Kimutatások",
+      "source": "dacca3cba3f346a4"
+    },
+    "reportFrom": {
+      "text": "Ettől",
+      "source": "218197693424e015"
+    },
+    "reportTo": {
+      "text": "Eddig",
+      "source": "f4b06ef6d3c81436"
+    },
+    "reportApply": {
+      "text": "Alkalmaz",
+      "source": "31e392d1c0378bec"
+    },
+    "reportClear": {
+      "text": "Törlés",
+      "source": "83b12c2216efb4fd"
+    },
+    "reportAll": {
+      "text": "(mind)",
+      "source": "adf4d0f85b1cc66d"
+    },
+    "reportRowCount": {
+      "text": "{0} sor",
+      "source": "8f710eeb16668862"
+    },
+    "reportBack": {
+      "text": "Vissza a kimutatáshoz",
+      "source": "d965c126c38661d9"
+    },
+    "gridFilter": {
+      "text": "Szűrés és rendezés",
+      "source": "06df7c654f2b71f4"
+    },
+    "gridQuick": {
+      "text": "Gyorsszűrő",
+      "source": "e731882872db7f58"
+    },
+    "gridQuickHint": {
+      "text": "Minden szónak egyeznie kell. Használjon \"kifejezést\", oszlop:érték formát, vagy -szó alakot a sorok kizárásához.",
+      "source": "b84ed8ffa8241927"
+    },
+    "gridMatch": {
+      "text": "Egyezés",
+      "source": "03c0e806becb1425"
+    },
+    "gridMatchAll": {
+      "text": "minden feltétel",
+      "source": "0f3adb650d6ca84e"
+    },
+    "gridMatchAny": {
+      "text": "bármely feltétel",
+      "source": "4747603e1a53eda1"
+    },
+    "gridColumn": {
+      "text": "(oszlop)",
+      "source": "67e1fdd2ce9fc897"
+    },
+    "gridOperator": {
+      "text": "Művelet",
+      "source": "291101a07fe980e9"
+    },
+    "gridValue": {
+      "text": "Érték",
+      "source": "8e37953d23daca5f"
+    },
+    "gridAnd": {
+      "text": "és",
+      "source": "6201111b83a0cb5b"
+    },
+    "gridOr": {
+      "text": "vagy",
+      "source": "7175517a370b5cd2"
+    },
+    "gridApply": {
+      "text": "Alkalmaz",
+      "source": "31e392d1c0378bec"
+    },
+    "gridReset": {
+      "text": "Visszaállítás",
+      "source": "daee7606b339f3c3"
+    },
+    "gridRemove": {
+      "text": "Eltávolítás",
+      "source": "c3812fc4acb861d5"
+    },
+    "gridSortBy": {
+      "text": "Rendezés",
+      "source": "c9129025bd3ff652"
+    },
+    "gridThenBy": {
+      "text": "majd",
+      "source": "0fddcf95258d1010"
+    },
+    "gridNoSort": {
+      "text": "(alapértelmezett sorrend)",
+      "source": "dfc8c82740630f05"
+    },
+    "gridDirection": {
+      "text": "Irány",
+      "source": "9c8a9579abe55bdc"
+    },
+    "gridAscending": {
+      "text": "növekvő",
+      "source": "f8ad0148b8ecce4b"
+    },
+    "gridDescending": {
+      "text": "csökkenő",
+      "source": "21c1f31f240521a3"
+    },
+    "gridContains": {
+      "text": "tartalmazza",
+      "source": "beeb20fbd6769508"
+    },
+    "gridNotContains": {
+      "text": "nem tartalmazza",
+      "source": "80ccd8c9b9af87ac"
+    },
+    "gridStartsWith": {
+      "text": "ezzel kezdődik",
+      "source": "97862730c3a13cd9"
+    },
+    "gridEndsWith": {
+      "text": "ezzel végződik",
+      "source": "19ecc104ac1b52b3"
+    },
+    "gridBetween": {
+      "text": "között",
+      "source": "fbb27fbdc4f4dd04"
+    },
+    "gridIsYes": {
+      "text": "igen",
+      "source": "3a003bf7e22c15b3"
+    },
+    "gridIsNo": {
+      "text": "nem",
+      "source": "36cb24bdfc2fd1ac"
+    },
+    "gridIsEmpty": {
+      "text": "üres",
+      "source": "86aaa00d0f0432e7"
+    },
+    "gridNotEmpty": {
+      "text": "nem üres",
+      "source": "5a78c3a30610c2bc"
+    },
+    "auditTrail": {
+      "text": "Változásnapló",
+      "source": "c1ada08ce13857e4"
+    },
+    "auditWhen": {
+      "text": "Időpont",
+      "source": "cf9c7aa24a26aac4"
+    },
+    "auditUser": {
+      "text": "Felhasználó",
+      "source": "b512d97e7cbf97c2"
+    },
+    "auditTable": {
+      "text": "Tábla",
+      "source": "16d1c9050a0b32e8"
+    },
+    "auditAction": {
+      "text": "Művelet",
+      "source": "64cff1319d2fd2cb"
+    },
+    "auditRecord": {
+      "text": "Rekord",
+      "source": "bfdd510698ef3ccb"
+    },
+    "auditChanges": {
+      "text": "Változások",
+      "source": "bbd4b6a86bc65b6a"
+    },
+    "auditInsert": {
+      "text": "Hozzáadva",
+      "source": "6b02e0d363a4af1c"
+    },
+    "auditUpdate": {
+      "text": "Módosítva",
+      "source": "2a6141e43be0c212"
+    },
+    "auditDelete": {
+      "text": "Törölve",
+      "source": "b48ff39c2e0f5451"
+    },
+    "auditAll": {
+      "text": "(mind)",
+      "source": "adf4d0f85b1cc66d"
+    },
+    "auditApply": {
+      "text": "Alkalmaz",
+      "source": "31e392d1c0378bec"
+    },
+    "auditClear": {
+      "text": "Törlés",
+      "source": "83b12c2216efb4fd"
+    },
+    "auditFrom": {
+      "text": "Ettől",
+      "source": "218197693424e015"
+    },
+    "auditTo": {
+      "text": "Eddig",
+      "source": "f4b06ef6d3c81436"
+    },
+    "auditEmpty": {
+      "text": "Nincs a feltételeknek megfelelő bejegyzés.",
+      "source": "a68fe1c170fa476a"
+    },
+    "impExport": {
+      "text": "Exportálás",
+      "source": "3664895579f0a7e6"
+    },
+    "impImport": {
+      "text": "Importálás",
+      "source": "2cff9baabf56ca00"
+    },
+    "impTitle": {
+      "text": "{0} importálása",
+      "source": "02052d82db44e000"
+    },
+    "impFile": {
+      "text": "Fájl",
+      "source": "50009ce1da4d15e1"
+    },
+    "impHeaderRow": {
+      "text": "Az első sor az oszlopneveket tartalmazza",
+      "source": "8e3fed80bc5b6bb5"
+    },
+    "impSkipInvalid": {
+      "text": "A hibás sorok kihagyása és a többi importálása",
+      "source": "b2108e3cd5ed172c"
+    },
+    "impUpload": {
+      "text": "Feltöltés és előnézet",
+      "source": "8467c38958c658ba"
+    },
+    "impTemplate": {
+      "text": "CSV-sablon letöltése",
+      "source": "b186b2a5da85b47e"
+    },
+    "impFormats": {
+      "text": "Elfogadott fájlok: {0}.",
+      "source": "5ab639caf89e0483"
+    },
+    "impNoFile": {
+      "text": "Válassza ki az importálandó fájlt.",
+      "source": "227783e97510032c"
+    },
+    "impTooLarge": {
+      "text": "A fájl nagyobb, mint {0} MB.",
+      "source": "fd0a14211a6ee97d"
+    },
+    "impBadType": {
+      "text": "Ilyen típusú fájl nem importálható.",
+      "source": "bc5381b36a3df65e"
+    },
+    "impUnreadable": {
+      "text": "A fájl nem olvasható be {0} formátumként.",
+      "source": "d16a2eac89a158c0"
+    },
+    "impNoRows": {
+      "text": "A fájlban nincs importálható sor.",
+      "source": "b15310e204ce2181"
+    },
+    "impTooMany": {
+      "text": "A fájl több mint {0} sort tartalmaz.",
+      "source": "734a3fcc3e0043b9"
+    },
+    "impPreview": {
+      "text": "Előnézet",
+      "source": "324b134f57c70c72"
+    },
+    "impMapping": {
+      "text": "Melyik oszlop melyik mezőbe kerül",
+      "source": "803a132b4015c18c"
+    },
+    "impMapNone": {
+      "text": "(nem importálandó)",
+      "source": "926ff0b30c8618a2"
+    },
+    "impField": {
+      "text": "Mező",
+      "source": "f45fc1dfdc96db27"
+    },
+    "impColumn": {
+      "text": "Oszlop a fájlban",
+      "source": "fea07f1553cda74b"
+    },
+    "impRowsFound": {
+      "text": "{0} sor található itt: {1}.",
+      "source": "f123f60ac41802ac"
+    },
+    "impCheck": {
+      "text": "Ellenőrzés",
+      "source": "9d60841e0a7891df"
+    },
+    "impExpired": {
+      "text": "A feltöltött fájl már nem érhető el. Töltse fel újra.",
+      "source": "ec263069fbbe4f9a"
+    },
+    "impNotMapped": {
+      "text": "{0} kötelező, de nincs hozzárendelve oszlop.",
+      "source": "57249cf9bb4acf68"
+    },
+    "impKeyNotMapped": {
+      "text": "{0} a tábla kulcsának része: rendeljen hozzá egy oszlopot a meglévő sorok frissítéséhez.",
+      "source": "7ddee7a8af519993"
+    },
+    "impNothingMapped": {
+      "text": "Rendeljen hozzá legalább egy oszlopot.",
+      "source": "f924bfda9cf0e637"
+    },
+    "impSummary": {
+      "text": "{0} sor érvényes, {1} sor hibás.",
+      "source": "4a16c637e032be0a"
+    },
+    "impRowError": {
+      "text": "{0}. sor: {1}",
+      "source": "0c3ac3d68b49c793"
+    },
+    "impMoreErrors": {
+      "text": "További {0} hiba nem látható.",
+      "source": "398bb3f506e4fb1a"
+    },
+    "impDone": {
+      "text": "Az importálás befejeződött",
+      "source": "2194340e961ab3bd"
+    },
+    "impResult": {
+      "text": "{0} sor hozzáadva, {1} sor frissítve, {2} sor kihagyva.",
+      "source": "da08d602484b80aa"
+    },
+    "impNothing": {
+      "text": "Semmi sem lett importálva, mert egyes sorok hibásak. Javítsa a fájlt, vagy válassza a hibás sorok kihagyását.",
+      "source": "f28bca5130295632"
+    },
+    "impFailed": {
+      "text": "Az importálás a(z) {0}. sornál meghiúsult, és visszavontuk. Semmi sem változott.",
+      "source": "68b7663e3a14cc6d"
+    },
+    "impBool": {
+      "text": "{0} értéke csak igen vagy nem lehet.",
+      "source": "428b570a940a2544"
+    },
+    "impLookup": {
+      "text": "{0}: a(z) '{1}' nem engedélyezett érték.",
+      "source": "87783a5c613ba8a7"
+    },
+    "impDuplicate": {
+      "text": "A kulcs többször szerepel a fájlban.",
+      "source": "ba51a067acaecf53"
+    },
+    "impKeyExists": {
+      "text": "Már létezik sor ezzel a kulccsal.",
+      "source": "3f0636e750a1fca2"
+    },
+    "impKeyMissing": {
+      "text": "A(z) {0} kulcs üres.",
+      "source": "c17a7dcc5b0d1c74"
+    },
+    "impAnother": {
+      "text": "Másik fájl importálása",
+      "source": "60850b365662615c"
+    },
+    "impTooLong": {
+      "text": "{0} hosszabb {1} karakternél.",
+      "source": "2d16040c955787d0"
+    },
+    "impTooShort": {
+      "text": "{0} legalább {1} karakter hosszú legyen.",
+      "source": "61ede8c2fe7cf08c"
+    },
+    "impPattern": {
+      "text": "{0} formátuma nem megfelelő.",
+      "source": "3d8a1329d9a0e884"
+    },
+    "impMin": {
+      "text": "{0} értéke legalább {1} legyen.",
+      "source": "91fe0a949f7c18c5"
+    },
+    "impMax": {
+      "text": "{0} értéke legfeljebb {1} legyen.",
+      "source": "65a8bdefd29a402f"
+    },
+    "idUsers": {
+      "text": "Felhasználók",
+      "source": "6b0cc904d081a8c1"
+    },
+    "idRoles": {
+      "text": "Szerepkörök",
+      "source": "c25337055464f8d3"
+    },
+    "idEmail": {
+      "text": "E-mail",
+      "source": "2550d962e536e7c0"
+    },
+    "idEmailConfirmed": {
+      "text": "E-mail megerősítve",
+      "source": "28fdbd531f52fa6d"
+    },
+    "idLevel": {
+      "text": "Felhasználói szint",
+      "source": "1ec8551630d2b5f0"
+    },
+    "idRoleName": {
+      "text": "Szerepkör neve",
+      "source": "82c784ca1c4ccf65"
+    },
+    "idLocked": {
+      "text": "Zárolva",
+      "source": "a424e33d90931d1e"
+    },
+    "idLock": {
+      "text": "Zárolás",
+      "source": "db44b8db4f05d720"
+    },
+    "idUnlock": {
+      "text": "Feloldás",
+      "source": "4ac709aa58bcfe5d"
+    },
+    "idSetPassword": {
+      "text": "Jelszó beállítása",
+      "source": "4e4116871bf1515d"
+    },
+    "idAddUser": {
+      "text": "Felhasználó hozzáadása",
+      "source": "eec5c73a1d6c8ae7"
+    },
+    "idAddRole": {
+      "text": "Szerepkör hozzáadása",
+      "source": "e53a93625e749483"
+    },
+    "idEditUser": {
+      "text": "{0} felhasználó szerkesztése",
+      "source": "bb016afeec4947b9"
+    },
+    "idEditRole": {
+      "text": "{0} szerepkör szerkesztése",
+      "source": "ef983f0b4331afd4"
+    },
+    "idNoUsers": {
+      "text": "Nincs a feltételeknek megfelelő felhasználó.",
+      "source": "c8fb32f35caf039f"
+    },
+    "idNoRoles": {
+      "text": "Még nincsenek szerepkörök.",
+      "source": "4a4e52692f29828b"
+    },
+    "idCreated": {
+      "text": "A rekord létrejött.",
+      "source": "36088cc44e9c2490"
+    },
+    "idSaved": {
+      "text": "A módosításokat mentettük.",
+      "source": "c50425075f40d288"
+    },
+    "idDeleted": {
+      "text": "A rekordot töröltük.",
+      "source": "cefc44ca8ab576a1"
+    },
+    "idPasswordSet": {
+      "text": "A jelszót beállítottuk.",
+      "source": "d5d754f5b852bc2f"
+    },
+    "idNotSelf": {
+      "text": "Ezt a saját fiókjával nem teheti meg.",
+      "source": "4d7006aa4700a224"
+    },
+    "idKeepAdmin": {
+      "text": "A saját szintjét nem csökkentheti a rendszergazdai szint alá.",
+      "source": "061877dae870295d"
+    },
+    "idNotFound": {
+      "text": "A felhasználó vagy a szerepkör nem található.",
+      "source": "8e0a5c04bc140a19"
+    },
+    "idNotNumber": {
+      "text": "A felhasználói szintnek egész számnak kell lennie.",
+      "source": "f863f6b7517806c5"
+    },
+    "idNotAllowed": {
+      "text": "Amíg a fiókját nem erősítették meg, nem jelentkezhet be.",
+      "source": "9d4f8a02ef763365"
+    },
+    "idRegistrationPending": {
+      "text": "A regisztráció sikerült. Bejelentkezés előtt egy rendszergazdának meg kell erősítenie a fiókját.",
+      "source": "57fa986a0e6c17b7"
+    },
+    "idAdminOnly": {
+      "text": "Ezt az oldalt csak rendszergazdák nyithatják meg.",
+      "source": "8984298271363cd4"
+    },
+    "idInvalidUserName": {
+      "text": "A(z) '{0}' felhasználónév érvénytelen.",
+      "source": "ca9d59acff667226"
+    },
+    "idRoleTaken": {
+      "text": "A(z) '{0}' szerepkörnév már foglalt.",
+      "source": "def04c10d6b64ff0"
+    },
+    "idInvalidRoleName": {
+      "text": "A(z) '{0}' szerepkörnév érvénytelen.",
+      "source": "0d9aa79901f59e87"
+    },
+    "idInvalidEmail": {
+      "text": "A(z) '{0}' e-mail-cím érvénytelen.",
+      "source": "6db4f6bc606a1b4e"
+    },
+    "idPasswordDigit": {
+      "text": "A jelszónak számjegyet kell tartalmaznia.",
+      "source": "065cc60600d93098"
+    },
+    "idPasswordUpper": {
+      "text": "A jelszónak nagybetűt kell tartalmaznia.",
+      "source": "8dd1adfb8e288d83"
+    },
+    "idPasswordLower": {
+      "text": "A jelszónak kisbetűt kell tartalmaznia.",
+      "source": "10965bbfd3572079"
+    },
+    "idPasswordSymbol": {
+      "text": "A jelszónak olyan karaktert is tartalmaznia kell, amely nem betű és nem számjegy.",
+      "source": "19b7e22aa35960bd"
+    },
+    "idConcurrency": {
+      "text": "A rekordot közben valaki más módosította. Próbálja újra.",
+      "source": "6c4dd74c7d3e9693"
+    },
+    "idError": {
+      "text": "A módosítást nem sikerült menteni.",
+      "source": "c1ae9753ec468ad7"
+    },
+    "pageConfirmSave": {
+      "text": "Menti a módosításokat?",
+      "source": "a241799a18cc0cd6"
+    },
+    "pageConfirmDelete": {
+      "text": "Biztos benne?",
+      "source": "f0762c4f3bfcd695"
+    },
+    "pageClose": {
+      "text": "Bezárás",
+      "source": "7d9eb7acb13e2462"
+    },
+    "pageRowsPerPage": {
+      "text": "Sor oldalanként",
+      "source": "141b69f959166949"
+    },
+    "formPrevious": {
+      "text": "Előző",
+      "source": "a57b08a480b822a0"
+    },
+    "formNext": {
+      "text": "Következő",
+      "source": "1ff57a29d7c9d11b"
+    },
+    "formStep": {
+      "text": "{0}. lépés / {1}",
+      "source": "92f19534d8c54115"
+    },
+    "formProgress": {
+      "text": "Haladás",
+      "source": "4664827f8e890192"
+    },
+    "detailNoRecords": {
+      "text": "Nincsenek rekordok.",
+      "source": "95cafa3e40f5ca21"
+    },
+    "detailBlocked": {
+      "text": "Nem törölhető: {0} kapcsolódó {1} rekord létezik.",
+      "source": "ea47cd3d43e570f1"
+    },
+    "detailAlsoDeletes": {
+      "text": "Ez {0} rekordot is töröl innen: {1}.",
+      "source": "853fd4a5c8c0de53"
+    },
+    "deniedView": {
+      "text": "Nincs jogosultsága a tábla megtekintéséhez.",
+      "source": "f2305a44b318c989"
+    },
+    "deniedEdit": {
+      "text": "Nincs jogosultsága a tábla módosításához.",
+      "source": "49cb639fbcd5655d"
+    },
+    "deniedReport": {
+      "text": "Nincs jogosultsága a kimutatás megtekintéséhez.",
+      "source": "ae00516f8f92e278"
+    },
+    "checkMaxLength": {
+      "text": "{0} legfeljebb {1} karakter lehet.",
+      "source": "ffba4b7843458feb"
+    },
+    "checkMinLength": {
+      "text": "{0} legalább {1} karakter legyen.",
+      "source": "a3532c3337dc60b5"
+    },
+    "checkPattern": {
+      "text": "{0} formátuma nem megfelelő.",
+      "source": "8331eb60332baa9c"
+    },
+    "checkChoice": {
+      "text": "{0} értéke nem választható.",
+      "source": "d0bb93cf598c600d"
+    },
+    "checkMin": {
+      "text": "{0} értéke legalább {1} legyen.",
+      "source": "91fe0a949f7c18c5"
+    },
+    "checkMax": {
+      "text": "{0} értéke legfeljebb {1} legyen.",
+      "source": "65a8bdefd29a402f"
+    },
+    "checkNotBefore": {
+      "text": "{0} nem lehet korábbi, mint {1}.",
+      "source": "de1371503ca88a77"
+    },
+    "checkNotAfter": {
+      "text": "{0} nem lehet későbbi, mint {1}.",
+      "source": "bd76967f2702cbb9"
+    }
+  }
+}

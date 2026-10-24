@@ -6,7 +6,8 @@ namespace WebAppForge.Core.Localization;
 public sealed record SourceText(string Key, string Text, string Language);
 
 /// <summary>Which translations were made, kept or skipped by one <see cref="TranslationService"/> run.</summary>
-public sealed record TranslationResult(int Translated, int UpToDate, int Protected);
+/// <param name="BuiltIn">Texts left alone because a built-in translation pack covers them (see <see cref="TranslationPacks"/>).</param>
+public sealed record TranslationResult(int Translated, int UpToDate, int Protected, int BuiltIn = 0);
 
 /// <summary>Lists every text of a project that goes through the translation store.</summary>
 public static class LocalizationKeys
@@ -304,6 +305,7 @@ public static class TranslationProviders
 /// <see cref="LocalizationSettings.AutoTranslate"/> is set, and nothing else in this library calls a provider.
 /// An entry is translated when it is missing, or when it came from a provider, is not reviewed, and its source text changed
 /// (compared by <see cref="TranslationEntry.SourceHash"/>). Reviewed entries and manual entries are never overwritten.
+/// A missing fixed text that a built-in pack translates (and that is not stale) is not sent.
 /// </summary>
 public sealed class TranslationService
 {
@@ -330,7 +332,7 @@ public sealed class TranslationService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
         var sources = LocalizationKeys.Enumerate(project);
-        int translated = 0, upToDate = 0, protectedCount = 0;
+        int translated = 0, upToDate = 0, protectedCount = 0, builtIn = 0;
 
         foreach (var target in targets)
         {
@@ -341,7 +343,12 @@ public sealed class TranslationService
                 foreach (var source in group)
                 {
                     var existing = settings.Find(source.Key, target);
-                    if (existing is null)
+                    if (existing is null && TranslationPacks.Find(source.Key, target) is not null)
+                    {
+                        // A fresh built-in translation is used as it is; nothing is sent for it.
+                        builtIn++;
+                    }
+                    else if (existing is null)
                     {
                         pending.Add(source);
                     }
@@ -388,7 +395,7 @@ public sealed class TranslationService
             }
         }
 
-        return new TranslationResult(translated, upToDate, protectedCount);
+        return new TranslationResult(translated, upToDate, protectedCount, builtIn);
     }
 
     private static string? NotesOrNull(LocalizationSettings settings) =>

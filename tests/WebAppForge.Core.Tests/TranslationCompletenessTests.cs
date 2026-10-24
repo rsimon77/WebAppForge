@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
@@ -275,6 +276,48 @@ public sealed class TranslationCompletenessTests : IAsyncLifetime
         // A text without a Hungarian translation falls back to the default language.
         Assert.Contains("First and last name", add);
         Assert.Contains("Our customers", WebUtility.HtmlDecode(await Get("/customers", "en")));
+    }
+
+    [Fact]
+    public async Task AHungarianVisitorReadsTheBuiltInFixedTexts()
+    {
+        // The project translated only two fixed texts itself; its own entries win over the built-in pack.
+        var store = JsonDocument.Parse(File.ReadAllText(Path.Combine(_root, "site", "Localization", "strings.hu.json"))).RootElement;
+        Assert.Equal("Új", store.GetProperty("ui.add").GetString());
+        Assert.Equal("Szerkesztés", store.GetProperty("ui.edit").GetString());
+        Assert.Equal("Változásnapló", store.GetProperty("ui.auditTrail").GetString());
+
+        // Words of the fixed English texts, minus words a project text (which falls back to English here) or a data value uses.
+        var fixedWords = new HashSet<string>(StringComparer.Ordinal);
+        var projectWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var source in LocalizationKeys.Enumerate(_project))
+        {
+            var target = source.Key.StartsWith(UiStrings.KeyPrefix, StringComparison.Ordinal) ? fixedWords : projectWords;
+            foreach (Match word in Regex.Matches(Regex.Replace(source.Text, "<[^>]*>|\\{\\d+\\}", " "), @"\p{L}{3,}"))
+            {
+                target.Add(word.Value);
+            }
+        }
+
+        fixedWords.RemoveWhere(w => projectWords.Contains(w) || Allowed.Contains(w) || w is "CSV" or "MB");
+        var pages = new[] { "/", "/customers", "/customers/add", "/customers/edit/1", "/customers/view/1", "/customers/search", "/orders", "/reports/orders-by-customer", "/audit-trail", "/customers/import" };
+        var leaks = new List<string>();
+        foreach (var page in pages)
+        {
+            foreach (var text in VisibleTexts(await Get(page, "hu")))
+            {
+                var words = Regex.Matches(text, @"\p{L}{3,}").Select(m => m.Value).Where(fixedWords.Contains).ToList();
+                if (words.Count > 0)
+                {
+                    leaks.Add($"{page}: \"{text.Trim()}\" ({string.Join(", ", words)})");
+                }
+            }
+        }
+
+        Assert.True(leaks.Count == 0, "English fixed texts on Hungarian pages:\n" + string.Join("\n", leaks.Distinct()));
+        var list = WebUtility.HtmlDecode(await Get("/customers", "hu"));
+        Assert.Contains("Exportálás", list);
+        Assert.Contains("Importálás", list);
     }
 
     [Fact]

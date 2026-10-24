@@ -325,3 +325,13 @@ Currency keeps the symbol of the default language with the visitor's separators.
   so "1,5" is 1.5 in Hungarian and an error in English (never 15). Integers stay invariant.
 - The html lang attribute and the Accept-Language fallback (when there is no language cookie) already existed.
 Sites without localization are byte-identical.
+
+## Built-in translation packs (2026-10-25)
+
+The fixed UI strings of generated sites ship pre-translated per language as embedded JSON packs in Core
+(src/WebAppForge.Core/Localization/Packs/<language>.json; read by TranslationPacks). Each entry keeps a hash of the English
+text it was made from; when the English text changes the entry is stale and the page falls back to English until the pack
+is updated (TranslationPackTests fails on stale or missing entries). Precedence: the project's own entry (manual or
+machine), then a fresh pack entry, then English. Packs apply only to fixed UI strings, never to captions or project texts.
+The Languages tab shows pack texts as "Built-in", counts them as translated, and automatic translation does not send them.
+First pack: Hungarian (hu), formal register.

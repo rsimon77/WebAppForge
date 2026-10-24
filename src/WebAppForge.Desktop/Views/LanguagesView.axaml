@@ -23,7 +23,8 @@
                         <CheckBox IsChecked="{Binding Reviewed}" IsEnabled="{Binding HasEntry}" MinWidth="0"
                                   ToolTip.Tip="Reviewed: a reviewed text is never replaced by automatic translation"
                                   AutomationProperties.AutomationId="TranslationReviewedCheck" />
-                        <TextBlock Text="{Binding SourceLabel}" Classes="hint" VerticalAlignment="Center" Width="48" />
+                        <TextBlock Text="{Binding SourceLabel}" Classes="hint" VerticalAlignment="Center" Width="56"
+                                   ToolTip.Tip="Built-in: shipped with WebAppForge; typing a text replaces it for this project" />
                     </StackPanel>
                 </Grid>
             </Border>
