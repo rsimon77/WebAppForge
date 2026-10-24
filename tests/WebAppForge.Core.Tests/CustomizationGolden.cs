@@ -9,6 +9,8 @@ namespace WebAppForge.Core.Tests;
 /// Dapper, select lists name each column after its property, and Web/Db.cs was added.
 /// The localized Permissions.cs and strings.en.json hashes were updated deliberately when the "no permission" answers of the routes
 /// became translatable: Permissions.cs answers in the language of the request, and the English store gained the three texts.
+/// The localized Program.cs and strings.en.json hashes were updated deliberately when project texts became translatable: the home
+/// page title is looked up under "site.title", and the English store gained that key.
 /// </summary>
 internal static class CustomizationGolden
 {
@@ -22,7 +24,7 @@ internal static class CustomizationGolden
         localized/LocShop.csproj 2dc238918d7c97f0
         localized/Localization/Strings.cs 3df468507f47da20
         localized/Localization/strings.de.json ca3d163bab055381
-        localized/Localization/strings.en.json 02b9873af5378424
+        localized/Localization/strings.en.json 33cb9d3eb1da7546
         localized/Models/AuditLog.cs a70a54b8072eba00
         localized/Models/Codes.cs 5622dce221ed3c93
         localized/Models/Notes.cs 8c5a4b4ed0c92dff
@@ -37,7 +39,7 @@ internal static class CustomizationGolden
         localized/Pages/OrderLinesPages.cs c495ab348d33be12
         localized/Pages/UserAccountPages.cs 68b4e82f64cc8414
         localized/Pages/UsersPages.cs 09192a7048838baf
-        localized/Program.cs bc5ba39fff17367f
+        localized/Program.cs 9c7b2af1177d477a
         localized/Security/LoginAttempts.cs 131d5392d619d1a0
         localized/Security/Passwords.cs 41009637792cf9b8
         localized/Security/Permissions.cs 20eee32b5f140015

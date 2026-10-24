@@ -273,7 +273,9 @@ internal static partial class Templates
         sb.AppendLine("{");
         sb.AppendLine($"    public const string Route = {Lit(ReportRoute(report))};");
         sb.AppendLine($"    public const int MinLevel = {level};");
-        sb.AppendLine($"    private const string Description = {Lit(report.Description)};");
+        sb.AppendLine(Localized && report.Description.Trim().Length > 0
+            ? $"    private static string Description => {ProjectText(LocalizationKeys.ReportDescription(report.Name), report.Description.Trim())};"
+            : $"    private const string Description = {Lit(report.Description)};");
         if (table is not null)
         {
             sb.AppendLine($"    private const string From = {Lit(" FROM " + QuoteIdent(table.Name))};");

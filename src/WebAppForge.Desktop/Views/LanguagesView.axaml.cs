@@ -10,7 +10,7 @@ namespace WebAppForge.Desktop.Views;
 public partial class LanguagesView : UserControl
 {
     /// <summary>The key and source text columns declared in the XAML; every column after them is a language.</summary>
-    private const int FixedColumns = 2;
+    private const int FixedColumns = 3;
 
     private LanguagesViewModel? _subscribed;
 

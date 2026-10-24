@@ -276,8 +276,21 @@ public static class UiStrings
         new("deniedReport", "You do not have permission to view this report."),
     ];
 
+    /// <summary>Messages of the checks of customized fields (lengths, patterns, choices, ranges); {0} is the field caption.</summary>
+    public static IReadOnlyList<UiString> Checks { get; } =
+    [
+        new("checkMaxLength", "{0} must be at most {1} characters."),
+        new("checkMinLength", "{0} must be at least {1} characters."),
+        new("checkPattern", "{0} is not in the expected format."),
+        new("checkChoice", "{0} is not a valid choice."),
+        new("checkMin", "{0} must be at least {1}."),
+        new("checkMax", "{0} must be at most {1}."),
+        new("checkNotBefore", "{0} must not be before {1}."),
+        new("checkNotAfter", "{0} must not be after {1}."),
+    ];
+
     private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).Concat(Audit).Concat(ImportExport).Concat(Identity)
-        .Concat(PageKit).Concat(FormPages).Concat(Details).Concat(Denied).ToDictionary(s => s.Id);
+        .Concat(PageKit).Concat(FormPages).Concat(Details).Concat(Denied).Concat(Checks).ToDictionary(s => s.Id);
 
     /// <summary>The English text of a UI string. Throws for an unknown id, which is a bug in the generator.</summary>
     public static string English(string id) =>

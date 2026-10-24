@@ -1,4 +1,5 @@
 using System.Text;
+using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 
 namespace WebAppForge.Core.Generation;
@@ -79,7 +80,7 @@ internal static partial class Templates
         t.Pages.Edit && t.PrimaryKeys.Count > 0 && (t.PrimaryKeys.Count > 1 || UpdateFields(t).Count > 0);
 
     private static string MdCaptionExpr(MdLink md) =>
-        Has(md.Link.Caption) ? Lit(md.Link.Caption.Trim()) : TableText(md.Detail);
+        Has(md.Link.Caption) ? ProjectText(LocalizationKeys.Detail(md.Master.Name, md.Index), md.Link.Caption.Trim()) : TableText(md.Detail);
 
     private static List<MdLink> MdViewLinks(TableInfo t) => MdLinks(t).Where(l => l.Link.ShowOnView).ToList();
 
@@ -265,7 +266,7 @@ internal static partial class Templates
                 var prop = PropName(dClass, field);
                 if (NeedsFmt(field))
                 {
-                    sb.AppendLine($"    private static readonly FieldView {MdFmt(md.Index, prop)} = {FmtInit(field)};");
+                    sb.AppendLine(Static("FieldView", MdFmt(md.Index, prop), FmtInit(field)));
                 }
 
                 if (LookupOf(field) is { } lookup)
@@ -501,10 +502,10 @@ internal static partial class Templates
         L("        grid.Append(\"<div class=\\\"table-responsive\\\"><table class=\\\"table table-sm table-striped align-middle\\\"><thead><tr>\");");
         foreach (var (field, width) in columns)
         {
-            var header = $"grid.Append({Lit("<th" + CellAttributes(field, true, width) + ">")}).Append(Html.Encode({FieldText(field)})).Append(\"</th>\");";
+            var header = $"grid.Append({HeaderAttributes(field, width, "<th", ">")}).Append(Html.Encode({FieldText(field)})).Append(\"</th>\");";
             if (tools && field.Ui.Sortable && field.Type != FieldType.Binary)
             {
-                L($"        if (tools) grid.Append(GridKit.DetailHeader(request, {i}, {Lit(field.Name)}, {FieldText(field)}, {Lit(CellAttributes(field, true, width))}));");
+                L($"        if (tools) grid.Append(GridKit.DetailHeader(request, {i}, {Lit(field.Name)}, {FieldText(field)}, {HeaderAttributes(field, width)}));");
                 L($"        else {header}");
             }
             else

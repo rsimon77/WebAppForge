@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 
 namespace WebAppForge.Core.Generation;
@@ -113,6 +114,14 @@ internal static partial class Templates
 
     // ---- statics emitted in the pages class -----------------------------------------------------
 
+    /// <summary>
+    /// A static of a pages class. One that holds a translated text is built on each use, so it is in the language of the
+    /// request; every other static is created once.
+    /// </summary>
+    internal static string Static(string type, string name, string init) => Localized && init.Contains("Strings.", StringComparison.Ordinal)
+        ? $"    private static {type} {name} => {init};"
+        : $"    private static readonly {type} {name} = {init};";
+
     /// <summary>Format objects, lookups, static options, sort whitelist and row styles used by the customized parts of a table's pages.</summary>
     private static void AppendCustomStatics(StringBuilder sb, string className, TableInfo table)
     {
@@ -122,7 +131,7 @@ internal static partial class Templates
             var ui = field.Ui;
             if (NeedsFmt(field))
             {
-                sb.AppendLine($"    private static readonly FieldView {Fmt(prop)} = {FmtInit(field)};");
+                sb.AppendLine(Static("FieldView", Fmt(prop), FmtInit(field)));
             }
 
             if (LookupOf(field) is { } lookup)
@@ -133,8 +142,8 @@ internal static partial class Templates
             }
             else if (ui.Options.Count > 0)
             {
-                var options = ui.Options.Select(o => $"new({Lit(o.Value)}, {Lit(o.Text)})");
-                sb.AppendLine($"    private static readonly KeyValuePair<string, string>[] {OptionsName(prop)} = [{string.Join(", ", options)}];");
+                var options = ui.Options.Select(o => $"new({Lit(o.Value)}, {(o.Text.Trim().Length > 0 ? FieldUiText(field, "option." + o.Value, o.Text) : Lit(o.Text))})");
+                sb.AppendLine(Static("KeyValuePair<string, string>[]", OptionsName(prop), $"[{string.Join(", ", options)}]"));
             }
         }
 
@@ -175,18 +184,19 @@ internal static partial class Templates
 
         if (ui.TrueText.Length > 0)
         {
-            parts.Add($"TrueText = {Lit(ui.TrueText)}");
+            parts.Add($"TrueText = {FieldUiText(field, "true", ui.TrueText)}");
         }
 
         if (ui.FalseText.Length > 0)
         {
-            parts.Add($"FalseText = {Lit(ui.FalseText)}");
+            parts.Add($"FalseText = {FieldUiText(field, "false", ui.FalseText)}");
         }
 
         if (ui.BadgeRules.Count > 0)
         {
-            var rules = ui.BadgeRules.Select(r =>
-                $"new({Lit(r.Operator.ToString())}, {Lit(RuleValue(field, r.Value))}, {Lit(Token(r.Style, "secondary"))}, {Lit(r.Text)})");
+            var rules = ui.BadgeRules.Select((r, i) =>
+                $"new({Lit(r.Operator.ToString())}, {Lit(RuleValue(field, r.Value))}, {Lit(Token(r.Style, "secondary"))}, "
+                + $"{(r.Text.Trim().Length > 0 ? ProjectText(LocalizationKeys.FieldBadge(_localizedTable ?? string.Empty, field.Name, i), r.Text) : Lit(r.Text))})");
             parts.Add("Rules = new FieldView.Rule[] { " + string.Join(", ", rules) + " }");
         }
 
@@ -263,7 +273,7 @@ internal static partial class Templates
     };
 
     /// <summary>class and style attributes (HTML-encoded) for a list cell, plus the width on header cells.</summary>
-    private static string CellAttributes(FieldInfo field, bool header, string width = "")
+    private static string CellAttributes(FieldInfo field, bool header, string width = "", bool tooltip = true)
     {
         var ui = field.Ui;
         var cssWidth = width.Length > 0 ? width : ui.Width.Trim();
@@ -290,7 +300,7 @@ internal static partial class Templates
             sb.Append(" style=\"").Append(HtmlText(string.Join(";", styles))).Append('"');
         }
 
-        if (header && ui.Tooltip.Length > 0)
+        if (tooltip && header && ui.Tooltip.Length > 0)
         {
             sb.Append(" title=\"").Append(HtmlText(ui.Tooltip)).Append('"');
         }
@@ -298,16 +308,29 @@ internal static partial class Templates
         return sb.ToString();
     }
 
+    /// <summary>
+    /// C# expression of the attributes of a header cell: a literal, or, for a localized site with a column tooltip, the
+    /// literal followed by the translated title.
+    /// </summary>
+    private static string HeaderAttributes(FieldInfo field, string width, string prefix = "", string suffix = "")
+    {
+        if (!Localized || field.Ui.Tooltip.Length == 0)
+        {
+            return Lit(prefix + CellAttributes(field, true, width) + suffix);
+        }
+
+        return $"{Lit(prefix + CellAttributes(field, true, width, tooltip: false) + " title=\"")} + Html.Attr({FieldUiText(field, "tooltip", field.Ui.Tooltip)}) + {Lit("\"" + suffix)}";
+    }
+
     /// <summary>The header statement of a list column of a customized table.</summary>
     private static string ListHeaderLine(FieldInfo field, string width = "")
     {
-        var attrs = CellAttributes(field, true, width);
         if (field.Ui.Sortable && field.Type != FieldType.Binary)
         {
-            return $"        body.Append(FieldView.SortHeader(request, Route, {Lit(field.Name)}, {FieldText(field)}, {Lit(attrs)}));";
+            return $"        body.Append(FieldView.SortHeader(request, Route, {Lit(field.Name)}, {FieldText(field)}, {HeaderAttributes(field, width)}));";
         }
 
-        return $"        body.Append({Lit("<th" + attrs + ">")}).Append(Html.Encode({FieldText(field)})).Append(\"</th>\");";
+        return $"        body.Append({HeaderAttributes(field, width, "<th", ">")}).Append(Html.Encode({FieldText(field)})).Append(\"</th>\");";
     }
 
     /// <summary>The value HTML of a field on the list and view pages.</summary>
@@ -434,9 +457,9 @@ internal static partial class Templates
             parts.Add("AutoFocus = true");
         }
 
-        AddText(parts, "Help", ui.HelpText);
-        AddText(parts, "Placeholder", ui.Placeholder);
-        AddText(parts, "Tooltip", ui.Tooltip);
+        AddFieldText(parts, field, "Help", "help", ui.HelpText);
+        AddFieldText(parts, field, "Placeholder", "placeholder", ui.Placeholder);
+        AddFieldText(parts, field, "Tooltip", "tooltip", ui.Tooltip);
         AddText(parts, "CssClass", ui.CssClass);
         AddText(parts, "Style", ui.Style);
         AddText(parts, "Min", ui.Min);
@@ -468,6 +491,15 @@ internal static partial class Templates
         }
 
         return "new FieldEditor.Spec { " + string.Join(", ", parts) + " }";
+    }
+
+    /// <summary>Adds a property with a field text the project owner wrote, translated when the site is localized.</summary>
+    private static void AddFieldText(List<string> parts, FieldInfo field, string name, string part, string value)
+    {
+        if (value.Length > 0)
+        {
+            parts.Add($"{name} = {FieldUiText(field, part, value)}");
+        }
     }
 
     private static void AddText(List<string> parts, string name, string value)
@@ -516,7 +548,7 @@ internal static partial class Templates
 
         if (group.Length > 0)
         {
-            yield return $"        body.Append(FieldEditor.GroupStart({Lit(group)}));";
+            yield return $"        body.Append(FieldEditor.GroupStart({ProjectText(LocalizationKeys.FieldGroup(_localizedTable ?? string.Empty, group), group)}));";
         }
     }
 
@@ -617,7 +649,7 @@ internal static partial class Templates
     }
 
     private static string RequiredText(FieldInfo field) =>
-        field.Ui.RequiredMessage.Length > 0 ? Lit(field.Ui.RequiredMessage) : FieldMessage("required", field);
+        field.Ui.RequiredMessage.Length > 0 ? FieldUiText(field, "required", field.Ui.RequiredMessage) : FieldMessage("required", field);
 
     private static bool TryDecimal(string text, out decimal value) =>
         decimal.TryParse(text.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out value);
@@ -630,23 +662,23 @@ internal static partial class Templates
         var checks = new List<string>();
         if (ui.MaxLength > 0)
         {
-            checks.Add($"if (value.Length > {ui.MaxLength}) errors.Add({label} + {Lit(" must be at most " + ui.MaxLength + " characters.")});");
+            checks.Add($"if (value.Length > {ui.MaxLength}) errors.Add({CheckMessage("checkMaxLength", label, ui.MaxLength.ToString(CultureInfo.InvariantCulture))});");
         }
 
         if (ui.MinLength > 0)
         {
-            checks.Add($"if (value.Length < {ui.MinLength}) errors.Add({label} + {Lit(" must be at least " + ui.MinLength + " characters.")});");
+            checks.Add($"if (value.Length < {ui.MinLength}) errors.Add({CheckMessage("checkMinLength", label, ui.MinLength.ToString(CultureInfo.InvariantCulture))});");
         }
 
         if (IsValidPattern(ui.Pattern))
         {
-            var message = ui.PatternMessage.Length > 0 ? Lit(ui.PatternMessage) : $"{label} + {Lit(" is not in the expected format.")}";
+            var message = ui.PatternMessage.Length > 0 ? FieldUiText(field, "pattern", ui.PatternMessage) : CheckMessage("checkPattern", label, string.Empty);
             checks.Add($"if (!FieldEditor.Matches(value, {Lit(ui.Pattern)})) errors.Add({message});");
         }
 
         if (LookupOf(field) is null && ui.Options.Count > 0)
         {
-            checks.Add($"if (!Array.Exists({OptionsName(prop)}, o => o.Key == value)) errors.Add({label} + {Lit(" is not a valid choice.")});");
+            checks.Add($"if (!Array.Exists({OptionsName(prop)}, o => o.Key == value)) errors.Add({CheckMessage("checkChoice", label, string.Empty)});");
         }
 
         return checks;
@@ -720,17 +752,17 @@ internal static partial class Templates
         var checks = new List<string>();
         if (TryDecimal(ui.Min, out var min))
         {
-            checks.Add($"if (parsed < {min.ToString(CultureInfo.InvariantCulture)}m) errors.Add({label} + {Lit(" must be at least " + ui.Min.Trim() + ".")});");
+            checks.Add($"if (parsed < {min.ToString(CultureInfo.InvariantCulture)}m) errors.Add({CheckMessage("checkMin", label, ui.Min.Trim())});");
         }
 
         if (TryDecimal(ui.Max, out var max))
         {
-            checks.Add($"if (parsed > {max.ToString(CultureInfo.InvariantCulture)}m) errors.Add({label} + {Lit(" must be at most " + ui.Max.Trim() + ".")});");
+            checks.Add($"if (parsed > {max.ToString(CultureInfo.InvariantCulture)}m) errors.Add({CheckMessage("checkMax", label, ui.Max.Trim())});");
         }
 
         if (LookupOf(field) is null && ui.Options.Count > 0)
         {
-            checks.Add($"if (!Array.Exists({OptionsName(prop)}, o => o.Key == raw)) errors.Add({label} + {Lit(" is not a valid choice.")});");
+            checks.Add($"if (!Array.Exists({OptionsName(prop)}, o => o.Key == raw)) errors.Add({CheckMessage("checkChoice", label, string.Empty)});");
         }
 
         return checks;
@@ -743,12 +775,12 @@ internal static partial class Templates
         var checks = new List<string>();
         if (DateTime.TryParse(ui.Min.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var min))
         {
-            checks.Add($"if (parsed < new DateTime({min.Ticks}L)) errors.Add({label} + {Lit(" must not be before " + ui.Min.Trim() + ".")});");
+            checks.Add($"if (parsed < new DateTime({min.Ticks}L)) errors.Add({CheckMessage("checkNotBefore", label, ui.Min.Trim())});");
         }
 
         if (DateTime.TryParse(ui.Max.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var max))
         {
-            checks.Add($"if (parsed > new DateTime({max.Ticks}L)) errors.Add({label} + {Lit(" must not be after " + ui.Max.Trim() + ".")});");
+            checks.Add($"if (parsed > new DateTime({max.Ticks}L)) errors.Add({CheckMessage("checkNotAfter", label, ui.Max.Trim())});");
         }
 
         return checks;
@@ -813,12 +845,12 @@ internal static partial class Templates
             menu.AppendLine("        {");
             foreach (var table in MenuTables(tables))
             {
-                menu.AppendLine($"            ({Lit(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}),");
+                menu.AppendLine($"            ({MenuGroupText(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}),");
             }
 
             foreach (var report in MenuReports())
             {
-                menu.AppendLine($"            ({Lit(report.MenuGroup)}, {ReportText(report)}, {Lit(ReportRoute(report))}),");
+                menu.AppendLine($"            ({MenuGroupText(report.MenuGroup)}, {ReportText(report)}, {Lit(ReportRoute(report))}),");
             }
 
             menu.AppendLine("        };");
@@ -922,9 +954,12 @@ internal static partial class Templates
         }
 
         var tail = new StringBuilder();
+        // A localized footer is looked up per request: its text is a placeholder here, replaced by the lookup below.
+        const string footerSlot = "footer";
+        var localizedFooter = Localized && meta.FooterText.Trim().Length > 0;
         if (meta.FooterText.Length > 0)
         {
-            tail.Append("<footer class=\"container text-muted small py-4\">").Append(HtmlText(meta.FooterText)).Append("</footer>");
+            tail.Append("<footer class=\"container text-muted small py-4\">").Append(localizedFooter ? footerSlot : HtmlText(meta.FooterText)).Append("</footer>");
         }
 
         if (nav)
@@ -940,7 +975,14 @@ internal static partial class Templates
 
         if (tail.Length > 0)
         {
-            text = ReplaceOnce(text, "\"</main></body></html>\"", "\"</main>\" + " + Lit(tail.ToString()) + " + \"</body></html>\"");
+            var tailExpr = Lit(tail.ToString());
+            if (localizedFooter)
+            {
+                var halves = tail.ToString().Split(footerSlot);
+                tailExpr = Lit(halves[0]) + " + Encode(" + ProjectText(LocalizationKeys.SiteFooter, meta.FooterText.Trim()) + ") + " + Lit(halves[1]);
+            }
+
+            text = ReplaceOnce(text, "\"</main></body></html>\"", "\"</main>\" + " + tailExpr + " + \"</body></html>\"");
         }
 
         return text;
