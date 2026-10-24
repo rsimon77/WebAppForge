@@ -176,10 +176,9 @@ internal sealed class DesktopSession : IDisposable
     {
         SelectTab("Database");
 
-        // The SQLite path box is the empty edit on the Database tab; the project name box holds "Project1".
+        // The SQLite path box, by its automation id: the tab has other empty edits since the server engines were added.
         var pathBox = Retry.WhileNull(
-            () => Window.FindAllDescendants(cf => cf.ByControlType(ControlType.Edit))
-                .FirstOrDefault(e => Property(() => e.AsTextBox().Text) == string.Empty),
+            () => Window.FindFirstDescendant(cf => cf.ByAutomationId("SqlitePathBox")),
             TimeSpan.FromSeconds(10)).Result;
         Require(pathBox, "The SQLite path box was not found.").AsTextBox().Enter(Database);
 

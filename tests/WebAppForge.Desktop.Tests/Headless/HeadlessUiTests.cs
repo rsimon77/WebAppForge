@@ -79,7 +79,8 @@ public class HeadlessUiTests
     private static ComboBox[] SecurityCombos(Window window)
     {
         var view = window.GetVisualDescendants().OfType<SecurityView>().Single();
-        return view.GetVisualDescendants().OfType<ComboBox>().ToArray();
+        // The user store picker comes first; these tests use the project-table pickers after it.
+        return view.GetVisualDescendants().OfType<ComboBox>().Where(c => AutomationProperties.GetAutomationId(c) != "UserStoreComboBox").ToArray();
     }
 
     private static DataGrid TablesGrid(Window window) => window.GetVisualDescendants().OfType<DataGrid>().Single();

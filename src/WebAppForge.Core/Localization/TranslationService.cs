@@ -67,6 +67,14 @@ public static class LocalizationKeys
             }
         }
 
+        if (project.Security.UsesIdentity)
+        {
+            foreach (var ui in UiStrings.Identity)
+            {
+                result.Add(new SourceText(ui.Key, ui.English, "en"));
+            }
+        }
+
         var reports = project.Reports.Where(r => r.Generate).ToList();
         if (reports.Count > 0)
         {

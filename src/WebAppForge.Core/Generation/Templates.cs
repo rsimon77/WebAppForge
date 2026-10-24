@@ -144,7 +144,13 @@ internal static partial class Templates
             sb.AppendLine("using Microsoft.Data.Sqlite;");
         }
 
-        if (secure)
+        var identity = security.UsesIdentity;
+        if (identity)
+        {
+            sb.AppendLine("using Microsoft.AspNetCore.Antiforgery;");
+            sb.AppendLine($"using {ns}.Security;");
+        }
+        else if (secure)
         {
             sb.AppendLine("using Microsoft.AspNetCore.Antiforgery;");
             sb.AppendLine("using Microsoft.AspNetCore.Authentication.Cookies;");
@@ -190,7 +196,13 @@ internal static partial class Templates
             sb.AppendLine("builder.Services.AddResponseCompression();");
         }
 
-        if (secure)
+        if (identity)
+        {
+            // ASP.NET Core Identity with the site's Dapper stores; it also sets up the sign-in cookie.
+            sb.AppendLine("builder.Services.AddSiteIdentity(connectionString);");
+            sb.AppendLine("builder.Services.AddAuthorization();");
+        }
+        else if (secure)
         {
             sb.AppendLine("builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)");
             sb.AppendLine("    .AddCookie(options =>");
@@ -238,7 +250,13 @@ internal static partial class Templates
             sb.AppendLine("app.UseAuthentication();");
             sb.AppendLine("app.UseAuthorization();");
             sb.AppendLine();
-            if (security.TrackFailedAttempts)
+            if (identity)
+            {
+                // Creates the missing identity tables and the first administrator before any request is served.
+                sb.AppendLine("await SiteIdentity.InitializeAsync(app.Services, connectionString);");
+                sb.AppendLine();
+            }
+            else if (security.TrackFailedAttempts)
             {
                 // Creates login_attempts before any request is served. Idempotent: CREATE TABLE IF NOT EXISTS.
                 sb.AppendLine("await LoginAttempts.EnsureTableAsync(connectionString);");
@@ -258,6 +276,11 @@ internal static partial class Templates
             if (security.AllowChangePassword)
             {
                 sb.AppendLine("secured.MapChangePasswordPages(connectionString);");
+            }
+
+            if (identity)
+            {
+                sb.AppendLine("secured.MapUserAdminPages(connectionString);");
             }
         }
 
@@ -318,14 +341,16 @@ internal static partial class Templates
                     : $"    ({Ui("auditTrail")}, {Lit(AuditRoute)}),");
             }
 
+            // Administrators of an identity site also get the links to the user and role pages.
+            var admin = identity ? " + UserAdminPages.AdminLinks(context)" : string.Empty;
             if (secure && security.AllowChangePassword)
             {
-                sb.AppendLine($"}}) + Html.Link(\"/changepassword\", {Ui("changePassword")}) + AuthPages.LogoutForm(context, antiforgery)));");
+                sb.AppendLine($"}}) + Html.Link(\"/changepassword\", {Ui("changePassword")}){admin} + AuthPages.LogoutForm(context, antiforgery)));");
             }
             else
             {
                 sb.AppendLine(secure
-                    ? "}) + AuthPages.LogoutForm(context, antiforgery)));"
+                    ? $"}}){admin} + AuthPages.LogoutForm(context, antiforgery)));"
                     : "})));");
             }
             sb.AppendLine();
