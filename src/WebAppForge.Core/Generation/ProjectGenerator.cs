@@ -41,6 +41,8 @@ public sealed class ProjectGenerator
             Templates.ConnectionVariable = string.Empty;
             Templates.EntraAuth = false;
             Templates.Auditing = null;
+            Templates.ImportExportConfig = null;
+            Templates.ExchangeOpenXml = false;
         }
     }
 
@@ -79,6 +81,21 @@ public sealed class ProjectGenerator
         var copies = tables.Select(t => GeneratedCopy(t, project.Security)).ToList();
         Templates.MdTables = copies;
         ReportValidator.Validate(project, copies);
+        ImportExportRules.Validate(project);
+        if (ImportExportRules.IsUsed(project))
+        {
+            // The user levels of the settings only count with User Level security, like those of a table.
+            var exchange = project.ImportExport.Clone();
+            if (!HasUserLevelSecurity(project.Security))
+            {
+                exchange.ExportMinLevel = 0;
+                exchange.ImportMinLevel = 0;
+            }
+
+            Templates.ImportExportConfig = exchange;
+            Templates.ExchangeOpenXml = ImportExportRules.UsesOpenXml(project);
+        }
+
         var reports = project.Reports.Where(r => r.Generate).ToList();
         Templates.Reports = reports;
         var files = new Dictionary<string, string>
@@ -132,6 +149,13 @@ public sealed class ProjectGenerator
             {
                 files["Pages/AuditTrailPages.cs"] = Templates.AuditPage(ns, copies, project.Security.Enabled && !string.IsNullOrEmpty(project.Security.UserLevelField));
             }
+        }
+
+        // Export and import share one runtime; the Open XML file is a stub for a site that offers neither Excel nor Word.
+        if (Templates.ImportExportConfig is { } importExport && copies.Any(Templates.UsesExchange))
+        {
+            files["Web/DataExchange.cs"] = Templates.DataExchangeRuntime(ns, importExport);
+            files["Web/OpenXmlFormats.cs"] = Templates.OpenXmlFormatsRuntime(ns);
         }
 
         if (Templates.EnvironmentName(project.Meta) is { } environment)
@@ -283,6 +307,8 @@ public sealed class ProjectGenerator
             Ui = table.Ui,
             Designs = table.Designs,
             Audit = table.Audit,
+            // The users table of the login security has no import: the form would add users without a password.
+            ImportExport = passwordHidden ? ImportExportWithoutImport(table.ImportExport) : table.ImportExport,
             OwnerField = ownerField?.Name ?? string.Empty,
             ViewMinLevel = levelSecured ? table.ViewMinLevel : 0,
             EditMinLevel = levelSecured ? table.EditMinLevel : 0,
@@ -322,6 +348,13 @@ public sealed class ProjectGenerator
             });
         }
 
+        return copy;
+    }
+
+    private static TableImportExport ImportExportWithoutImport(TableImportExport settings)
+    {
+        var copy = settings.Clone();
+        copy.Import = false;
         return copy;
     }
 
