@@ -732,6 +732,35 @@ public partial class PageDesignerViewModel : EditorViewModelBase
         return list;
     }
 
+    /// <summary>Gives the list page of every generated table the filter and sort, quick filter and reset settings of this list.</summary>
+    [RelayCommand]
+    public void ApplyGridToolsToAllLists()
+    {
+        if (Table is null)
+        {
+            return;
+        }
+
+        var source = Table.Designs.List;
+        var changed = 0;
+        foreach (var table in _main.Current.Tables.Where(t => t.Generate && !ReferenceEquals(t, Table)))
+        {
+            var list = table.Designs.List;
+            if (list.FilterBuilder != source.FilterBuilder || list.QuickFilter != source.QuickFilter || list.ResetButton != source.ResetButton)
+            {
+                list.FilterBuilder = source.FilterBuilder;
+                list.QuickFilter = source.QuickFilter;
+                list.ResetButton = source.ResetButton;
+                changed++;
+            }
+        }
+
+        OnTableChanged();
+        _main.Status = changed == 1
+            ? "Copied the searching, filtering and sorting options to 1 other list."
+            : $"Copied the searching, filtering and sorting options to {changed} other lists.";
+    }
+
     /// <summary>Copies another page design (of this table or another one) over the selected page design.</summary>
     [RelayCommand]
     public async Task CopyDesignFromAsync()

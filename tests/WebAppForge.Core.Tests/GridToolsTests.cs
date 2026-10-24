@@ -32,6 +32,11 @@ public sealed class GridSite : ReportSiteBase
         items.Designs.List.FilterBuilder = true;
         items.Designs.List.QuickFilter = true;
         items.Designs.List.ResetButton = true;
+
+        // The view page of a category lists its items with the detail grid's quick filter and header sort.
+        var link = MdSupport.Link("items", ("id", "category"));
+        link.FilterAndSort = true;
+        project.Tables.Single(t => t.Name == "categories").Details.Add(link);
         return project;
     }
 }
@@ -283,5 +288,65 @@ public class GridToolsSiteTests : IClassFixture<GridSite>
         Assert.Contains("value=\"&lt;b&gt;&quot;\"", html);
         Assert.Contains("value=\"&lt;script&gt;\"", html);
         Assert.Matches(new Regex("name contains &lt;b&gt;&quot;<a "), html);
+    }
+}
+
+/// <summary>The quick filter, header sort and reset of a detail grid on the master's view page.</summary>
+public class DetailGridToolsTests : IClassFixture<GridSite>
+{
+    private readonly GridSite _site;
+
+    public DetailGridToolsTests(GridSite site) => _site = site;
+
+    /// <summary>The item names in the detail grid of category 1 (Tools) with <paramref name="query"/>, in page order.</summary>
+    private async Task<List<string>> Listed(string query, string page = "view")
+    {
+        var html = await _site.Get("/categories/" + page + "/1" + query);
+        return GridSite.Names.Select(n => (Name: n, At: html.IndexOf(">" + n + "<", StringComparison.Ordinal)))
+            .Where(p => p.At >= 0).OrderBy(p => p.At).Select(p => p.Name).ToList();
+    }
+
+    [Fact]
+    public async Task TheViewPageGridHasAQuickFilterSortableHeadersAndAReset()
+    {
+        var html = await _site.Get("/categories/view/1");
+        Assert.Contains("<div class=\"mt-4\" id=\"md-grid-0\" data-md-grid=\"0\">", html);
+        Assert.Contains("<form method=\"get\" action=\"/categories/view/1#md-grid-0\" role=\"search\"", html);
+        Assert.Contains("name=\"dq0\"", html);
+        Assert.Contains("href=\"/categories/view/1?ds0=name&amp;dd0=asc#md-grid-0\">name</a></th>", html);
+        Assert.Contains("gk-reset disabled", html);
+        Assert.Equal(["Red hammer", "Blue hammer", "Saw"], await Listed(string.Empty));
+    }
+
+    [Fact]
+    public async Task TheQuickFilterLimitsTheRowsOfTheMaster()
+    {
+        Assert.Equal(["Red hammer"], await Listed("?dq0=red"));
+        Assert.Equal(["Saw"], await Listed("?dq0=-hammer"));
+        Assert.Equal(["Blue hammer"], await Listed("?dq0=note:%25"));
+        Assert.Empty(await Listed("?dq0=kite"));
+    }
+
+    [Fact]
+    public async Task HeadersSortTheGridAndResetClearsItsParametersOnly()
+    {
+        Assert.Equal(["Saw", "Blue hammer", "Red hammer"], await Listed("?ds0=price&dd0=desc"));
+        Assert.Equal(["Blue hammer", "Red hammer", "Saw"], await Listed("?ds0=name"));
+        Assert.Equal(["Red hammer", "Blue hammer", "Saw"], await Listed("?ds0=nothing"));
+
+        var html = await _site.Get("/categories/view/1?x=1&dq0=a&ds0=price&dd0=desc&dp0=1");
+        Assert.Contains("href=\"/categories/view/1?x=1#md-grid-0\">Reset</a>", html);
+        Assert.Contains("href=\"/categories/view/1?x=1&amp;dq0=a&amp;ds0=price&amp;dd0=asc#md-grid-0\">price &#9660;</a></th>", html);
+        Assert.Contains("<input type=\"hidden\" name=\"ds0\" value=\"price\">", html);
+    }
+
+    [Fact]
+    public async Task TheEditPageGridHasNoToolsAndIgnoresTheirParameters()
+    {
+        var html = await _site.Get("/categories/edit/1");
+        Assert.DoesNotContain("name=\"dq0\"", html);
+        Assert.DoesNotContain("gk-reset", html);
+        Assert.DoesNotContain("ds0=", html);
+        Assert.Equal(["Red hammer", "Blue hammer", "Saw"], await Listed("?dq0=red&ds0=price&dd0=desc", "edit"));
     }
 }

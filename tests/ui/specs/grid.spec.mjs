@@ -100,4 +100,28 @@ test.describe('grid tools', () => {
     await box.press('Enter');
     await expect(listed(page)).toHaveText(notes(sales.filter((s) => s.note.startsWith('Sale 1'))));
   });
+
+  test('the detail grid of a region filters, sorts by a header and resets', async ({ page }) => {
+    await page.goto('/regions/view/N');
+    const grid = page.locator('#md-grid-0');
+    const rows = grid.locator('tbody tr td').filter({ hasText: /^Sale \d\d$/ });
+    const north = sales.filter((s) => s.region === 'North');
+    await expect(rows).toHaveText(notes(north));
+
+    const box = grid.getByRole('searchbox', { name: 'Quick filter' });
+    await box.fill('"sale 1" -"sale 10"');
+    await box.press('Enter');
+    await expect(page).toHaveURL(/#md-grid-0$/);
+    const filtered = north.filter((s) => s.note.startsWith('Sale 1') && s.note !== 'Sale 10');
+    await expect(rows).toHaveText(notes(filtered));
+
+    await grid.getByRole('link', { name: 'amount', exact: true }).click();
+    await grid.getByRole('link', { name: /^amount/ }).click();
+    await expect(rows).toHaveText(notes([...filtered].sort((a, b) => b.amount - a.amount)));
+    await expect(box).toHaveValue('"sale 1" -"sale 10"');
+
+    await grid.getByRole('link', { name: 'Reset', exact: true }).click();
+    await expect(rows).toHaveText(notes(north));
+    await expect(grid.locator('.gk-reset')).toHaveClass(/disabled/);
+  });
 });

@@ -13,6 +13,10 @@ internal static partial class Templates
         return design.FilterBuilder || design.QuickFilter || design.ResetButton;
     }
 
+    /// <summary>True when a list or a detail grid of <paramref name="tables"/> uses the GridKit runtime.</summary>
+    internal static bool UsesGridKit(IEnumerable<TableInfo> tables)
+        => tables.Any(t => UsesGridTools(t) || t.Details.Any(d => d.FilterAndSort));
+
     /// <summary>
     /// The columns the filter builder and the quick filter can use: fields the list shows or that are searchable, except binary ones.
     /// The generated copy of the table no longer has secret fields.
@@ -388,20 +392,29 @@ internal static partial class Templates
                         }
                     }
 
-                    if (quick)
+                    if (quick && QuickWhere(request.Query["qf"].ToString(), columns, parameters) is { Length: > 0 } terms)
                     {
-                        foreach (var term in Terms(request.Query["qf"].ToString(), columns))
-                        {
-                            Column[] targets = term.Column is null ? columns.Where(c => c.Kind != Boolean).ToArray() : [term.Column];
-                            if (targets.Length == 0)
-                            {
-                                continue;
-                            }
+                        clauses.Add(terms);
+                    }
 
-                            var name = Add(parameters, "%" + Like(term.Text) + "%");
-                            var any = string.Join(" OR ", targets.Select(c => "COALESCE(CAST(" + c.Sql + " AS TEXT), '') LIKE " + name + " ESCAPE '\\'"));
-                            clauses.Add(term.Exclude ? "NOT (" + any + ")" : "(" + any + ")");
+                    return string.Join(" AND ", clauses);
+                }
+
+                /// <summary>The WHERE part (without the keyword, empty when there are no terms) of a quick filter: every term must match.</summary>
+                public static string QuickWhere(string text, Column[] columns, List<KeyValuePair<string, object>> parameters)
+                {
+                    var clauses = new List<string>();
+                    foreach (var term in Terms(text, columns))
+                    {
+                        Column[] targets = term.Column is null ? columns.Where(c => c.Kind != Boolean).ToArray() : [term.Column];
+                        if (targets.Length == 0)
+                        {
+                            continue;
                         }
+
+                        var name = Add(parameters, "%" + Like(term.Text) + "%");
+                        var any = string.Join(" OR ", targets.Select(c => "COALESCE(CAST(" + c.Sql + " AS TEXT), '') LIKE " + name + " ESCAPE '\\'"));
+                        clauses.Add(term.Exclude ? "NOT (" + any + ")" : "(" + any + ")");
                     }
 
                     return string.Join(" AND ", clauses);
@@ -459,6 +472,82 @@ internal static partial class Templates
                             html.Append("<input type=\"hidden\" name=\"").Append(Html.Attr(pair.Key)).Append("\" value=\"").Append(Html.Attr(value ?? "")).Append("\">");
                         }
                     }
+                }
+
+                /// <summary>The page itself with its query, except the parameters <paramref name="skip"/> picks.</summary>
+                private static string Here(HttpRequest request, Func<string, bool> skip)
+                {
+                    var query = new StringBuilder();
+                    foreach (var pair in request.Query)
+                    {
+                        if (skip(pair.Key))
+                        {
+                            continue;
+                        }
+
+                        foreach (var value in pair.Value)
+                        {
+                            query.Append(query.Length == 0 ? '?' : '&').Append(Uri.EscapeDataString(pair.Key)).Append('=').Append(Uri.EscapeDataString(value ?? ""));
+                        }
+                    }
+
+                    return request.PathBase + request.Path + query;
+                }
+
+                /// <summary>
+                /// A column header of detail grid <paramref name="grid"/> that sorts by <paramref name="field"/> (ds and dd parameters of the
+                /// grid). The other parameters of the page are kept, the page of the grid is reset and the link returns to the grid.
+                /// </summary>
+                public static string DetailHeader(HttpRequest request, int grid, string field, string caption, string attributes)
+                {
+                    var sortKey = "ds" + grid;
+                    var dirKey = "dd" + grid;
+                    var pageKey = "dp" + grid;
+                    var active = request.Query[sortKey].ToString() == field;
+                    var descending = request.Query[dirKey].ToString() == "desc";
+                    var here = Here(request, k => k == sortKey || k == dirKey || k == pageKey);
+                    var href = here + (here.Contains('?') ? "&" : "?") + sortKey + "=" + Uri.EscapeDataString(field) + "&" + dirKey + "=" + (active && !descending ? "desc" : "asc") + "#md-grid-" + grid;
+                    var arrow = active ? (descending ? " &#9660;" : " &#9650;") : "";
+                    return "<th" + attributes + "><a class=\"link-body-emphasis text-decoration-none\" href=\"" + Html.Attr(href) + "\">" + Html.Encode(caption) + arrow + "</a></th>";
+                }
+
+                /// <summary>The ORDER BY column of detail grid <paramref name="grid"/> from its ds and dd parameters, or null.</summary>
+                public static string? DetailOrder(HttpRequest request, int grid, string[] fields, string[] columns)
+                {
+                    var index = Array.IndexOf(fields, request.Query["ds" + grid].ToString());
+                    return index < 0 ? null : " ORDER BY " + columns[index] + (request.Query["dd" + grid].ToString() == "desc" ? " DESC" : " ASC");
+                }
+
+                /// <summary>The quick filter box (dq parameter) and the reset link of detail grid <paramref name="grid"/>.</summary>
+                public static string DetailTools(HttpRequest request, int grid)
+                {
+                    var quickKey = "dq" + grid;
+                    var pageKey = "dp" + grid;
+                    bool Own(string k) => k == quickKey || k == pageKey || k == "ds" + grid || k == "dd" + grid;
+                    var html = new StringBuilder("<form method=\"get\" action=\"").Append(Html.Attr(request.PathBase + request.Path + "#md-grid-" + grid))
+                        .Append("\" role=\"search\" class=\"d-flex gap-2 align-items-center me-2\">");
+                    foreach (var pair in request.Query)
+                    {
+                        if (pair.Key == quickKey || pair.Key == pageKey)
+                        {
+                            continue;
+                        }
+
+                        foreach (var value in pair.Value)
+                        {
+                            html.Append("<input type=\"hidden\" name=\"").Append(Html.Attr(pair.Key)).Append("\" value=\"").Append(Html.Attr(value ?? "")).Append("\">");
+                        }
+                    }
+
+                    html.Append("<div class=\"input-group input-group-sm\"><input type=\"search\" name=\"").Append(quickKey).Append("\" class=\"form-control\" style=\"min-width:12rem\" placeholder=\"")
+                        .Append(Html.Attr(T("gridQuick"))).Append("\" aria-label=\"").Append(Html.Attr(T("gridQuick"))).Append("\" title=\"").Append(Html.Attr(T("gridQuickHint")))
+                        .Append("\" value=\"").Append(Html.Attr(request.Query[quickKey].ToString())).Append("\"><button type=\"submit\" class=\"btn btn-outline-secondary\">")
+                        .Append(Html.Encode(T("gridApply"))).Append("</button></div>");
+                    var active = request.Query.Any(p => Own(p.Key) && p.Key != pageKey && p.Value.Any(v => !string.IsNullOrWhiteSpace(v)));
+                    html.Append(active
+                        ? "<a class=\"btn btn-sm btn-outline-secondary gk-reset\" href=\"" + Html.Attr(Here(request, Own) + "#md-grid-" + grid) + "\">" + Html.Encode(T("gridReset")) + "</a>"
+                        : "<a class=\"btn btn-sm btn-outline-secondary gk-reset disabled\" aria-disabled=\"true\" tabindex=\"-1\">" + Html.Encode(T("gridReset")) + "</a>");
+                    return html.Append("</form>").ToString();
                 }
 
                 private static string Option(string value, string caption, bool selected, string attributes = "")

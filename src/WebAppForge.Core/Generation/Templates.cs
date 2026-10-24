@@ -1311,7 +1311,7 @@ internal static partial class Templates
         var viewLinks = MdViewLinks(table);
         foreach (var l in viewLinks)
         {
-            sb.AppendLine($"        var md{l.Index} = await DetailGrid{l.Index}(context, connection, item, false);");
+            sb.AppendLine($"        var md{l.Index} = await DetailGrid{l.Index}(context, connection, item, false{MdToolsArg(l, true)});");
         }
 
         var (hostedGrids, belowGrids) = MdPlacement(table, viewLinks, IsPagedView(table), l => $"md{l.Index}");
