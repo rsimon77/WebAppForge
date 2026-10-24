@@ -7,11 +7,56 @@ namespace WebAppForge.Core.Generation;
 /// </summary>
 internal static partial class Templates
 {
-    internal static string UiRuntime(string ns) => """"
+    internal static string UiRuntime(string ns) => Localized ? LocalizedUiRuntime(PlainUiRuntime(ns), ns) : PlainUiRuntime(ns);
+
+    /// <summary>
+    /// The localized variant: display formats use the visitor's language (Strings.Culture), currency keeps the symbol of the
+    /// default language, and the default date formats become the short patterns of the language.
+    /// </summary>
+    private static string LocalizedUiRuntime(string text, string ns)
+    {
+        text = ReplaceOnce(text, "namespace " + ns + ".Web;", "using " + ns + ".Localization;\n\nnamespace " + ns + ".Web;");
+        text = ReplaceOnce(text, """return Numeric(value, FormatString.Length > 0 ? FormatString : "C");""",
+            """return Numeric(value, FormatString.Length > 0 ? FormatString : "C", Strings.CurrencyFormat);""");
+        text = ReplaceOnce(text, "private string Numeric(object value, string format)", "private string Numeric(object value, string format, IFormatProvider? provider = null)");
+        text = ReplaceOnce(text, "return WebUtility.HtmlEncode(number.ToString(format, CultureInfo.CurrentCulture));",
+            "return WebUtility.HtmlEncode(number.ToString(format, provider ?? Strings.Culture));");
+        text = ReplaceOnce(text, "? WebUtility.HtmlEncode(date.ToString(FormatString, CultureInfo.CurrentCulture))",
+            "? WebUtility.HtmlEncode(date.ToString(FormatString, Strings.Culture))");
+        text = ReplaceOnce(text, ": WebUtility.HtmlEncode(date.ToString(defaultFormat, CultureInfo.InvariantCulture));",
+            ": WebUtility.HtmlEncode(LanguageDate(date, defaultFormat));");
+        text = ReplaceOnce(text, "    private string Dated(object value, string defaultFormat)", LanguageDateMethod + "    private string Dated(object value, string defaultFormat)");
+        return text;
+    }
+
+    /// <summary>The default date formats of the field display kinds, written as the short patterns of the visitor's language.</summary>
+    private const string LanguageDateMethod = """
+            private static string LanguageDate(DateTime date, string defaultFormat)
+            {
+                var culture = Strings.Culture;
+                if (ReferenceEquals(culture, CultureInfo.InvariantCulture))
+                {
+                    return date.ToString(defaultFormat, CultureInfo.InvariantCulture);
+                }
+
+                var pattern = defaultFormat switch
+                {
+                    "yyyy-MM-dd" => culture.DateTimeFormat.ShortDatePattern,
+                    "HH:mm" => culture.DateTimeFormat.ShortTimePattern,
+                    _ => culture.DateTimeFormat.ShortDatePattern + " " + culture.DateTimeFormat.ShortTimePattern,
+                };
+                return date.ToString(pattern, culture);
+            }
+
+
+        """;
+
+    private static string PlainUiRuntime(string ns) => """"
         using System.Globalization;
         using System.Net;
         using System.Text;
         using System.Text.RegularExpressions;
+        using Dapper;
         using Microsoft.AspNetCore.Http;
         using Microsoft.Data.Sqlite;
 
@@ -456,19 +501,11 @@ internal static partial class Templates
             /// <summary>All rows for a drop-down or radio group, filtered and ordered as configured.</summary>
             public async Task<List<KeyValuePair<string, string>>> OptionsAsync(string connectionString)
             {
-                var rows = new List<KeyValuePair<string, string>>();
                 await using var connection = new SqliteConnection(connectionString);
                 await connection.OpenAsync();
-                await using var command = connection.CreateCommand();
-                command.CommandText = "SELECT " + key + ", " + display + " FROM " + table
-                    + (filter.Length > 0 ? " WHERE (" + filter + ")" : "") + " ORDER BY " + order;
-                await using var reader = await command.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
-                {
-                    rows.Add(new KeyValuePair<string, string>(KeyOf(reader.GetValue(0)), reader.IsDBNull(1) ? "" : Convert.ToString(reader.GetValue(1), CultureInfo.InvariantCulture) ?? ""));
-                }
-
-                return rows;
+                var rows = await connection.QueryAsync<(object Key, object? Display)>("SELECT " + key + ", " + display + " FROM " + table
+                    + (filter.Length > 0 ? " WHERE (" + filter + ")" : "") + " ORDER BY " + order);
+                return rows.Select(r => new KeyValuePair<string, string>(KeyOf(r.Key), KeyOf(r.Display))).ToList();
             }
 
             /// <summary>Display texts for the given keys, in one parameterised query per 500 keys. The filter is not applied, so stored values always resolve.</summary>
@@ -479,19 +516,19 @@ internal static partial class Templates
                 for (var offset = 0; offset < distinct.Count; offset += 500)
                 {
                     var chunk = distinct.Skip(offset).Take(500).ToList();
-                    await using var command = connection.CreateCommand();
+                    var args = new DynamicParameters();
                     var names = new List<string>();
                     for (var i = 0; i < chunk.Count; i++)
                     {
                         names.Add("@k" + i);
-                        command.Parameters.AddWithValue("@k" + i, chunk[i]);
+                        args.Add("@k" + i, chunk[i]);
                     }
 
-                    command.CommandText = "SELECT " + key + ", " + display + " FROM " + table + " WHERE " + key + " IN (" + string.Join(", ", names) + ")";
-                    await using var reader = await command.ExecuteReaderAsync();
-                    while (await reader.ReadAsync())
+                    var rows = await connection.QueryAsync<(object Key, object? Display)>(
+                        "SELECT " + key + ", " + display + " FROM " + table + " WHERE " + key + " IN (" + string.Join(", ", names) + ")", args);
+                    foreach (var row in rows)
                     {
-                        result[KeyOf(reader.GetValue(0))] = reader.IsDBNull(1) ? "" : Convert.ToString(reader.GetValue(1), CultureInfo.InvariantCulture) ?? "";
+                        result[KeyOf(row.Key)] = KeyOf(row.Display);
                     }
                 }
 

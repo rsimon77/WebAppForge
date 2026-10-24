@@ -182,7 +182,7 @@ public class ReportModelTests
 /// <summary>Generated report sources, and building them in the three sample projects.</summary>
 public class ReportGenerationTests
 {
-    private static Project WithReports(string sample)
+    internal static Project WithReports(string sample)
     {
         var project = CustomizationSamples.Create(sample);
         var table = project.Tables.First(t => t.Generate && t.Name != project.Security.UserTable && t.OwnerField.Length == 0

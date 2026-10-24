@@ -302,19 +302,24 @@ public class MultiPageFormTests
     }
 
     [Fact]
-    public void LocalizationLeavesPageTextsAsProjectTextAndAddsNoUiStrings()
+    public void LocalizationTranslatesThePageCaptionsAndTheWizardTexts()
     {
-        var plain = Generate(People(t => { AddPages(t); t.Designs.Add.MultiPage = MultiPageMode.Tabs; }));
-        var project = People(t => { AddPages(t); t.Designs.Add.MultiPage = MultiPageMode.Tabs; });
+        var plain = Generate(People(t => { AddPages(t); t.Designs.Add.MultiPage = MultiPageMode.Wizard; }));
+        var project = People(t => { AddPages(t); t.Designs.Add.MultiPage = MultiPageMode.Wizard; });
         project.Localization.Enabled = true;
         project.Localization.DefaultLanguage = "en";
         project.Localization.Languages.Add("de");
         var localized = Generate(project);
 
-        Assert.Contains("new FormPages.Page(0, \"Personal\", \"Personal\"", localized["Pages/PeoplePages.cs"]);
-        Assert.DoesNotContain("Previous", localized["Localization/strings.en.json"]);
-        Assert.DoesNotContain("Step {0}", localized["Localization/strings.en.json"]);
-        Assert.Equal(plain["Web/FormPages.cs"], localized["Web/FormPages.cs"]);
+        Assert.Contains("new FormPages.Page(0, \"Personal\", \"Personal\"", plain["Pages/PeoplePages.cs"]);
+        var table = project.Tables.Single(t => t.FormPages.Count > 0).Name;
+        Assert.Contains($"new FormPages.Page(0, \"Personal\", Strings.T(\"formpage.{table}.Personal.caption\", \"Personal\")", localized["Pages/PeoplePages.cs"]);
+        Assert.Contains($"\"formpage.{table}.Personal.caption\": \"Personal\"", localized["Localization/strings.en.json"]);
+        Assert.Contains("\"ui.formPrevious\": \"Previous\"", localized["Localization/strings.en.json"]);
+        Assert.Contains("\"ui.formStep\": \"Step {0} of {1}\"", localized["Localization/strings.en.json"]);
+        Assert.Contains("public static string PreviousText => Strings.T(\"ui.formPrevious\", \"Previous\");", localized["Web/FormPages.cs"]);
+        Assert.Contains("public const string PreviousText = \"Previous\";", plain["Web/FormPages.cs"]);
+        Assert.DoesNotContain("formPrevious", plain.Values.Aggregate(string.Empty, string.Concat));
     }
 
     // ---- the generated site compiles and behaves ------------------------------------------------

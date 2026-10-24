@@ -51,11 +51,13 @@ internal static partial class Templates
     private static string MdOldNew(TableInfo table, string className, string item) =>
         "new object?[] { " + string.Join(", ", MdTracked(table).Select(f => ParameterValue(f, item, className))) + " }";
 
-    private static (List<(string Caption, string Sql)> Blockers, List<(string Caption, string Sql)> Counts, List<string> Statements) MdBuildPlan(TableInfo root)
+    private static (List<(string Caption, string Sql)> Blockers, List<(string Caption, string Sql)> Counts, List<string> Statements,
+        List<(string Table, string Action, string Sql, List<string> NullFields)> Captures) MdBuildPlan(TableInfo root)
     {
         var blockers = new List<(string, string)>();
         var counts = new List<(string, string)>();
         var statements = new List<string>();
+        var captures = new List<(string Table, string Action, string Sql, List<string> NullFields)>();
         var keys = root.PrimaryKeys;
         var names = KeyNames(root);
         string RootScope(string a) => string.Join(" AND ", keys.Select((k, i) => a + "." + QuoteIdent(k.Name) + " = @" + names[i]));
@@ -90,10 +92,20 @@ internal static partial class Templates
                         break;
                     case DeleteRule.Cascade:
                         counts.Add((caption, count));
+                        if (AuditsDeletes(md.Detail))
+                        {
+                            captures.Add((md.Detail.Name, "delete", AuditCaptureSql(md.Detail, where), []));
+                        }
+
                         Walk(md.Detail, Scope, depth + 1);
                         statements.Add("DELETE FROM " + target + " WHERE " + where);
                         break;
                     case DeleteRule.SetNull:
+                        if (AuditsUpdates(md.Detail) && md.Pairs.Select(p => p.Detail).Where(f => AuditFields(md.Detail).Any(a => MdSame(a.Name, f.Name))).Select(f => f.Name).ToList() is { Count: > 0 } nulled)
+                        {
+                            captures.Add((md.Detail.Name, "update", AuditCaptureSql(md.Detail, where), nulled));
+                        }
+
                         statements.Add("UPDATE " + target + " SET " + string.Join(", ", md.Pairs.Select(p => QuoteIdent(p.Detail.Name) + " = NULL")) + " WHERE " + where);
                         break;
                 }
@@ -101,7 +113,7 @@ internal static partial class Templates
         }
 
         Walk(root, RootScope, 0);
-        return (blockers, counts, statements);
+        return (blockers, counts, statements, captures);
     }
 
     private static string MdStepArray(List<(string Caption, string Sql)> steps) =>
@@ -114,24 +126,16 @@ internal static partial class Templates
     /// <summary>The PUT body when linked values cascade: reads the old row, updates and cascades in one transaction.</summary>
     private static void AppendMdApiUpdate(StringBuilder sb, string className, TableInfo table, List<FieldInfo> updateFields, bool owned)
     {
+        var auditUpdate = AuditsUpdates(table);
+        var readSql = Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty));
         void L(string line) => sb.AppendLine(line);
-        L($"            {className} before;");
-        L("            await using (var read = connection.CreateCommand())");
+        L("            var read = new DynamicParameters();");
+        AppendKeyParameters(sb, table, "            ", "read");
+        AppendOwnerParameter(sb, owned, "read", "            ");
+        L($"            var before = await connection.QueryFirstOrDefaultAsync<{className}>({Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty))}, read);");
+        L("            if (before is null)");
         L("            {");
-        L($"                read.CommandText = {Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty))};");
-        foreach (var name in KeyNames(table))
-        {
-            L($"                read.Parameters.AddWithValue(\"@{name}\", {name});");
-        }
-
-        AppendOwnerParameter(sb, owned, "read", "                ");
-        L("                await using var reader = await read.ExecuteReaderAsync();");
-        L("                if (!await reader.ReadAsync())");
-        L("                {");
-        L("                    return Results.NotFound();");
-        L("                }");
-        L(string.Empty);
-        L($"                before = {className}.FromReader(reader);");
+        L("                return Results.NotFound();");
         L("            }");
         L(string.Empty);
         L($"            var mdOld = {MdOldNew(table, className, "before")};");
@@ -139,17 +143,22 @@ internal static partial class Templates
         L("            await ReferentialIntegrity.BeginAsync(connection);");
         L("            try");
         L("            {");
-        L("                await using var command = connection.CreateCommand();");
-        L($"                command.CommandText = {Lit(UpdateSql(table, updateFields))};");
+        L("                var args = new DynamicParameters();");
         AppendParameters(sb, updateFields, "item", className, "                ");
         AppendKeyParameters(sb, table, "                ");
-        L("                if (await command.ExecuteNonQueryAsync() == 0)");
+        L($"                if (await connection.ExecuteAsync({Lit(UpdateSql(table, updateFields))}, args) == 0)");
         L("                {");
         L("                    await ReferentialIntegrity.RollbackAsync(connection);");
         L("                    return Results.NotFound();");
         L("                }");
         L(string.Empty);
-        L($"                await ReferentialIntegrity.Update_{className}(connection, mdOld, mdNew);");
+        if (auditUpdate)
+        {
+            L($"                var after = await connection.QueryFirstOrDefaultAsync<{className}>({readSql}, read);");
+            L($"                {AuditWrite(table, "update", "http", "before.AuditKey()", "before.AuditValues()", "(after ?? item).AuditValues()")}");
+        }
+
+        L($"                await ReferentialIntegrity.Update_{className}(connection, mdOld, mdNew{(MdUpdateAudited(table) ? ", http" : string.Empty)});");
         L("                await ReferentialIntegrity.CommitAsync(connection);");
         L("            }");
         L("            catch");
@@ -190,19 +199,12 @@ internal static partial class Templates
 
         L("            await using var connection = new SqliteConnection(connectionString);");
         L("            await connection.OpenAsync();");
-        L("            await using (var check = connection.CreateCommand())");
+        L("            var check = new DynamicParameters();");
+        AppendKeyParameters(sb, table, "            ", "check");
+        AppendOwnerParameter(sb, owned, "check", "            ");
+        L($"            if (await connection.ExecuteScalarAsync<long>({Lit("SELECT COUNT(*) FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty))}, check) == 0)");
         L("            {");
-        L($"                check.CommandText = {Lit("SELECT COUNT(*) FROM " + QuoteIdent(table.Name) + " WHERE " + KeyWhereSql(table) + (owned ? " AND " + OwnerCondition(table) : string.Empty))};");
-        foreach (var name in names)
-        {
-            L($"                check.Parameters.AddWithValue(\"@{name}\", {name});");
-        }
-
-        AppendOwnerParameter(sb, owned, "check", "                ");
-        L("                if (Convert.ToInt64(await check.ExecuteScalarAsync()) == 0)");
-        L("                {");
-        L("                    return Results.NotFound();");
-        L("                }");
+        L("                return Results.NotFound();");
         L("            }");
         L(string.Empty);
         var scope = "EXISTS (SELECT 1 FROM " + QuoteIdent(table.Name) + " t0 WHERE "
@@ -211,25 +213,14 @@ internal static partial class Templates
         var detailOwned = IsOwned(d);
         var sql = "SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name) + " WHERE " + scope
             + (detailOwned ? " AND " + QuoteIdent(d.OwnerField) + " = @downer" : string.Empty) + OrderSql(d);
-        L($"            var items = new List<{dClass}>();");
-        L("            await using var command = connection.CreateCommand();");
-        L($"            command.CommandText = {Lit(sql)};");
-        foreach (var name in names)
-        {
-            L($"            command.Parameters.AddWithValue(\"@{name}\", {name});");
-        }
-
+        L("            var args = new DynamicParameters();");
+        AppendKeyParameters(sb, table, "            ");
         if (detailOwned)
         {
-            L("            command.Parameters.AddWithValue(\"@downer\", user.Identity?.Name ?? string.Empty);");
+            L("            args.Add(\"@downer\", user.Identity?.Name ?? string.Empty);");
         }
 
-        L("            await using var reader = await command.ExecuteReaderAsync();");
-        L("            while (await reader.ReadAsync())");
-        L("            {");
-        L($"                items.Add({dClass}.FromReader(reader));");
-        L("            }");
-        L(string.Empty);
+        L($"            var items = (await connection.QueryAsync<{dClass}>({Lit(sql)}, args)).AsList();");
         L("            return Results.Ok(items);");
         L($"        }}){viewGuard};");
     }
@@ -237,6 +228,12 @@ internal static partial class Templates
     internal static string ReferentialIntegrityFile(string ns, IReadOnlyList<TableInfo> tables)
     {
         var sb = new StringBuilder();
+        sb.AppendLine("using Dapper;");
+        if (Auditing is not null)
+        {
+            sb.AppendLine("using Microsoft.AspNetCore.Http;");
+        }
+
         sb.AppendLine("using Microsoft.Data.Sqlite;");
         if (Localized)
         {
@@ -246,19 +243,22 @@ internal static partial class Templates
         sb.AppendLine();
         sb.AppendLine($"namespace {ns}.Web;");
         sb.AppendLine();
-        sb.Append(IntegrityRuntimeHead);
+        sb.Append(LocalizedIntegrityHead(Auditing is null ? IntegrityRuntimeHead : AuditedIntegrityHead()));
         foreach (var table in tables)
         {
             var cls = Identifier.Pascal(table.Name);
             if (MdDeletePlanned(table))
             {
-                var (blockers, counts, statements) = MdBuildPlan(table);
+                var (blockers, counts, statements, captures) = MdBuildPlan(table);
                 var where = KeyWhereSql(table) + (IsOwned(table) ? " AND " + OwnerCondition(table) : string.Empty);
                 sb.AppendLine();
                 sb.AppendLine($"    public static readonly Plan Plan_{cls} = new({Lit(QuoteIdent(table.Name))}, {Lit(where)},");
                 sb.AppendLine($"        {MdStepArray(blockers)},");
                 sb.AppendLine($"        {MdStepArray(counts)},");
-                sb.AppendLine($"        {(statements.Count == 0 ? "[]" : "[" + string.Join(", ", statements.Select(Lit)) + "]")});");
+                var captureArray = captures.Count == 0
+                    ? string.Empty
+                    : "," + Environment.NewLine + "        [" + string.Join(", ", captures.Select(c => $"new Audit.Capture({Lit(c.Table)}, {Lit(c.Action)}, {Lit(c.Sql)}, [{string.Join(", ", c.NullFields.Select(Lit))}])")) + "]";
+                sb.AppendLine($"        {(statements.Count == 0 ? "[]" : "[" + string.Join(", ", statements.Select(Lit)) + "]")}{captureArray});");
             }
 
             if (MdUpdatePlanned(table))
@@ -266,7 +266,7 @@ internal static partial class Templates
                 var tracked = MdTracked(table);
                 sb.AppendLine();
                 sb.AppendLine($"    /// <summary>Copies changed linked values of a {table.Name} row to its detail rows (UpdateRule.Cascade). Values are in tracked-field order.</summary>");
-                sb.AppendLine($"    public static async Task Update_{cls}(SqliteConnection connection, object?[] oldValues, object?[] newValues)");
+                sb.AppendLine($"    public static async Task Update_{cls}(SqliteConnection connection, object?[] oldValues, object?[] newValues{(MdUpdateAudited(table) ? ", HttpContext? http = null" : string.Empty)})");
                 sb.AppendLine("    {");
                 foreach (var md in MdLinks(table).Where(l => l.Link.OnUpdate == UpdateRule.Cascade && l.Pairs.Any(p => !p.Master.IsPrimaryKey)))
                 {
@@ -278,7 +278,22 @@ internal static partial class Templates
                         .Concat(md.Pairs.Select(p => $"(\"@o{Idx(p.Master)}\", oldValues[{Idx(p.Master)}])")).Distinct();
                     sb.AppendLine($"        if (Changed(oldValues, newValues, {string.Join(", ", changed)}))");
                     sb.AppendLine("        {");
-                    sb.AppendLine($"            await ExecAsync(connection, {Lit("UPDATE " + QuoteIdent(md.Detail.Name) + " SET " + sets + " WHERE " + where)}, new (string, object?)[] {{ {string.Join(", ", args)} }});");
+                    var update = Lit("UPDATE " + QuoteIdent(md.Detail.Name) + " SET " + sets + " WHERE " + where);
+                    if (MdAuditedUpdateFields(md) is { Count: > 0 } audited)
+                    {
+                        // The rows are read before the statement changes them, so the entry has the old values.
+                        var newMap = string.Join(", ", md.Pairs.Where(p => !p.Master.IsPrimaryKey && audited.Any(a => MdSame(a.Name, p.Detail.Name)))
+                            .Select(p => $"[{Lit(p.Detail.Name)}] = newValues[{Idx(p.Master)}]"));
+                        sb.AppendLine($"            var args = new (string, object?)[] {{ {string.Join(", ", args)} }};");
+                        sb.AppendLine($"            var captured = await Audit.CaptureAsync(connection, [new Audit.Capture({Lit(md.Detail.Name)}, \"update\", {Lit(AuditCaptureSql(md.Detail, where))}, [])], sql => Bind(sql, args));");
+                        sb.AppendLine($"            await ExecAsync(connection, {update}, args);");
+                        sb.AppendLine($"            await Audit.WriteUpdatedAsync(connection, http, {Lit(md.Detail.Name)}, captured[0].Rows, new Dictionary<string, object?> {{ {newMap} }});");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"            await ExecAsync(connection, {update}, new (string, object?)[] {{ {string.Join(", ", args)} }});");
+                    }
+
                     sb.AppendLine("        }");
                     sb.AppendLine();
                 }
@@ -289,6 +304,24 @@ internal static partial class Templates
 
         sb.AppendLine("}");
         return sb.ToString();
+    }
+
+    /// <summary>Localized, the delete notes are read per request in the visitor's language; the counts and captions are filled in.</summary>
+    private static string LocalizedIntegrityHead(string head)
+    {
+        if (!Localized)
+        {
+            return head;
+        }
+
+        head = ReplaceOnce(head, """string.Join(" ", blockers.Select(b => "Cannot delete: " + b.Count + " related " + b.Caption + " record(s) exist."));""",
+            """string.Join(" ", blockers.Select(b => Strings.F("ui.detailBlocked", "Cannot delete: {0} related {1} record(s) exist.", b.Count, b.Caption)));""");
+        head = ReplaceOnce(head, """role=\"alert\">Cannot delete: ").Append(b.Count).Append(" related ")""",
+            """role=\"alert\">").Append(Html.Encode(Strings.F("ui.detailBlocked", "Cannot delete: {0} related {1} record(s) exist.", b.Count, b.Caption)))""");
+        head = ReplaceOnce(head, """.Append(Html.Encode(b.Caption)).Append(" record(s) exist.</div>");""", """.Append("</div>");""");
+        head = ReplaceOnce(head, """role=\"status\">This will also delete ").Append(c.Count).Append(" record(s) in ")""",
+            """role=\"status\">").Append(Html.Encode(Strings.F("ui.detailAlsoDeletes", "This will also delete {0} record(s) in {1}.", c.Count, c.Caption)))""");
+        return ReplaceOnce(head, """.Append(Html.Encode(c.Caption)).Append(".</div>");""", """.Append("</div>");""");
     }
 
     private const string IntegrityRuntimeHead = """
@@ -326,32 +359,26 @@ internal static partial class Templates
                 }
             }
 
-            public static async Task ExecAsync(SqliteConnection connection, string sql, (string Name, object? Value)[] args)
-            {
-                await using var command = connection.CreateCommand();
-                command.CommandText = sql;
-                Bind(command, sql, args);
-                await command.ExecuteNonQueryAsync();
-            }
+            public static async Task ExecAsync(SqliteConnection connection, string sql, (string Name, object? Value)[] args) =>
+                await connection.ExecuteAsync(sql, Bind(sql, args));
 
-            private static void Bind(SqliteCommand command, string sql, (string Name, object? Value)[] args)
+            /// <summary>The arguments that <paramref name="sql"/> names.</summary>
+            private static DynamicParameters Bind(string sql, (string Name, object? Value)[] args)
             {
+                var parameters = new DynamicParameters();
                 foreach (var (name, value) in args)
                 {
                     if (sql.Contains(name, StringComparison.Ordinal))
                     {
-                        command.Parameters.AddWithValue(name, value ?? DBNull.Value);
+                        parameters.Add(name, value is DBNull ? null : value);
                     }
                 }
+
+                return parameters;
             }
 
-            private static async Task<long> ScalarAsync(SqliteConnection connection, string sql, (string Name, object? Value)[] args)
-            {
-                await using var command = connection.CreateCommand();
-                command.CommandText = sql;
-                Bind(command, sql, args);
-                return Convert.ToInt64(await command.ExecuteScalarAsync());
-            }
+            private static async Task<long> ScalarAsync(SqliteConnection connection, string sql, (string Name, object? Value)[] args) =>
+                await connection.ExecuteScalarAsync<long>(sql, Bind(sql, args));
 
             public static bool Changed(object?[] oldValues, object?[] newValues, params int[] indexes) =>
                 indexes.Any(i => !Equals(oldValues[i], newValues[i]));

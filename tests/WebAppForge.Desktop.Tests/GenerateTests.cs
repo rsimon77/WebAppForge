@@ -44,7 +44,7 @@ public class GenerateTests
         await main.Generate.GenerateCommand.ExecuteAsync(null);
 
         Assert.Equal(
-            "Not supported: Provider 'postgres' is not supported yet. Only SQLite is implemented.",
+            "Not supported: Provider 'postgres' is not supported. Use one of: sqlite, sqlserver, azuresql, mysql.",
             main.Status);
         Assert.False(Directory.Exists(folder.File("generated")));
     }

@@ -1,4 +1,5 @@
 using System.Text;
+using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 
 namespace WebAppForge.Core.Generation;
@@ -14,7 +15,7 @@ internal static partial class Templates
     /// <summary>True when the table sets anything in <see cref="PageDesigns"/>; only such a table gets the designed pages.</summary>
     internal static bool Designed(TableInfo table) => !table.Designs.IsDefaultExceptMultiPage() || UsesFormPages(table);
 
-    private static PageDesign DesignOf(TableInfo table, string page) => page switch
+    internal static PageDesign DesignOf(TableInfo table, string page) => page switch
     {
         "list" => table.Designs.List,
         "view" => table.Designs.View,
@@ -51,7 +52,7 @@ internal static partial class Templates
     private static List<int> PageSizesOf(TableInfo table) =>
         Designed(table) ? table.Designs.List.PageSizeOptions.Where(n => n is >= 1 and <= 1000).Distinct().ToList() : [];
 
-    private static string OptionsInit(PageDesign d, string confirmText)
+    private static string OptionsInit(TableInfo table, string page, PageDesign d, string confirmId)
     {
         var parts = new List<string>();
         void Add(string name, string value)
@@ -62,10 +63,19 @@ internal static partial class Templates
             }
         }
 
-        Add("Title", d.Title.Trim());
-        Add("Subtitle", d.Subtitle.Trim());
-        Add("HeaderHtml", d.HeaderHtml);
-        Add("FooterHtml", d.FooterHtml);
+        // A text the project owner wrote, translated under its key when the site is localized.
+        void AddText(string name, string part, string value)
+        {
+            if (Has(value))
+            {
+                parts.Add($"{name} = {ProjectText(LocalizationKeys.Page(table.Name, page, part), value)}");
+            }
+        }
+
+        AddText("Title", "title", d.Title.Trim());
+        AddText("Subtitle", "subtitle", d.Subtitle.Trim());
+        AddText("HeaderHtml", "header", d.HeaderHtml);
+        AddText("FooterHtml", "footer", d.FooterHtml);
         Add("CssClass", d.CssClass.Trim());
         Add("CustomCss", d.CustomCss);
         Add("CustomScript", d.CustomScript);
@@ -74,8 +84,8 @@ internal static partial class Templates
             parts.Add($"Layout = {Lit(d.FormLayout.ToString())}");
         }
 
-        Add("SubmitText", d.SubmitText.Trim());
-        Add("CancelText", d.CancelText.Trim());
+        AddText("SubmitText", "submit", d.SubmitText.Trim());
+        AddText("CancelText", "cancel", d.CancelText.Trim());
         if (!d.ShowCancel)
         {
             parts.Add("ShowCancel = false");
@@ -89,7 +99,7 @@ internal static partial class Templates
 
         if (d.ConfirmBeforeSave)
         {
-            parts.Add($"Confirm = {Lit(confirmText)}");
+            parts.Add($"Confirm = {Ui(confirmId)}");
         }
 
         return parts.Count == 0 ? "new()" : "new() { " + string.Join(", ", parts) + " }";
@@ -100,15 +110,18 @@ internal static partial class Templates
     {
         foreach (var page in new[] { "list", "view", "add", "copy", "edit", "delete", "search" })
         {
-            sb.AppendLine($"    private static readonly PageKit.Options {DesignName(page)} = {OptionsInit(DesignOf(table, page), page == "delete" ? "Are you sure?" : "Save changes?")};");
+            var design = DesignOf(table, page);
+            var init = OptionsInit(table, page, design, page == "delete" ? "pageConfirmDelete" : "pageConfirmSave");
+            // Localized texts are in the language of the request, so options with one are built per request.
+            sb.AppendLine(Static("PageKit.Options", DesignName(page), init));
         }
 
         var flash = FlashPages(table);
         if (flash.Count > 0)
         {
             sb.AppendLine($"    private const string FlashCookie = {Lit(FlashCookieName(table))};");
-            sb.AppendLine("    private static readonly KeyValuePair<string, string>[] FlashMessages = ["
-                + string.Join(", ", flash.Select(p => $"new({Lit(p)}, {Lit(DesignOf(table, p).SuccessMessage.Trim())})")) + "];");
+            sb.AppendLine(Static("KeyValuePair<string, string>[]", "FlashMessages", "["
+                + string.Join(", ", flash.Select(p => $"new({Lit(p)}, {ProjectText(LocalizationKeys.Page(table.Name, p, "success"), DesignOf(table, p).SuccessMessage.Trim())})")) + "]"));
         }
         else
         {
@@ -302,7 +315,24 @@ internal static partial class Templates
 
     // ---- the runtime ----------------------------------------------------------------------------
 
-    internal static string PageKitRuntime(string ns) => """"
+    internal static string PageKitRuntime(string ns)
+    {
+        var text = PlainPageKitRuntime(ns);
+        if (!Localized)
+        {
+            return text;
+        }
+
+        text = ReplaceOnce(text, "namespace " + ns + ".Web;", "using " + ns + ".Localization;\n\nnamespace " + ns + ".Web;");
+        text = ReplaceOnce(text, """data-bs-dismiss=\"modal\" aria-label=\"Close\">""",
+            """data-bs-dismiss=\"modal\" aria-label=\"" + Html.Attr(Strings.T("ui.pageClose", "Close")) + "\">""");
+        text = ReplaceOnce(text, """data-bs-dismiss=\"offcanvas\" aria-label=\"Close\">""",
+            """data-bs-dismiss=\"offcanvas\" aria-label=\"" + Html.Attr(Strings.T("ui.pageClose", "Close")) + "\">""");
+        return ReplaceOnce(text, """for=\"pk-pagesize\">Rows per page</label>""",
+            """for=\"pk-pagesize\">" + Html.Encode(Strings.T("ui.pageRowsPerPage", "Rows per page")) + "</label>""");
+    }
+
+    private static string PlainPageKitRuntime(string ns) => """"
         using System.Globalization;
         using System.Text;
         using Microsoft.AspNetCore.Http;

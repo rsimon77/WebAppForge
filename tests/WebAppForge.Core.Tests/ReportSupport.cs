@@ -155,15 +155,23 @@ public abstract class ReportSiteBase : IAsyncLifetime
         Assert.True(build.ExitCode == 0, build.Output);
 
         var port = MdSupport.FreePort();
-        _site = Process.Start(new ProcessStartInfo("dotnet", "run --no-build")
+        var start = new ProcessStartInfo("dotnet", "run --no-build")
         {
             WorkingDirectory = siteFolder,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             Environment = { ["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}" },
-        })!;
-        _ = _site.StandardOutput.ReadToEndAsync();
-        _ = _site.StandardError.ReadToEndAsync();
+        };
+        foreach (var (name, value) in SiteEnvironment)
+        {
+            start.Environment[name] = value;
+        }
+
+        _site = Process.Start(start)!;
+        _site.OutputDataReceived += (_, e) => Log(e.Data);
+        _site.ErrorDataReceived += (_, e) => Log(e.Data);
+        _site.BeginOutputReadLine();
+        _site.BeginErrorReadLine();
         Client = new HttpClient(new HttpClientHandler { CookieContainer = new CookieContainer(), AllowAutoRedirect = false })
         {
             BaseAddress = new Uri($"http://127.0.0.1:{port}"),
@@ -195,20 +203,59 @@ public abstract class ReportSiteBase : IAsyncLifetime
         }
 
         MdSupport.TryDelete(Root);
+        CleanUp();
         return Task.CompletedTask;
     }
+
+    private readonly System.Text.StringBuilder _output = new();
+
+    /// <summary>The last part of what the site wrote to its console, such as the exception behind a 500.</summary>
+    public string SiteOutput
+    {
+        get
+        {
+            lock (_output)
+            {
+                return _output.Length > 4000 ? _output.ToString(_output.Length - 4000, 4000) : _output.ToString();
+            }
+        }
+    }
+
+    private void Log(string? line)
+    {
+        if (line is null)
+        {
+            return;
+        }
+
+        lock (_output)
+        {
+            _output.AppendLine(line);
+        }
+    }
+
+    /// <summary>Extra environment variables of the site process.</summary>
+    protected virtual IReadOnlyDictionary<string, string> SiteEnvironment => new Dictionary<string, string>();
+
+    /// <summary>Runs after the site has stopped, for example to drop a server database.</summary>
+    protected virtual void CleanUp()
+    {
+    }
+
+    /// <summary>A connection to the site's database (the SQLite file at <see cref="DbPath"/>), not yet opened.</summary>
+    protected virtual System.Data.Common.DbConnection CreateConnection() => new SqliteConnection($"Data Source={DbPath}");
 
     public async Task<string> Get(string url)
     {
         using var response = await Client.GetAsync(url);
         var text = await response.Content.ReadAsStringAsync();
-        Assert.True(response.StatusCode == HttpStatusCode.OK, $"{url}: {(int)response.StatusCode} {text}");
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"{url}: {(int)response.StatusCode} {text}\n--- site output ---\n{SiteOutput}");
         return text;
     }
 
     public async Task<object?> Scalar(string sql) => await Task.Run(() =>
     {
-        using var connection = new SqliteConnection($"Data Source={DbPath}");
+        using var connection = CreateConnection();
         connection.Open();
         using var command = connection.CreateCommand();
         command.CommandText = sql;

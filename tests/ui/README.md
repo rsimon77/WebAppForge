@@ -11,7 +11,7 @@ ASP.NET Core site in a real browser. They do not drive the Avalonia desktop wind
 | `tools/harness/` | Console project (references `src\WebAppForge.Core`). Recreates the SQLite database for a scenario and calls `ProjectGenerator.Generate` |
 | `tools/generate-site.ps1` | Harness, then `dotnet build` of the generated site, then start it on a free port |
 | `tools/stop-site.ps1` | Stops the site started for a target folder |
-| `specs/*.spec.mjs` | Test files. `shop.spec.mjs` uses `UI_BASE_URL`; `secure-*.spec.mjs` use `UI_SECURE_BASE_URL`; `designed.spec.mjs` uses `UI_DESIGNED_BASE_URL`; `relations.spec.mjs` uses `UI_RELATIONS_BASE_URL`; `reports.spec.mjs` and `grid.spec.mjs` use `UI_REPORTS_BASE_URL` |
+| `specs/*.spec.mjs` | Test files. `shop.spec.mjs` uses `UI_BASE_URL`; `secure-*.spec.mjs` use `UI_SECURE_BASE_URL`; `designed.spec.mjs` uses `UI_DESIGNED_BASE_URL`; `relations.spec.mjs` uses `UI_RELATIONS_BASE_URL`; `reports.spec.mjs` and `grid.spec.mjs` use `UI_REPORTS_BASE_URL`; `audit.spec.mjs` uses `UI_AUDIT_BASE_URL`; `identity.spec.mjs` uses `UI_IDENTITY_BASE_URL` |
 | `.sites/` | Generated sites, databases and logs (recreated on each run) |
 
 Scenarios:
@@ -39,6 +39,17 @@ Scenarios:
   crosstab of region by paid; a calendar with a region filter; a dashboard. The sales list has the filter and sort panel,
   the quick filter and the reset button, and the view page of a region lists its sales in a
   detail grid with a quick filter and sortable headers (`grid.spec.mjs`). No login. The tests only read data.
+- `audit`: the shop scenario (customers 25 rows, orders 3 rows, no login) with an audit trail on both tables. `audit.spec.mjs`
+  adds, edits and deletes through the pages and the API, then checks the `/audit-trail` page: entries, old/new values,
+  the table, action, record, user and date filters, paging after 50 entries and HTML encoding. Generate the site again
+  before every run (the entries accumulate).
+- `identity`: ASP.NET Core Identity user store. The site creates its AspNet* tables at startup and the administrator `admin`;
+  `generate-site.ps1` passes its password (`Admin-pass-42`, a test value) in `WEBAPPFORGE_ADMIN_PASSWORD`. Tables `notes`
+  (owned by the user name), `secrets` (level 5) and `users` (a plain project table whose `/users` pages sit beside the
+  `/admin/users` and `/admin/roles` administration). Registration and change password on, lockout after 3 failures.
+  `identity.spec.mjs` covers the admin pages (add, edit, roles, lock, unlock, set password, delete, no self-delete), role
+  levels with 403 for lower levels, registration, owned rows, change password and logout. Generate the site again before
+  every run (the users accumulate).
 
 ## Commands
 
@@ -58,6 +69,8 @@ Generate and start the sites (each prints `UI_BASE_URL=...`):
 .\tools\generate-site.ps1 -Target .\.sites\designed -Scenario designed
 .\tools\generate-site.ps1 -Target .\.sites\relations -Scenario relations
 .\tools\generate-site.ps1 -Target .\.sites\reports -Scenario reports
+.\tools\generate-site.ps1 -Target .\.sites\audit -Scenario audit
+.\tools\generate-site.ps1 -Target .\.sites\identity -Scenario identity
 ```
 
 Run the tests with all base URLs set:
@@ -68,6 +81,8 @@ $env:UI_SECURE_BASE_URL = (Get-Content .\.sites\secure\site.json | ConvertFrom-J
 $env:UI_DESIGNED_BASE_URL = (Get-Content .\.sites\designed\site.json | ConvertFrom-Json).baseUrl
 $env:UI_RELATIONS_BASE_URL = (Get-Content .\.sites\relations\site.json | ConvertFrom-Json).baseUrl
 $env:UI_REPORTS_BASE_URL = (Get-Content .\.sites\reports\site.json | ConvertFrom-Json).baseUrl
+$env:UI_AUDIT_BASE_URL = (Get-Content .\.sites\audit\site.json | ConvertFrom-Json).baseUrl
+$env:UI_IDENTITY_BASE_URL = (Get-Content .\.sites\identity\site.json | ConvertFrom-Json).baseUrl
 npx playwright test
 ```
 
@@ -79,6 +94,8 @@ Stop the sites:
 .\tools\stop-site.ps1 -Target .\.sites\designed
 .\tools\stop-site.ps1 -Target .\.sites\relations
 .\tools\stop-site.ps1 -Target .\.sites\reports
+.\tools\stop-site.ps1 -Target .\.sites\audit
+.\tools\stop-site.ps1 -Target .\.sites\identity
 ```
 
 Each `generate-site.ps1` run stops any site still recorded in its target folder, deletes the old database and code, and

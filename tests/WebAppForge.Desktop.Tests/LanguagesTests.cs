@@ -229,6 +229,31 @@ public class LanguagesTests
     }
 
     [Fact]
+    public void TheProjectTextsAppearWithTheirKind()
+    {
+        var rig = Setup();
+        var project = rig.Main.Current;
+        project.AspNet.Title = "Order desk";
+        var customers = project.Tables.Single(t => t.Name == "Customers");
+        customers.Ui.MenuGroup = "Sales";
+        customers.Designs.List.Title = "Our customers";
+        var name = customers.Fields.Single(f => f.Name == "Name");
+        name.Ui.HelpText = "The full name.";
+        name.Ui.Group = "Identity";
+        customers.FormPages.Add(new FormPageDef { Name = "Main", Caption = "Main data" });
+        rig.Languages.Reload();
+
+        Assert.Equal(KeyCount(rig), rig.Languages.Rows.Count);
+        Assert.Equal(("Site", "Order desk"), (Row(rig, LocalizationKeys.SiteTitle).Kind, Row(rig, LocalizationKeys.SiteTitle).SourceText));
+        Assert.Equal("Menu", Row(rig, LocalizationKeys.MenuGroup("Sales")).Kind);
+        Assert.Equal(("Page", "Our customers"), (Row(rig, LocalizationKeys.Page("Customers", "list", "title")).Kind, Row(rig, LocalizationKeys.Page("Customers", "list", "title")).SourceText));
+        Assert.Equal("Field setting", Row(rig, LocalizationKeys.FieldUi("Customers", "Name", "help")).Kind);
+        Assert.Equal("Field group", Row(rig, LocalizationKeys.FieldGroup("Customers", "Identity")).Kind);
+        Assert.Equal("Form page", Row(rig, LocalizationKeys.FormPage("Customers", "Main", "caption")).Kind);
+        Assert.True(Row(rig, LocalizationKeys.SiteTitle).CellFor("en")!.IsSource);
+    }
+
+    [Fact]
     public void EditingACellStoresAManualReviewedEntryWithTheSourceHash()
     {
         var rig = Setup();

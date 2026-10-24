@@ -11,7 +11,26 @@ internal static class AuthTemplates
     /// User Level helpers (only written when a user level field is set). The level is read at login and stored in the
     /// cookie as the "user_level" claim. A missing or non-numeric claim counts as level 0.
     /// </summary>
-    public static string Permissions(string ns) => ("""
+    public static string Permissions(string ns)
+    {
+        var text = PlainPermissions(ns);
+        if (!Templates.Localized)
+        {
+            return text;
+        }
+
+        // Localized, the denied message is answered in the language of the request. The routes pass the English text.
+        text = Templates.ReplaceOnce(text, "namespace " + ns + ".Security;", "using " + ns + ".Localization;\n\nnamespace " + ns + ".Security;");
+        text = Templates.ReplaceOnce(text, "return Results.Text(deniedMessage, ", "return Results.Text(Translate(deniedMessage), ");
+        var cases = string.Concat(UiStrings.Denied.Select(s => $"        {Templates.Lit(s.English)} => Strings.T({Templates.Lit(s.Key)}, message),\n"));
+        const string anchor = "    /// <summary>True when the user is signed in and has at least";
+        return Templates.ReplaceOnce(text, anchor,
+            "    /// <summary>A denied message of the generated routes in the language of the request; any other text as it is.</summary>\n"
+            + "    private static string Translate(string message) => message switch\n    {\n" + cases + "        _ => message,\n    };\n\n"
+            + anchor);
+    }
+
+    private static string PlainPermissions(string ns) => ("""
         using System.Security.Claims;
 
         namespace @@NS@@.Security;
@@ -75,6 +94,7 @@ internal static class AuthTemplates
 
     public static string LoginAttempts(string ns) => ("""
         using System.Globalization;
+        using Dapper;
         using Microsoft.Data.Sqlite;
 
         namespace @@NS@@.Security;
@@ -115,9 +135,7 @@ internal static class AuthTemplates
             {
                 await using var connection = new SqliteConnection(connectionString);
                 await connection.OpenAsync();
-                await using var command = connection.CreateCommand();
-                command.CommandText = CreateTableSql;
-                await command.ExecuteNonQueryAsync();
+                await connection.ExecuteAsync(CreateTableSql);
             }
 
             /// <summary>True while the user name has reached the failure limit and the window has not expired.</summary>
@@ -125,18 +143,8 @@ internal static class AuthTemplates
             {
                 await using var connection = new SqliteConnection(_connectionString);
                 await connection.OpenAsync();
-                await using var command = connection.CreateCommand();
-                command.CommandText = SelectSql;
-                command.Parameters.AddWithValue("@username", Key(userName));
-                await using var reader = await command.ExecuteReaderAsync();
-                if (!await reader.ReadAsync())
-                {
-                    return false;
-                }
-
-                var failures = reader.GetInt32(0);
-                var windowStart = ParseUtc(reader.GetString(1));
-                return failures >= _maxFailures && !IsExpired(windowStart, DateTime.UtcNow);
+                var row = (await connection.QueryAsync<(long Failures, string WindowStart)>(SelectSql, new { username = Key(userName) })).AsList();
+                return row.Count > 0 && row[0].Failures >= _maxFailures && !IsExpired(ParseUtc(row[0].WindowStart), DateTime.UtcNow);
             }
 
             /// <summary>Counts one failed login for the user name. The read and the write run in one transaction.</summary>
@@ -156,30 +164,18 @@ internal static class AuthTemplates
                     var failures = 1;
                     var windowStart = now;
 
-                    await using (var select = connection.CreateCommand())
+                    var previous = (await connection.QueryAsync<(long Failures, string WindowStart)>(SelectSql, new { username = key })).AsList();
+                    if (previous.Count > 0)
                     {
-                        select.CommandText = SelectSql;
-                        select.Parameters.AddWithValue("@username", key);
-                        await using var reader = await select.ExecuteReaderAsync();
-                        if (await reader.ReadAsync())
+                        var previousStart = ParseUtc(previous[0].WindowStart);
+                        if (!IsExpired(previousStart, now))
                         {
-                            var previousStart = ParseUtc(reader.GetString(1));
-                            if (!IsExpired(previousStart, now))
-                            {
-                                failures = reader.GetInt32(0) + 1;
-                                windowStart = previousStart;
-                            }
+                            failures = (int)previous[0].Failures + 1;
+                            windowStart = previousStart;
                         }
                     }
 
-                    await using (var upsert = connection.CreateCommand())
-                    {
-                        upsert.CommandText = UpsertSql;
-                        upsert.Parameters.AddWithValue("@username", key);
-                        upsert.Parameters.AddWithValue("@failures", failures);
-                        upsert.Parameters.AddWithValue("@windowStart", Format(windowStart));
-                        await upsert.ExecuteNonQueryAsync();
-                    }
+                    await connection.ExecuteAsync(UpsertSql, new { username = key, failures, windowStart = Format(windowStart) });
 
                     await Run(connection, "COMMIT");
                 }
@@ -195,10 +191,7 @@ internal static class AuthTemplates
             {
                 await using var connection = new SqliteConnection(_connectionString);
                 await connection.OpenAsync();
-                await using var command = connection.CreateCommand();
-                command.CommandText = DeleteSql;
-                command.Parameters.AddWithValue("@username", Key(userName));
-                await command.ExecuteNonQueryAsync();
+                await connection.ExecuteAsync(DeleteSql, new { username = Key(userName) });
             }
 
             private static string Key(string userName) => userName.ToLowerInvariant();
@@ -210,12 +203,7 @@ internal static class AuthTemplates
 
             private bool IsExpired(DateTime windowStart, DateTime now) => now - windowStart >= _window;
 
-            private static async Task Run(SqliteConnection connection, string sql)
-            {
-                await using var command = connection.CreateCommand();
-                command.CommandText = sql;
-                await command.ExecuteNonQueryAsync();
-            }
+            private static async Task Run(SqliteConnection connection, string sql) => await connection.ExecuteAsync(sql);
         }
         """).Replace("@@NS@@", ns);
 
@@ -241,6 +229,7 @@ internal static class AuthTemplates
         sb.AppendLine("using Microsoft.AspNetCore.Antiforgery;");
         sb.AppendLine("using Microsoft.AspNetCore.Authentication;");
         sb.AppendLine("using Microsoft.AspNetCore.Authentication.Cookies;");
+        sb.AppendLine("using Dapper;");
         sb.AppendLine("using Microsoft.Data.Sqlite;");
         sb.AppendLine($"using {ns}.Security;");
         if (Templates.Localized)
@@ -354,25 +343,15 @@ internal static class AuthTemplates
 
         sb.AppendLine("        await using var connection = new SqliteConnection(connectionString);");
         sb.AppendLine("        await connection.OpenAsync();");
-        sb.AppendLine("        await using var command = connection.CreateCommand();");
-        sb.AppendLine("        command.CommandText = LookupSql;");
-        sb.AppendLine("        command.Parameters.AddWithValue(\"@username\", userName);");
         if (levelSecured)
         {
-            sb.AppendLine("        string? storedHash = null;");
-            sb.AppendLine("        var userLevel = 0;");
-            sb.AppendLine("        await using (var reader = await command.ExecuteReaderAsync())");
-            sb.AppendLine("        {");
-            sb.AppendLine("            if (await reader.ReadAsync())");
-            sb.AppendLine("            {");
-            sb.AppendLine("                storedHash = reader.IsDBNull(0) ? null : reader.GetString(0);");
-            sb.AppendLine("                userLevel = reader.IsDBNull(1) ? 0 : Convert.ToInt32(reader.GetValue(1), System.Globalization.CultureInfo.InvariantCulture);");
-            sb.AppendLine("            }");
-            sb.AppendLine("        }");
+            // The hash and the level, or nulls when there is no such user.
+            sb.AppendLine("        var (storedHash, level) = await connection.QueryFirstOrDefaultAsync<(string? Hash, long? Level)>(LookupSql, new { username = userName });");
+            sb.AppendLine("        var userLevel = (int)(level ?? 0);");
         }
         else
         {
-            sb.AppendLine("        var storedHash = await command.ExecuteScalarAsync() as string;");
+            sb.AppendLine("        var storedHash = await connection.ExecuteScalarAsync<string?>(LookupSql, new { username = userName });");
         }
 
         sb.AppendLine();
@@ -505,6 +484,7 @@ internal static class AuthTemplates
         var sb = new StringBuilder();
         sb.Append(("""
             using System.Text;
+            using Dapper;
             using Microsoft.AspNetCore.Antiforgery;
             using Microsoft.Data.Sqlite;
             using @@NS@@.Security;
@@ -596,23 +576,14 @@ internal static class AuthTemplates
 
                         await using var connection = new SqliteConnection(connectionString);
                         await connection.OpenAsync();
-                        await using (var exists = connection.CreateCommand())
+                        if (await connection.ExecuteScalarAsync<long>(ExistsSql, new { username = userName }) > 0)
                         {
-                            exists.CommandText = ExistsSql;
-                            exists.Parameters.AddWithValue("@username", userName);
-                            if (Convert.ToInt64(await exists.ExecuteScalarAsync()) > 0)
-                            {
-                                return RegisterForm(context, antiforgery, new List<string> { "That user name is already taken." }, userName);
-                            }
+                            return RegisterForm(context, antiforgery, new List<string> { "That user name is already taken." }, userName);
                         }
 
                         try
                         {
-                            await using var insert = connection.CreateCommand();
-                            insert.CommandText = InsertSql;
-                            insert.Parameters.AddWithValue("@username", userName);
-                            insert.Parameters.AddWithValue("@hash", Passwords.Hash(password));
-                            await insert.ExecuteNonQueryAsync();
+                            await connection.ExecuteAsync(InsertSql, new { username = userName, hash = Passwords.Hash(password) });
                         }
                         catch (SqliteException ex) when (ex.SqliteErrorCode == 19)
                         {
@@ -686,24 +657,13 @@ internal static class AuthTemplates
                     var userName = context.User.Identity?.Name ?? string.Empty;
                     await using var connection = new SqliteConnection(connectionString);
                     await connection.OpenAsync();
-                    await using (var lookup = connection.CreateCommand())
+                    var storedHash = await connection.ExecuteScalarAsync<string?>(StoredHashSql, new { username = userName });
+                    if (!Passwords.Verify(storedHash ?? string.Empty, current))
                     {
-                        lookup.CommandText = StoredHashSql;
-                        lookup.Parameters.AddWithValue("@username", userName);
-                        var storedHash = await lookup.ExecuteScalarAsync() as string;
-                        if (!Passwords.Verify(storedHash ?? string.Empty, current))
-                        {
-                            return ChangePasswordForm(context, antiforgery, new List<string> { "The current password is not correct." }, null);
-                        }
+                        return ChangePasswordForm(context, antiforgery, new List<string> { "The current password is not correct." }, null);
                     }
 
-                    await using (var update = connection.CreateCommand())
-                    {
-                        update.CommandText = UpdateSql;
-                        update.Parameters.AddWithValue("@hash", Passwords.Hash(password));
-                        update.Parameters.AddWithValue("@username", userName);
-                        await update.ExecuteNonQueryAsync();
-                    }
+                    await connection.ExecuteAsync(UpdateSql, new { hash = Passwords.Hash(password), username = userName });
 
                     return ChangePasswordForm(context, antiforgery, new List<string>(), "Your password has been changed.");
                 }

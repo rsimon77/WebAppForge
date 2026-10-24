@@ -28,9 +28,7 @@ public static class ProjectFile
             new XAttribute("name", project.Name),
             new XAttribute("id", project.ProjectId.ToString("D")),
             new XAttribute("outputFolder", project.OutputFolder),
-            new XElement("database",
-                new XAttribute("provider", project.Database.Provider),
-                new XAttribute("path", project.Database.Path)),
+            DatabaseElement(project.Database),
             new XElement("aspnet",
                 new XAttribute("title", project.AspNet.Title),
                 new XAttribute("theme", project.AspNet.Theme),
@@ -46,6 +44,7 @@ public static class ProjectFile
                 new XAttribute("allowRegistration", project.Security.AllowRegistration),
                 new XAttribute("allowChangePassword", project.Security.AllowChangePassword),
                 new XAttribute("userLevelField", project.Security.UserLevelField)));
+        IdentityXml.Append(root.Element("security")!, project.Security);
 
         foreach (var table in project.Tables)
         {
@@ -96,6 +95,8 @@ public static class ProjectFile
 
             CustomizationXml.AppendTable(tableElement, table);
             MasterDetailXml.Append(tableElement, table);
+            AuditXml.AppendTable(tableElement, table.Audit);
+            ImportExportXml.AppendTable(tableElement, table);
             root.Add(tableElement);
         }
 
@@ -117,6 +118,8 @@ public static class ProjectFile
         LocalizationXml.Append(root, project.Localization);
         CustomizationXml.AppendMeta(root, project.Meta);
         ReportXml.Append(root, project.Reports);
+        AuditXml.AppendProject(root, project.Audit);
+        ImportExportXml.Append(root, project.ImportExport);
 
         return new XDocument(new XDeclaration("1.0", "utf-8", null), root);
     }
@@ -143,8 +146,10 @@ public static class ProjectFile
         {
             project.Database = new DatabaseSettings
             {
-                Provider = Optional(database, "provider", "sqlite"),
+                Provider = Optional(database, "provider", DatabaseProviders.Sqlite),
                 Path = Optional(database, "path", string.Empty),
+                ConnectionString = Optional(database, "connectionString", string.Empty),
+                ConnectionStringVariable = Optional(database, "connectionStringVariable", string.Empty),
             };
         }
 
@@ -174,6 +179,7 @@ public static class ProjectFile
                 AllowChangePassword = ReadBool(security, "allowChangePassword", true),
                 UserLevelField = Optional(security, "userLevelField", string.Empty),
             };
+            IdentityXml.Read(security, project.Security);
         }
 
         // Older project files have no <build> element; the defaults keep building and Docker off.
@@ -257,11 +263,15 @@ public static class ProjectFile
 
             CustomizationXml.ReadTable(tableElement, table);
             MasterDetailXml.Read(tableElement, table);
+            AuditXml.ReadTable(tableElement, table);
+            ImportExportXml.ReadTable(tableElement, table);
 
             project.Tables.Add(table);
         }
 
         ReportXml.Read(root, project.Reports);
+        project.Audit = AuditXml.ReadProject(root);
+        ImportExportXml.Read(root, project);
 
         return project;
     }
@@ -270,6 +280,23 @@ public static class ProjectFile
     {
         return element.Attribute(name)?.Value
             ?? throw new InvalidDataException($"Element '{element.Name.LocalName}' is missing attribute '{name}'.");
+    }
+
+    /// <summary>The database element. A SQLite project writes only provider and path, as before servers were supported.</summary>
+    private static XElement DatabaseElement(DatabaseSettings database)
+    {
+        var e = new XElement("database", new XAttribute("provider", database.Provider), new XAttribute("path", database.Path));
+        if (database.ConnectionString.Length > 0)
+        {
+            e.Add(new XAttribute("connectionString", database.ConnectionString));
+        }
+
+        if (database.ConnectionStringVariable.Length > 0)
+        {
+            e.Add(new XAttribute("connectionStringVariable", database.ConnectionStringVariable));
+        }
+
+        return e;
     }
 
     private static string Optional(XElement element, string name, string fallback)

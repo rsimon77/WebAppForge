@@ -14,6 +14,9 @@ public sealed class Project
 
     public SecuritySettings Security { get; set; } = new();
 
+    /// <summary>Audit trail of inserts, updates and deletes (off by default).</summary>
+    public AuditSettings Audit { get; set; } = new();
+
     /// <summary>Multi-language support of the generated site (off by default) and its stored translations.</summary>
     public LocalizationSettings Localization { get; set; } = new();
 
@@ -29,24 +32,90 @@ public sealed class Project
 
     /// <summary>Summary, crosstab, chart, calendar and dashboard pages of the generated site.</summary>
     public List<ReportInfo> Reports { get; } = [];
+
+    /// <summary>Export menu and import pages of the generated site (off by default).</summary>
+    public ImportExportSettings ImportExport { get; set; } = new();
+}
+
+/// <summary>The database products the generator supports. The keys are stored in the project file.</summary>
+public static class DatabaseProviders
+{
+    public const string Sqlite = "sqlite";
+
+    public const string SqlServer = "sqlserver";
+
+    /// <summary>Azure SQL Database: the SQL Server dialect and driver, with Entra ID sign-in through the connection string.</summary>
+    public const string AzureSql = "azuresql";
+
+    public const string MySql = "mysql";
+
+    public static IReadOnlyList<string> All { get; } = [Sqlite, SqlServer, AzureSql, MySql];
+
+    public static bool IsKnown(string? provider) => All.Contains(Normalize(provider));
+
+    /// <summary>The key in lower case, with "sqlite" for an empty value.</summary>
+    public static string Normalize(string? provider) => string.IsNullOrWhiteSpace(provider) ? Sqlite : provider.Trim().ToLowerInvariant();
+
+    /// <summary>True for SQL Server and Azure SQL, which share the dialect and the driver.</summary>
+    public static bool IsSqlServer(string? provider) => Normalize(provider) is SqlServer or AzureSql;
+
+    /// <summary>True for the providers that connect to a server with a connection string instead of opening a file.</summary>
+    public static bool IsServer(string? provider) => Normalize(provider) != Sqlite;
+
+    public static string DisplayName(string? provider) => Normalize(provider) switch
+    {
+        SqlServer => "SQL Server",
+        AzureSql => "Azure SQL",
+        MySql => "MySQL",
+        _ => "SQLite",
+    };
 }
 
 public sealed class DatabaseSettings
 {
-    /// <summary>Provider key. Only "sqlite" is implemented in this version.</summary>
-    public string Provider { get; set; } = "sqlite";
+    /// <summary>Provider key, one of <see cref="DatabaseProviders.All"/>.</summary>
+    public string Provider { get; set; } = DatabaseProviders.Sqlite;
 
     /// <summary>SQLite file path, relative to the project file folder (or absolute). Forward slashes.</summary>
     public string Path { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Connection string of a server database. It is saved in the project file and written to the generated appsettings.json,
+    /// so a password in it is stored in plain text; <see cref="ConnectionStringVariable"/> keeps it out of both.
+    /// </summary>
+    public string ConnectionString { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of an environment variable that holds the connection string of a server database. When set, the editor reads the
+    /// connection from it, the generated appsettings.json leaves the connection empty and the generated site reads the variable.
+    /// </summary>
+    public string ConnectionStringVariable { get; set; } = string.Empty;
+
+    public bool IsServer => DatabaseProviders.IsServer(Provider);
+
     /// <summary>Resolves the connection string against the folder that contains the project file.</summary>
     public string ResolveConnectionString(string projectFolder)
     {
+        if (IsServer)
+        {
+            var variable = ConnectionStringVariable.Trim();
+            if (variable.Length > 0 && Environment.GetEnvironmentVariable(variable) is { Length: > 0 } fromVariable)
+            {
+                return fromVariable;
+            }
+
+            return variable.Length > 0 ? string.Empty : ConnectionString;
+        }
+
         var full = System.IO.Path.IsPathRooted(Path)
             ? Path
             : System.IO.Path.GetFullPath(System.IO.Path.Combine(projectFolder, Path));
         return $"Data Source={full}";
     }
+
+    /// <summary>The connection string written to the generated appsettings.json: empty when it comes from an environment variable.</summary>
+    public string GeneratedConnectionString(string projectFolder)
+        => IsServer && ConnectionStringVariable.Trim().Length > 0 ? string.Empty : ResolveConnectionString(projectFolder);
 }
 
 /// <summary>Application-level settings that apply to every generated page.</summary>
@@ -96,6 +165,21 @@ public sealed class SecuritySettings
 
     /// <summary>When set (and login is enabled), signed-in users can change their own password at /changepassword.</summary>
     public bool AllowChangePassword { get; set; } = true;
+
+    /// <summary>
+    /// Where the users are kept. With <see cref="UserStore.AspNetIdentity"/> the user table settings above are not used, and
+    /// User Level security is always on (levels come from the identity claims, see <see cref="IdentitySettings"/>).
+    /// </summary>
+    public UserStore UserStore { get; set; } = UserStore.ProjectTable;
+
+    /// <summary>Options of the ASP.NET Core Identity user store.</summary>
+    public IdentitySettings Identity { get; set; } = new();
+
+    /// <summary>True when login is enabled and the users are kept by ASP.NET Core Identity.</summary>
+    public bool UsesIdentity => Enabled && UserStore == UserStore.AspNetIdentity;
+
+    /// <summary>True when User Level security applies: login with a user level field, or with ASP.NET Core Identity.</summary>
+    public bool HasUserLevels => Enabled && (UserStore == UserStore.AspNetIdentity || !string.IsNullOrEmpty(UserLevelField));
 }
 
 public sealed class TableInfo
@@ -139,6 +223,9 @@ public sealed class TableInfo
     /// <summary>One design per page type (title, layout, columns, buttons, modal, CSS).</summary>
     public PageDesigns Designs { get; set; } = new();
 
+    /// <summary>Whether and how changes to this table are written to the audit trail.</summary>
+    public TableAudit Audit { get; set; } = new();
+
     /// <summary>Detail tables of this master table (master/detail and multiple master/detail).</summary>
     public List<DetailLink> Details { get; } = [];
 
@@ -147,6 +234,9 @@ public sealed class TableInfo
 
     /// <summary>Pages of the multi-page forms of this table, in order. Used when a design sets a MultiPage mode.</summary>
     public List<FormPageDef> FormPages { get; } = [];
+
+    /// <summary>Export and import of this table; used when <see cref="ImportExportSettings.Enabled"/> is set.</summary>
+    public TableImportExport ImportExport { get; set; } = new();
 
     public List<FieldInfo> Fields { get; } = [];
 

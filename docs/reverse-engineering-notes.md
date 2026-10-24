@@ -71,7 +71,7 @@ Done:
 - 8 unit tests pass.
 
 Not done:
-- Providers other than SQLite (the generator throws `NotSupportedException`).
+- Providers other than SQLite (the generator threw `NotSupportedException`). SQL Server, Azure SQL and MySQL were added later; see [ADR 001](adr-001-data-access.md).
 - Razor UI pages, search, master/detail, reports and the desktop editor.
 - Templates and output are our own; the vendor's `@aspnetmaker/*` templates are not used.
 
@@ -280,3 +280,48 @@ Follow-up, the rest of the mockup:
 - Reports: a Preview button runs the selected report on the project's SQLite file (`ReportPreview` in Core, the same
   group, date and lookup SQL as the generated page) and shows its first rows, with bars for charts. Owner fields and user
   levels are not applied in the preview.
+
+## Audit trail (2026-10-24)
+
+Generated sites can log add, copy, edit and delete (page and REST API) for selected tables, including rows changed by
+referential-integrity cascades. Settings: Project.Audit (global) and TableInfo.Audit (per table), edited on the desktop
+"Audit trail" tab in the Site stage. Entries are written in the same transaction as the change and store the changed
+values as JSON; the generated audit-trail page filters by table, action, user, record and date. Off by default, so
+existing projects generate identical output.
+
+Not verified: audited sites on SQL Server and MySQL (only SQLite is exercised by tests); the audit-trail page itself has
+no browser test.
+
+## Import and export (2026-10-24)
+
+Generated sites export list rows (current search, filters and sort) as CSV, XLSX, JSON, XML or Word, and import them
+through upload, column mapping, a validated preview and one transaction (insert, or upsert by primary key). Settings:
+Project.ImportExport and TableInfo.ImportExport, edited on the desktop "Import/Export" tab after "Audit trail". XLSX and
+Word use DocumentFormat.OpenXml, referenced only by sites that offer them. Imports into audited tables write audit
+entries in the import transaction. Off by default, so existing projects generate identical output.
+
+Limits: Word import reads the first table only; composite foreign keys are not checked on import; at most 50,000 rows
+per file, held in memory; imports into tables without a primary key write no audit entries; imported audit values are
+the stored database values. SQL Server and MySQL sites are generated and compiled in tests but not run.
+
+## ASP.NET Core Identity user store (2026-10-24)
+
+Security can use ASP.NET Core Identity instead of a project user table: standard AspNet* tables with Dapper stores (no
+EF Core) on every dialect, created at site startup when missing and from the editor's Security tab ("Create missing
+tables"). The first admin is seeded from an environment variable (default WEBAPPFORGE_ADMIN_PASSWORD); roles carry
+numeric user levels, so table levels, owner rows and the audit trail keep working. Generated /admin/users and /admin/roles pages
+manage accounts and roles. Not done: e-mail sending, password reset tokens, 2FA, external logins, migration from a
+project user table. SQL Server and MySQL Identity sites are generated and compiled in tests but not run.
+
+## Dates and numbers per language (translation phase 2, 2026-10-24)
+
+Localized sites show dates and numbers as the visitor's language writes them (Strings.Culture, the specific culture of the
+request language, invariant for an unknown one): list and view values, field display formats and report numbers.
+Currency keeps the symbol of the default language with the visitor's separators. Rules:
+- CultureInfo.CurrentCulture is not changed (only CurrentUICulture), so form input values, the JSON API, CSV/JSON/XML/Word
+  exports, imports, filters and stored values stay invariant. XLSX keeps native types. Word stays invariant because Word
+  files can be imported again.
+- A decimal typed in a form is read with the visitor's decimal separator first, then with "."; group separators are refused,
+  so "1,5" is 1.5 in Hungarian and an error in English (never 15). Integers stay invariant.
+- The html lang attribute and the Accept-Language fallback (when there is no language cookie) already existed.
+Sites without localization are byte-identical.

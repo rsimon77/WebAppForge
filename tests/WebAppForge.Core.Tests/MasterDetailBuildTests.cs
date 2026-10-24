@@ -51,6 +51,9 @@ public class MasterDetailBuildTests
             items.Details.Add(toNotes);
         }
 
+        // Export and import of every table with the designed, localized and cards pages of this sample.
+        project.ImportExport = new ImportExportSettings { Enabled = true, ExportFormats = DataFormats.All, ImportFormats = DataFormats.All };
+        items.ImportExport.ExportMaxRows = 50;
         return project;
     }
 

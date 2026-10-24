@@ -49,7 +49,8 @@ public class ProjectGeneratorTests
             Assert.Contains("group.MapPost(\"/\"", endpoints);
             Assert.Contains("group.MapPut(\"/{id}\"", endpoints);
             Assert.Contains("group.MapDelete(\"/{id}\"", endpoints);
-            Assert.Contains("item.Id = (long)Convert.ToInt64(await command.ExecuteScalarAsync());", endpoints);
+            Assert.Contains("item.Id = await connection.ExecuteScalarAsync<long>(\"INSERT INTO \\\"order_items\\\"", endpoints);
+            Assert.Contains("; SELECT last_insert_rowid()\", args);", endpoints);
             Assert.Contains("FROM \\\"order_items\\\"", endpoints);
 
             var model = File.ReadAllText(Path.Combine(output, "Models", "OrderItems.cs"));

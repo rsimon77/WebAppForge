@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WebAppForge.Desktop.Views.AuditView">
+    <Grid DataContext="{Binding Audit}" RowDefinitions="Auto,*" Margin="12">
+        <Border Grid.Row="0" Classes="card" MaxWidth="720" HorizontalAlignment="Left" Margin="0,0,0,8">
+            <StackPanel Spacing="8">
+                <CheckBox Content="Record an audit trail (who inserted, changed or deleted which record, and when)" IsChecked="{Binding Enabled}"
+                          AutomationProperties.AutomationId="AuditEnabledCheckBox" />
+                <StackPanel IsEnabled="{Binding Enabled}" Spacing="8">
+                    <TextBlock Text="Log table" FontWeight="SemiBold" />
+                    <TextBox Text="{Binding LogTable}" Width="260" HorizontalAlignment="Left" AutomationProperties.AutomationId="AuditLogTableBox" />
+                    <CheckBox Content="Create the log table when the site starts and it does not exist" IsChecked="{Binding CreateTable}" />
+
+                    <TextBlock Text="Values kept in an entry" FontWeight="SemiBold" />
+                    <ComboBox ItemsSource="{Binding ValueChoices}" SelectedItem="{Binding Values}" Width="260" AutomationProperties.AutomationId="AuditValuesPicker" />
+                    <CheckBox Content="Also store the client's IP address" IsChecked="{Binding RecordIpAddress}" />
+
+                    <CheckBox Content="Add a page that lists the entries (/audit-trail)" IsChecked="{Binding ShowLogPage}" />
+                    <StackPanel Spacing="4" IsEnabled="{Binding ShowLogPage}">
+                        <TextBlock Text="Lowest user level that may open it (0 = any signed-in user)" />
+                        <TextBox Text="{Binding LogPageMinLevelText}" Width="180" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </StackPanel>
+                <TextBlock IsVisible="{Binding HasInputMessage}" Text="{Binding InputMessage}" Foreground="#B3261E" TextWrapping="Wrap" />
+                <Border IsVisible="{Binding HasValidationMessage}" Padding="8" BorderThickness="1" BorderBrush="#B3261E" CornerRadius="4">
+                    <TextBlock Text="{Binding ValidationMessage}" Foreground="#B3261E" TextWrapping="Wrap" />
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <DockPanel Grid.Row="1" IsEnabled="{Binding Enabled}">
+            <TextBlock DockPanel.Dock="Top" Classes="hint" TextWrapping="Wrap" Margin="0,0,0,6"
+                       Text="Choose the tables to audit and the actions to log. Excluded fields (comma separated) are never written to the trail; password fields never are." />
+            <DataGrid ItemsSource="{Binding Rows}" AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single"
+                      HorizontalScrollBarVisibility="Auto" AutomationProperties.AutomationId="AuditTablesGrid">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Table" Binding="{Binding Name}" IsReadOnly="True" Width="Auto" MinWidth="140" />
+                    <DataGridCheckBoxColumn Header="Audit" Binding="{Binding Enabled}" Width="Auto" MinWidth="70" />
+                    <DataGridCheckBoxColumn Header="Inserts" Binding="{Binding Inserts}" Width="Auto" MinWidth="80" />
+                    <DataGridCheckBoxColumn Header="Updates" Binding="{Binding Updates}" Width="Auto" MinWidth="80" />
+                    <DataGridCheckBoxColumn Header="Deletes" Binding="{Binding Deletes}" Width="Auto" MinWidth="80" />
+                    <DataGridTextColumn Header="Excluded fields" Binding="{Binding ExcludedText}" Width="*" MinWidth="160" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </Grid>
+</UserControl>

@@ -1,4 +1,5 @@
 using System.Text;
+using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 
 namespace WebAppForge.Core.Generation;
@@ -44,7 +45,10 @@ internal static partial class Templates
     private static string PageExpr(TableInfo table, int index, string html)
     {
         var page = table.FormPages[index];
-        return $"new FormPages.Page({index}, {Lit(page.Name.Trim())}, {Lit(PageCaption(page))}, {Lit(Token(page.Icon))}, {Lit(page.Description.Trim())}, {html})";
+        var name = page.Name.Trim();
+        var description = page.Description.Trim();
+        var descriptionExpr = description.Length > 0 ? ProjectText(LocalizationKeys.FormPage(table.Name, name, "description"), description) : Lit(description);
+        return $"new FormPages.Page({index}, {Lit(name)}, {ProjectText(LocalizationKeys.FormPage(table.Name, name, "caption"), PageCaption(page))}, {Lit(Token(page.Icon))}, {descriptionExpr}, {html})";
     }
 
     /// <summary>Pages that have at least one of the given fields, in page order, with their fields in field order.</summary>
@@ -151,7 +155,24 @@ internal static partial class Templates
 
     // ---- the runtime ----------------------------------------------------------------------------
 
-    internal static string FormPagesRuntime(string ns) => """"
+    internal static string FormPagesRuntime(string ns)
+    {
+        var text = PlainFormPagesRuntime(ns);
+        if (!Localized)
+        {
+            return text;
+        }
+
+        // Localized, the wizard texts are read per request in the visitor's language.
+        text = ReplaceOnce(text, "namespace " + ns + ".Web;", "using " + ns + ".Localization;\n\nnamespace " + ns + ".Web;");
+        text = ReplaceOnce(text, """public const string PreviousText = "Previous";""", """public static string PreviousText => Strings.T("ui.formPrevious", "Previous");""");
+        text = ReplaceOnce(text, """public const string NextText = "Next";""", """public static string NextText => Strings.T("ui.formNext", "Next");""");
+        text = ReplaceOnce(text, """public const string StepText = "Step {0} of {1}";""", """public static string StepText => Strings.T("ui.formStep", "Step {0} of {1}");""");
+        return ReplaceOnce(text, """aria-label=\"Progress\" aria-valuemin""",
+            """aria-label=\"" + Html.Attr(Strings.T("ui.formProgress", "Progress")) + "\" aria-valuemin""");
+    }
+
+    private static string PlainFormPagesRuntime(string ns) => """"
         using System.Runtime.CompilerServices;
         using System.Text;
 

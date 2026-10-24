@@ -180,6 +180,12 @@
             <TabItem Header="Security">
                 <views:SecurityView />
             </TabItem>
+            <TabItem Header="Audit trail">
+                <views:AuditView />
+            </TabItem>
+            <TabItem Header="Import/Export">
+                <views:ImportExportView />
+            </TabItem>
             <TabItem Header="Languages">
                 <views:LanguagesView />
             </TabItem>

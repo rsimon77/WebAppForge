@@ -365,7 +365,7 @@ public class CustomizationTests
         Assert.Contains("LookupSource.Pick(lk_CategoryId, item.CategoryId)", pages);
 
         // Stored keys are bound as parameters, never added to the SQL text. The filter is part of the project.
-        Assert.Contains("command.Parameters.AddWithValue(\"@k\" + i, chunk[i]);", runtime);
+        Assert.Contains("args.Add(\"@k\" + i, chunk[i]);", runtime);
         Assert.Contains("\" IN (\" + string.Join(\", \", names) + \")\"", runtime);
         Assert.Contains("(filter.Length > 0 ? \" WHERE (\" + filter + \")\" : \"\") + \" ORDER BY \" + order", runtime);
         Assert.DoesNotContain("chunk[i].ToString()", runtime);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 using WebAppForge.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -69,9 +70,8 @@ public sealed class TranslationRow : ObservableObject
     /// <summary>The language the source text is written in (English for the fixed UI strings, the default language for captions).</summary>
     public string SourceLanguage { get; }
 
-    /// <summary>"Table", "Field" or "UI".</summary>
-    public string Kind => Key.StartsWith("table.", StringComparison.Ordinal) ? "Table"
-        : Key.StartsWith("field.", StringComparison.Ordinal) ? "Field" : "UI";
+    /// <summary>What the text is: "UI" for a fixed text, "Table", "Field", "Report", "Page", "Field setting" and so on.</summary>
+    public string Kind => LocalizationKeys.KindOf(Key);
 
     public IReadOnlyCollection<TranslationCell> Cells => _cells.Values;
 

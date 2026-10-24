@@ -256,7 +256,7 @@ public class BuildConsoleTests
         provider.Main.Current.Database.Provider = "postgres";
         await provider.Generate.GenerateCommand.ExecuteAsync(null);
         Assert.Equal(0, provider.Runner.RunCount);
-        Assert.Equal("Not supported: Provider 'postgres' is not supported yet. Only SQLite is implemented.", provider.Main.Status);
+        Assert.Equal("Not supported: Provider 'postgres' is not supported. Use one of: sqlite, sqlserver, azuresql, mysql.", provider.Main.Status);
     }
 
     // ---- Output and diagnostics ----

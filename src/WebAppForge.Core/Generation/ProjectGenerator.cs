@@ -1,5 +1,6 @@
 using System.Text;
 using WebAppForge.Core.Model;
+using WebAppForge.Core.Schema;
 
 namespace WebAppForge.Core.Generation;
 
@@ -22,10 +23,44 @@ public sealed class ProjectGenerator
         ArgumentException.ThrowIfNullOrEmpty(outputDirectory);
         ArgumentException.ThrowIfNullOrEmpty(projectFolder);
 
-        if (!string.Equals(project.Database.Provider, "sqlite", StringComparison.OrdinalIgnoreCase))
+        if (!DatabaseProviders.IsKnown(project.Database.Provider))
         {
-            throw new NotSupportedException($"Provider '{project.Database.Provider}' is not supported yet. Only SQLite is implemented.");
+            throw new NotSupportedException(UnsupportedProviderMessage(project.Database.Provider));
         }
+
+        Templates.Db = SqlDialect.For(project.Database.Provider);
+        Templates.ConnectionVariable = project.Database.IsServer ? project.Database.ConnectionStringVariable.Trim() : string.Empty;
+        Templates.EntraAuth = UsesEntraAuth(project.Database);
+        Templates.Auditing = project.Audit.Enabled ? project.Audit : null;
+        try
+        {
+            return Write(project, outputDirectory, projectFolder);
+        }
+        finally
+        {
+            Templates.Db = SqlDialect.Sqlite;
+            Templates.ConnectionVariable = string.Empty;
+            Templates.EntraAuth = false;
+            Templates.Auditing = null;
+            Templates.ImportExportConfig = null;
+            Templates.ExchangeOpenXml = false;
+        }
+    }
+
+    /// <summary>
+    /// True for Azure SQL, and for SQL Server with an "Active Directory" authentication mode in its connection string. A connection
+    /// string kept in an environment variable is not known here, so Azure SQL always gets the Entra ID package.
+    /// </summary>
+    internal static bool UsesEntraAuth(DatabaseSettings database) =>
+        DatabaseProviders.Normalize(database.Provider) == DatabaseProviders.AzureSql
+        || (DatabaseProviders.IsSqlServer(database.Provider) && database.ConnectionString.Contains("Active Directory", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>The message for a provider key the generator does not know.</summary>
+    public static string UnsupportedProviderMessage(string provider) =>
+        $"Provider '{provider}' is not supported. Use one of: {string.Join(", ", DatabaseProviders.All)}.";
+
+    private static IReadOnlyList<string> Write(Project project, string outputDirectory, string projectFolder)
+    {
 
         // Localization is off by default; the templates then produce the same output as before it existed.
         var localized = project.Localization.Enabled;
@@ -35,21 +70,45 @@ public sealed class ProjectGenerator
         }
 
         MasterDetailValidator.Validate(project.Tables);
+        IdentityRules.Validate(project);
+        if (Templates.AuditProblems(project) is [var auditProblem, ..])
+        {
+            throw new InvalidOperationException(auditProblem);
+        }
 
         Templates.Localized = localized;
         var ns = Identifier.Pascal(project.Name);
-        var tables = project.Tables.Where(t => t.Generate).ToList();
-        var copies = tables.Select(t => GeneratedCopy(t, project.Security)).ToList();
+        Templates.AuditNamespace = ns;
+        // The identity tables of ASP.NET Core Identity are kept by the site's own stores and pages, not by generated CRUD pages.
+        var tables = project.Tables.Where(t => t.Generate && !Templates.IsAuditLogOf(project, t) && !IdentitySchema.IsIdentityTable(project.Security, t.Name)).ToList();
+        var security = EffectiveSecurity(project.Security);
+        var copies = tables.Select(t => GeneratedCopy(t, security)).ToList();
         Templates.MdTables = copies;
         ReportValidator.Validate(project, copies);
+        ImportExportRules.Validate(project);
+        if (ImportExportRules.IsUsed(project))
+        {
+            // The user levels of the settings only count with User Level security, like those of a table.
+            var exchange = project.ImportExport.Clone();
+            if (!HasUserLevelSecurity(security))
+            {
+                exchange.ExportMinLevel = 0;
+                exchange.ImportMinLevel = 0;
+            }
+
+            Templates.ImportExportConfig = exchange;
+            Templates.ExchangeOpenXml = ImportExportRules.UsesOpenXml(project);
+        }
+
         var reports = project.Reports.Where(r => r.Generate).ToList();
         Templates.Reports = reports;
         var files = new Dictionary<string, string>
         {
             [$"{ns}.csproj"] = Templates.Csproj(SqliteVersion, project.Meta),
-            ["Program.cs"] = Templates.Program(ns, project.AspNet, tables, project.Security, project.Meta),
-            ["appsettings.json"] = Templates.AppSettings(project.Database.ResolveConnectionString(projectFolder), project.Meta),
+            ["Program.cs"] = Templates.Program(ns, project.AspNet, tables, security, project.Meta),
+            ["appsettings.json"] = Templates.AppSettings(project.Database.GeneratedConnectionString(projectFolder), project.Meta),
             ["Web/Html.cs"] = Templates.HtmlHelper(ns, project.Meta, tables),
+            ["Web/Db.cs"] = Templates.DbRuntime(ns),
         };
 
         // The runtime for customized fields and tables is only part of sites that use it.
@@ -87,6 +146,22 @@ public sealed class ProjectGenerator
             files["Web/ReferentialIntegrity.cs"] = Templates.ReferentialIntegrityFile(ns, copies);
         }
 
+        if (Templates.Auditing is not null)
+        {
+            files["Web/Audit.cs"] = Templates.AuditRuntime(ns);
+            if (project.Audit.ShowLogPage)
+            {
+                files["Pages/AuditTrailPages.cs"] = Templates.AuditPage(ns, copies, HasUserLevelSecurity(security));
+            }
+        }
+
+        // Export and import share one runtime; the Open XML file is a stub for a site that offers neither Excel nor Word.
+        if (Templates.ImportExportConfig is { } importExport && copies.Any(Templates.UsesExchange))
+        {
+            files["Web/DataExchange.cs"] = Templates.DataExchangeRuntime(ns, importExport);
+            files["Web/OpenXmlFormats.cs"] = Templates.OpenXmlFormatsRuntime(ns);
+        }
+
         if (Templates.EnvironmentName(project.Meta) is { } environment)
         {
             files["Properties/launchSettings.json"] = Templates.LaunchSettings(ns, project.Meta, environment);
@@ -113,14 +188,18 @@ public sealed class ProjectGenerator
             files[$"Pages/{className}Pages.cs"] = Templates.Pages(ns, className, generatedTable);
         }
 
-        if (project.Security.Enabled)
+        if (security.UsesIdentity)
         {
-            AddLoginFiles(files, ns, project.Security, tables);
+            AddIdentityFiles(files, ns, security);
+        }
+        else if (security.Enabled)
+        {
+            AddLoginFiles(files, ns, security, tables);
         }
 
         if (reports.Count > 0)
         {
-            AddReportFiles(files, ns, project.Security, reports, copies);
+            AddReportFiles(files, ns, security, reports, copies);
         }
 
         Templates.Localized = false;
@@ -131,6 +210,30 @@ public sealed class ProjectGenerator
             foreach (var (path, content) in Localization.LocalizedSite.Files(ns, project))
             {
                 files[path] = content;
+            }
+        }
+
+        // A table named "audit" has a model class named like the audit runtime. Files that import both namespaces mean the
+        // model by the short name; the generated audit code names the runtime with its full name.
+        if (Templates.Auditing is not null && files.ContainsKey("Models/Audit.cs"))
+        {
+            var models = $"using {ns}.Models;";
+            foreach (var path in files.Keys.Where(k => k.EndsWith(".cs", StringComparison.Ordinal)).ToList())
+            {
+                var text = files[path];
+                if (text.Contains(models, StringComparison.Ordinal) && text.Contains($"using {ns}.Web;", StringComparison.Ordinal)
+                    && !text.Contains($"namespace {ns}.Web;", StringComparison.Ordinal))
+                {
+                    files[path] = text.Replace(models, models + $"\nusing Audit = {ns}.Models.Audit;", StringComparison.Ordinal);
+                }
+            }
+        }
+
+        if (Templates.Db != SqlDialect.Sqlite)
+        {
+            foreach (var path in files.Keys.Where(k => k.EndsWith(".cs", StringComparison.Ordinal)).ToList())
+            {
+                files[path] = Templates.ForDialect(files[path]);
             }
         }
 
@@ -211,6 +314,9 @@ public sealed class ProjectGenerator
             Pages = table.Pages,
             Ui = table.Ui,
             Designs = table.Designs,
+            Audit = table.Audit,
+            // The users table of the login security has no import: the form would add users without a password.
+            ImportExport = passwordHidden ? ImportExportWithoutImport(table.ImportExport) : table.ImportExport,
             OwnerField = ownerField?.Name ?? string.Empty,
             ViewMinLevel = levelSecured ? table.ViewMinLevel : 0,
             EditMinLevel = levelSecured ? table.EditMinLevel : 0,
@@ -253,6 +359,13 @@ public sealed class ProjectGenerator
         return copy;
     }
 
+    private static TableImportExport ImportExportWithoutImport(TableImportExport settings)
+    {
+        var copy = settings.Clone();
+        copy.Import = false;
+        return copy;
+    }
+
     /// <summary>
     /// Adds Web/ReportKit.cs and one Reports/{Name}Report.cs per report. A report reads the generated copy of its table, so the
     /// fields the site hides stay hidden and the table's owner and view level apply. User Level security also needs Permissions.cs.
@@ -270,9 +383,47 @@ public sealed class ProjectGenerator
         }
     }
 
-    /// <summary>True when User Level security is on: login is enabled and a user level field is named.</summary>
-    private static bool HasUserLevelSecurity(SecuritySettings security) =>
-        security.Enabled && !string.IsNullOrEmpty(security.UserLevelField);
+    /// <summary>True when User Level security is on: login with a user level field, or with ASP.NET Core Identity.</summary>
+    private static bool HasUserLevelSecurity(SecuritySettings security) => security.HasUserLevels;
+
+    /// <summary>
+    /// The security settings the generator works with. With ASP.NET Core Identity the user table settings do not apply, so they are
+    /// cleared: no project table is treated as the users table.
+    /// </summary>
+    private static SecuritySettings EffectiveSecurity(SecuritySettings security)
+    {
+        if (!security.UsesIdentity)
+        {
+            return security;
+        }
+
+        return new SecuritySettings
+        {
+            Enabled = security.Enabled,
+            TrackFailedAttempts = security.TrackFailedAttempts,
+            MaxFailedAttempts = security.MaxFailedAttempts,
+            FailedAttemptsWindowMinutes = security.FailedAttemptsWindowMinutes,
+            AllowRegistration = security.AllowRegistration,
+            AllowChangePassword = security.AllowChangePassword,
+            UserStore = security.UserStore,
+            Identity = security.Identity,
+        };
+    }
+
+    /// <summary>The files of ASP.NET Core Identity: setup, Dapper stores, permissions, login, account and management pages.</summary>
+    private static void AddIdentityFiles(Dictionary<string, string> files, string ns, SecuritySettings security)
+    {
+        files["Security/Permissions.cs"] = Templates.IdentityPermissions(ns);
+        files["Security/SiteIdentity.cs"] = Templates.IdentitySetup(ns, security);
+        files["Security/IdentityStores.cs"] = Templates.IdentityStores(ns, security);
+        files["Pages/AuthPages.cs"] = Templates.IdentityAuthPages(ns, security);
+        if (security.AllowRegistration || security.AllowChangePassword)
+        {
+            files["Pages/UserAccountPages.cs"] = Templates.IdentityAccountPages(ns, security);
+        }
+
+        files["Pages/UserAdminPages.cs"] = Templates.IdentityAdminPages(ns, security);
+    }
 
     /// <summary>
     /// Adds the login files. The user table must be one of the generated tables, otherwise the site would be

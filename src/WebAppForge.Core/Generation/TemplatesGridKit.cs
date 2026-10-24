@@ -47,7 +47,7 @@ internal static partial class Templates
 
     /// <summary>SQL of a filter column: the day (yyyy-MM-dd) of a date, the display text of a lookup or option, else the column.</summary>
     private static string GridSql(TableInfo table, FieldInfo field)
-        => GridKind(field) == "GridKit.Date" ? $"date({DateTextSql(table, field)})" : GroupSql(table, field, DateInterval.None);
+        => GridKind(field) == "GridKit.Date" ? Db.Day(DateTextSql(table, field)) : GroupSql(table, field, DateInterval.None);
 
     /// <summary>
     /// GridColumns (the filter columns) and GridSorts (the sortable columns, in the order of SortFields) of a page class whose list
@@ -236,6 +236,15 @@ internal static partial class Templates
                 /// <summary>Escapes the LIKE wildcards of a value, so % and _ match themselves (the pattern uses ESCAPE '\').</summary>
                 private static string Like(string value) => value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 
+                /// <summary>The ESCAPE clause of the LIKE patterns, whose escape character is a backslash.</summary>
+                private const string Escape = @@ESCAPE@@;
+
+                /// <summary>Appended to a text comparison to ignore case.</summary>
+                private const string NoCase = @@NOCASE@@;
+
+                /// <summary>The SQL expression as text.</summary>
+                private static string AsText(string sql) => @@CASTBEFORE@@ + sql + @@CASTAFTER@@;
+
                 private static string Add(List<KeyValuePair<string, object>> parameters, object value)
                 {
                     var name = "@g" + parameters.Count;
@@ -246,31 +255,31 @@ internal static partial class Templates
                 private static string ConditionSql(Condition c, List<KeyValuePair<string, object>> parameters)
                 {
                     var sql = c.Column.Sql;
-                    var text = "COALESCE(CAST(" + sql + " AS TEXT), '')";
+                    var text = "COALESCE(" + AsText(sql) + ", '')";
                     switch (c.Operator)
                     {
                         case "null":
-                            return "(" + sql + " IS NULL OR CAST(" + sql + " AS TEXT) = '')";
+                            return "(" + sql + " IS NULL OR " + AsText(sql) + " = '')";
                         case "nnull":
-                            return "(" + sql + " IS NOT NULL AND CAST(" + sql + " AS TEXT) <> '')";
+                            return "(" + sql + " IS NOT NULL AND " + AsText(sql) + " <> '')";
                         case "yes":
                             return sql + " = 1";
                         case "no":
                             return sql + " = 0";
                         case "has":
-                            return text + " LIKE " + Add(parameters, "%" + Like(c.Value) + "%") + " ESCAPE '\\'";
+                            return text + " LIKE " + Add(parameters, "%" + Like(c.Value) + "%") + Escape;
                         case "nhas":
-                            return text + " NOT LIKE " + Add(parameters, "%" + Like(c.Value) + "%") + " ESCAPE '\\'";
+                            return text + " NOT LIKE " + Add(parameters, "%" + Like(c.Value) + "%") + Escape;
                         case "sw":
-                            return text + " LIKE " + Add(parameters, Like(c.Value) + "%") + " ESCAPE '\\'";
+                            return text + " LIKE " + Add(parameters, Like(c.Value) + "%") + Escape;
                         case "ew":
-                            return text + " LIKE " + Add(parameters, "%" + Like(c.Value)) + " ESCAPE '\\'";
+                            return text + " LIKE " + Add(parameters, "%" + Like(c.Value)) + Escape;
                     }
 
                     if (c.Column.Kind == Text)
                     {
                         var name = Add(parameters, c.Value);
-                        return c.Operator == "eq" ? text + " = " + name + " COLLATE NOCASE" : text + " <> " + name + " COLLATE NOCASE";
+                        return c.Operator == "eq" ? text + " = " + name + NoCase : text + " <> " + name + NoCase;
                     }
 
                     var value = Parse(c.Column.Kind, c.Value)!;
@@ -413,7 +422,7 @@ internal static partial class Templates
                         }
 
                         var name = Add(parameters, "%" + Like(term.Text) + "%");
-                        var any = string.Join(" OR ", targets.Select(c => "COALESCE(CAST(" + c.Sql + " AS TEXT), '') LIKE " + name + " ESCAPE '\\'"));
+                        var any = string.Join(" OR ", targets.Select(c => "COALESCE(" + AsText(c.Sql) + ", '') LIKE " + name + Escape));
                         clauses.Add(term.Exclude ? "NOT (" + any + ")" : "(" + any + ")");
                     }
 
@@ -716,7 +725,18 @@ internal static partial class Templates
             }
             """).Replace("@@NS@@", ns);
 
+        // Filter values typed by a visitor fall back to the visitor's language in a localized site.
+        if (Localized)
+        {
+            text = text.Replace("CultureInfo.CurrentCulture", "Strings.Culture", StringComparison.Ordinal);
+        }
+
+        var cast = TextCastParts();
         return text.Replace("@@USING@@\n", Localized ? $"using {ns}.Localization;\n" : string.Empty)
-            .Replace("@@TEXTS@@", texts);
+            .Replace("@@TEXTS@@", texts)
+            .Replace("@@ESCAPE@@", Lit(Db == SqlDialect.MySql ? " ESCAPE '\\\\'" : " ESCAPE '\\'"))
+            .Replace("@@NOCASE@@", Lit(Db.NoCase))
+            .Replace("@@CASTBEFORE@@", Lit(cast.Before))
+            .Replace("@@CASTAFTER@@", Lit(cast.After));
     }
 }

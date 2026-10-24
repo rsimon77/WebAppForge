@@ -696,7 +696,7 @@ public partial class ReportsViewModel : EditorViewModelBase
     }
 
     /// <summary>
-    /// Runs the selected report on the project's SQLite file and shows its first rows. Owner fields and user levels are not
+    /// Runs the selected report on the project's database and shows its first rows. Owner fields and user levels are not
     /// applied: the editor has no signed-in user.
     /// </summary>
     [RelayCommand]
@@ -707,27 +707,11 @@ public partial class ReportsViewModel : EditorViewModelBase
             return;
         }
 
-        var database = _main.Current.Database.Path;
-        var folder = _main.ProjectFolder;
-        string? problem = null;
-        string? path = null;
-        if (string.IsNullOrWhiteSpace(database))
+        var (connectionString, problem) = _main.Database.Resolve();
+        if (!_main.Current.Database.IsServer && string.IsNullOrWhiteSpace(_main.Current.Database.Path))
         {
             problem = "Connect a database on the Database section first.";
         }
-        else if (!System.IO.Path.IsPathRooted(database) && folder is null)
-        {
-            problem = "Save the project first, so the database path can be found.";
-        }
-        else
-        {
-            path = System.IO.Path.IsPathRooted(database) ? database : System.IO.Path.GetFullPath(System.IO.Path.Combine(folder!, database));
-            if (!System.IO.File.Exists(path))
-            {
-                problem = $"The database file was not found: {path}";
-            }
-        }
-
         ClearPreview();
         if (problem is not null)
         {
@@ -740,7 +724,8 @@ public partial class ReportsViewModel : EditorViewModelBase
         try
         {
             var project = _main.Current;
-            var result = await Task.Run(() => ReportPreview.Run(project, report, $"Data Source={path};Mode=ReadOnly"));
+            var readOnly = project.Database.IsServer ? connectionString! : connectionString + ";Mode=ReadOnly";
+            var result = await Task.Run(() => ReportPreview.Run(project, report, readOnly));
             if (!ReferenceEquals(report, Report))
             {
                 return;

@@ -1,4 +1,5 @@
 using System.Text;
+using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 
 namespace WebAppForge.Core.Generation;
@@ -79,7 +80,7 @@ internal static partial class Templates
         t.Pages.Edit && t.PrimaryKeys.Count > 0 && (t.PrimaryKeys.Count > 1 || UpdateFields(t).Count > 0);
 
     private static string MdCaptionExpr(MdLink md) =>
-        Has(md.Link.Caption) ? Lit(md.Link.Caption.Trim()) : TableText(md.Detail);
+        Has(md.Link.Caption) ? ProjectText(LocalizationKeys.Detail(md.Master.Name, md.Index), md.Link.Caption.Trim()) : TableText(md.Detail);
 
     private static List<MdLink> MdViewLinks(TableInfo t) => MdLinks(t).Where(l => l.Link.ShowOnView).ToList();
 
@@ -92,7 +93,7 @@ internal static partial class Templates
         (t.PrimaryKeys.Count > 0 && MdLinks(t).Any(l => l.Detail.ViewMinLevel > 0 || l.Detail.EditMinLevel > 0))
         || MdMasters(t).Any(l => l.Master.ViewMinLevel > 0);
 
-    private static bool UsesSecurityNamespace(TableInfo t) => IsLevelGuarded(t) || MdNeedsSecurity(t);
+    private static bool UsesSecurityNamespace(TableInfo t) => IsLevelGuarded(t) || MdNeedsSecurity(t) || ExchangeNeedsSecurity(t);
 
     /// <summary>The preview a link really gets: the expandable row needs table rows, so the cards layout uses an offcanvas.</summary>
     private static DetailPreview MdPreviewOf(TableInfo t, MdLink l) =>
@@ -265,7 +266,7 @@ internal static partial class Templates
                 var prop = PropName(dClass, field);
                 if (NeedsFmt(field))
                 {
-                    sb.AppendLine($"    private static readonly FieldView {MdFmt(md.Index, prop)} = {FmtInit(field)};");
+                    sb.AppendLine(Static("FieldView", MdFmt(md.Index, prop), FmtInit(field)));
                 }
 
                 if (LookupOf(field) is { } lookup)
@@ -354,7 +355,7 @@ internal static partial class Templates
             sb.AppendLine();
             sb.AppendLine($"        var grid = await DetailGrid{md.Index}(context, connection, item, true{MdToolsArg(md, false)});");
             sb.AppendLine("        return grid.Length == 0");
-            sb.AppendLine("            ? Results.Text(\"You do not have permission to view this table.\", \"text/plain; charset=utf-8\", statusCode: StatusCodes.Status403Forbidden)");
+            sb.AppendLine($"            ? Results.Text({Ui("deniedView")}, \"text/plain; charset=utf-8\", statusCode: StatusCodes.Status403Forbidden)");
             sb.AppendLine("            : Results.Content(\"<div data-partial=\\\"1\\\">\" + grid + \"</div>\", \"text/html; charset=utf-8\");");
             sb.AppendLine("    }");
             sb.AppendLine();
@@ -437,48 +438,24 @@ internal static partial class Templates
         }
 
         L($"        var requested = int.TryParse(request.Query[{Lit("dp" + i)}], out var parsed) ? parsed : 1;");
-        L("        void Bind(SqliteCommand command)");
-        L("        {");
+        L(tools ? "        var args = Db.Args(gridParameters);" : "        var args = new DynamicParameters();");
         for (var j = 0; j < md.Pairs.Count; j++)
         {
-            L($"            command.Parameters.AddWithValue(\"@m{j}\", {ParameterValue(md.Pairs[j].Master, "item", masterClass)});");
+            L($"        args.Add(\"@m{j}\", {ParameterValue(md.Pairs[j].Master, "item", masterClass)});");
         }
 
         if (owned)
         {
-            L("            command.Parameters.AddWithValue(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
+            L("        args.Add(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
         }
 
-        if (tools)
-        {
-            L("            foreach (var parameter in gridParameters)");
-            L("            {");
-            L("                command.Parameters.AddWithValue(parameter.Key, parameter.Value);");
-            L("            }");
-        }
-
-        L("        }");
-        L(string.Empty);
-        L("        long total;");
-        L("        await using (var count = connection.CreateCommand())");
-        L("        {");
-        L($"            count.CommandText = {Lit("SELECT COUNT(*) FROM " + QuoteIdent(d.Name))} + where;");
-        L("            Bind(count);");
-        L("            total = Convert.ToInt64(await count.ExecuteScalarAsync());");
-        L("        }");
+        L($"        var total = await connection.ExecuteScalarAsync<long>({Lit("SELECT COUNT(*) FROM " + QuoteIdent(d.Name))} + where, args);");
         L(string.Empty);
         L($"        var pageCount = Math.Max(1, (int)Math.Ceiling(total / (double)MdPageSize{i}));");
         L("        var page = Math.Clamp(requested, 1, pageCount);");
-        L($"        var rows = new List<{dClass}>();");
-        L("        await using (var command = connection.CreateCommand())");
-        L("        {");
-        L($"            command.CommandText = {Lit("SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name))} + where + {(tools ? "order" : Lit(OrderSql(d)))} + \" LIMIT @limit OFFSET @offset\";");
-        L("            Bind(command);");
-        L($"            command.Parameters.AddWithValue(\"@limit\", MdPageSize{i});");
-        L($"            command.Parameters.AddWithValue(\"@offset\", (page - 1) * MdPageSize{i});");
-        L("            await using var reader = await command.ExecuteReaderAsync();");
-        L($"            while (await reader.ReadAsync()) rows.Add({dClass}.FromReader(reader));");
-        L("        }");
+        L($"        args.Add(\"@limit\", MdPageSize{i});");
+        L($"        args.Add(\"@offset\", (page - 1) * MdPageSize{i});");
+        L($"        var rows = (await connection.QueryAsync<{dClass}>({Lit("SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name))} + where + {(tools ? "order" : Lit(OrderSql(d)))} + {Lit(Db.Page)}, args)).AsList();");
         L(string.Empty);
         foreach (var (field, _) in columns.Where(c => ShowsLookupText(c.Field)))
         {
@@ -525,10 +502,10 @@ internal static partial class Templates
         L("        grid.Append(\"<div class=\\\"table-responsive\\\"><table class=\\\"table table-sm table-striped align-middle\\\"><thead><tr>\");");
         foreach (var (field, width) in columns)
         {
-            var header = $"grid.Append({Lit("<th" + CellAttributes(field, true, width) + ">")}).Append(Html.Encode({FieldText(field)})).Append(\"</th>\");";
+            var header = $"grid.Append({HeaderAttributes(field, width, "<th", ">")}).Append(Html.Encode({FieldText(field)})).Append(\"</th>\");";
             if (tools && field.Ui.Sortable && field.Type != FieldType.Binary)
             {
-                L($"        if (tools) grid.Append(GridKit.DetailHeader(request, {i}, {Lit(field.Name)}, {FieldText(field)}, {Lit(CellAttributes(field, true, width))}));");
+                L($"        if (tools) grid.Append(GridKit.DetailHeader(request, {i}, {Lit(field.Name)}, {FieldText(field)}, {HeaderAttributes(field, width)}));");
                 L($"        else {header}");
             }
             else
@@ -589,7 +566,7 @@ internal static partial class Templates
         L("            grid.Append(\"</tr>\");");
         L("        }");
         var width2 = columns.Count + (showActions ? 1 : 0);
-        L($"        if (rows.Count == 0) grid.Append(\"<tr><td colspan=\\\"{Math.Max(1, width2)}\\\" class=\\\"text-muted\\\">No records.</td></tr>\");");
+        L($"        if (rows.Count == 0) grid.Append(\"<tr><td colspan=\\\"{Math.Max(1, width2)}\\\" class=\\\"text-muted\\\">{UiInText("detailNoRecords")}</td></tr>\");");
         L("        grid.Append(\"</tbody></table></div>\");");
         var fragmentBase = $"Route + \"/details/{i}/\" + " + string.Join(" + \"/\" + ", KeyPropExprs(masterClass, md.Master).Select(v => $"Uri.EscapeDataString({v}.ToString())"));
         L($"        grid.Append(MasterDetailKit.Pager(request, {Lit("dp" + i)}, page, pageCount, fragment ? {fragmentBase} : null));");
@@ -647,23 +624,20 @@ internal static partial class Templates
                 where += " AND " + OwnerCondition(md.Master);
             }
 
-            L($"                await using (var check{n} = connection.CreateCommand())");
-            L("                {");
-            L($"                    check{n}.CommandText = {Lit("SELECT COUNT(*) FROM " + QuoteIdent(md.Master.Name) + " WHERE " + where)};");
+            L($"                var check{n} = new DynamicParameters();");
             for (var j = 0; j < md.Pairs.Count; j++)
             {
-                L($"                    check{n}.Parameters.AddWithValue(\"@p{j}\", pp{n}_{j});");
+                L($"                check{n}.Add(\"@p{j}\", pp{n}_{j});");
             }
 
             if (masterOwned)
             {
-                L($"                    check{n}.Parameters.AddWithValue(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
+                L($"                check{n}.Add(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
             }
 
-            L($"                    if (Convert.ToInt64(await check{n}.ExecuteScalarAsync()) == 0)");
-            L("                    {");
-            L("                        return null;");
-            L("                    }");
+            L($"                if (await connection.ExecuteScalarAsync<long>({Lit("SELECT COUNT(*) FROM " + QuoteIdent(md.Master.Name) + " WHERE " + where)}, check{n}) == 0)");
+            L("                {");
+            L("                    return null;");
             L("                }");
             L(string.Empty);
             for (var j = 0; j < md.Pairs.Count; j++)

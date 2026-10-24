@@ -6,8 +6,70 @@
             <CheckBox Content="Require sign-in (cookie login against a generated table)" IsChecked="{Binding Security.Enabled}"
                       AutomationProperties.AutomationId="SignInCheckBox" />
 
+            <TextBlock Text="User store" FontWeight="SemiBold" />
+            <ComboBox ItemsSource="{Binding Security.UserStoreChoices}" SelectedItem="{Binding Security.UserStoreChoice}"
+                      IsEnabled="{Binding Security.Enabled}" HorizontalAlignment="Stretch"
+                      AutomationProperties.AutomationId="UserStoreComboBox" />
+
             <!-- The groups below are accordions: each can be collapsed to keep the tab short. -->
-            <Expander Header="Login options" IsExpanded="True" HorizontalAlignment="Stretch">
+            <Expander Header="ASP.NET Core Identity" IsExpanded="True" HorizontalAlignment="Stretch"
+                      IsVisible="{Binding Security.IsIdentity}" AutomationProperties.AutomationId="IdentityExpander">
+                <StackPanel Spacing="8" Margin="0,4,0,0">
+                    <CheckBox Content="Create missing identity tables when the site starts" IsChecked="{Binding Security.CreateTablesAtStartup}" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Table prefix" />
+                            <TextBox Width="180" Text="{Binding Security.TablePrefix}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Minimum password length" />
+                            <TextBox Width="180" Text="{Binding Security.MinPasswordLengthText}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <WrapPanel>
+                        <CheckBox Content="Require a digit" IsChecked="{Binding Security.RequireDigit}" Margin="0,0,16,0" />
+                        <CheckBox Content="Require an uppercase letter" IsChecked="{Binding Security.RequireUppercase}" Margin="0,0,16,0" />
+                        <CheckBox Content="Require a lowercase letter" IsChecked="{Binding Security.RequireLowercase}" Margin="0,0,16,0" />
+                        <CheckBox Content="Require a symbol" IsChecked="{Binding Security.RequireNonAlphanumeric}" />
+                    </WrapPanel>
+                    <CheckBox Content="Require a confirmed e-mail address to sign in" IsChecked="{Binding Security.RequireConfirmedEmail}" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,8,0,0">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Administrator user name" />
+                            <TextBox Width="180" Text="{Binding Security.AdminUserName}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Password environment variable" />
+                            <TextBox Width="260" Text="{Binding Security.AdminPasswordVariable}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Administrator level" />
+                            <TextBox Width="180" Text="{Binding Security.AdminLevelText}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Level of new users" />
+                            <TextBox Width="180" Text="{Binding Security.RegisteredUserLevelText}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock TextWrapping="Wrap" Opacity="0.7"
+                               Text="The site creates the administrator when it has no users, with the password from the environment variable. The password is never stored in the project." />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                        <Button Content="Create missing tables" Command="{Binding Security.CreateIdentityTablesCommand}"
+                                IsEnabled="{Binding !Security.IdentityBusy}"
+                                AutomationProperties.AutomationId="CreateIdentityTablesButton" />
+                    </StackPanel>
+                    <TextBlock IsVisible="{Binding Security.HasIdentityTablesMessage}" Text="{Binding Security.IdentityTablesMessage}"
+                               TextWrapping="Wrap" />
+                    <TextBlock IsVisible="{Binding Security.HasIdentityNotes}" Text="{Binding Security.IdentityNotes}"
+                               TextWrapping="Wrap" Opacity="0.7" />
+                </StackPanel>
+            </Expander>
+
+            <Expander Header="Login options" IsExpanded="True" HorizontalAlignment="Stretch" IsVisible="{Binding Security.IsProjectTable}">
                 <StackPanel Spacing="8" Margin="0,4,0,0">
                     <TextBlock Text="User table" FontWeight="SemiBold" />
                     <ComboBox ItemsSource="{Binding Security.UserTables}"
@@ -25,10 +87,11 @@
 
             <Expander Header="Password options" IsExpanded="True" HorizontalAlignment="Stretch">
                 <StackPanel Spacing="8" Margin="0,4,0,0">
-                    <TextBlock Text="Password field (stores the password hash)" FontWeight="SemiBold" />
+                    <TextBlock Text="Password field (stores the password hash)" FontWeight="SemiBold" IsVisible="{Binding Security.IsProjectTable}" />
                     <ComboBox ItemsSource="{Binding Security.PasswordFields}"
                               SelectedItem="{Binding Security.PasswordField}"
                               PlaceholderText="Choose a field of the user table"
+                              IsVisible="{Binding Security.IsProjectTable}"
                               HorizontalAlignment="Stretch" />
 
                     <CheckBox Content="Track failed sign-in attempts" IsChecked="{Binding Security.TrackFailedAttempts}" Margin="0,8,0,0" />
@@ -47,10 +110,11 @@
 
             <Expander Header="Permissions" IsExpanded="True" HorizontalAlignment="Stretch">
                 <StackPanel Spacing="8" Margin="0,4,0,0">
-                    <TextBlock Text="Level field (integer, optional: enables user level security)" FontWeight="SemiBold" />
+                    <TextBlock Text="Level field (integer, optional: enables user level security)" FontWeight="SemiBold" IsVisible="{Binding Security.IsProjectTable}" />
                     <ComboBox ItemsSource="{Binding Security.UserLevelFields}"
                               SelectedItem="{Binding Security.LevelField}"
                               IsEnabled="{Binding Security.Enabled}"
+                              IsVisible="{Binding Security.IsProjectTable}"
                               HorizontalAlignment="Stretch" />
 
                     <CheckBox Content="Allow registration (new users can sign up)" IsChecked="{Binding Security.AllowRegistration}"
@@ -69,7 +133,7 @@
             </Border>
 
             <TextBlock TextWrapping="Wrap" Opacity="0.7" Margin="0,8,0,0"
-                       Text="When sign-in is enabled, every page and API route needs a signed-in user except /login and /logout. The user table must be marked Generate on the Tables tab. Generate is disabled while these settings are invalid." />
+                       Text="When sign-in is enabled, every page and API route needs a signed-in user except /login and /logout. With a project table, the user table must be marked Generate on the Tables tab; with ASP.NET Core Identity, levels come from roles and administrators manage users at /users. Generate is disabled while these settings are invalid." />
         </StackPanel>
     </Border>
 </UserControl>
