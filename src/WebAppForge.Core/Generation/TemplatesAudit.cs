@@ -19,6 +19,22 @@ internal static partial class Templates
         set => _audit = value;
     }
 
+    [ThreadStatic]
+    private static string? _auditNamespace;
+
+    /// <summary>Root namespace of the site being generated; set with <see cref="Auditing"/>.</summary>
+    internal static string AuditNamespace
+    {
+        get => _auditNamespace ?? string.Empty;
+        set => _auditNamespace = value;
+    }
+
+    /// <summary>
+    /// The fully qualified audit runtime class. Generated code outside the Web namespace uses it, because a project table named
+    /// "audit" has a model class of the same name.
+    /// </summary>
+    internal static string AuditType => "global::" + AuditNamespace + ".Web.Audit";
+
     /// <summary>True when changes to <paramref name="table"/> are written to the audit trail.</summary>
     internal static bool IsAudited(TableInfo table) =>
         Auditing is { } audit && table.Audit.Enabled && !string.Equals(table.Name, audit.LogTable.Trim(), StringComparison.OrdinalIgnoreCase);
@@ -105,7 +121,7 @@ internal static partial class Templates
 
     /// <summary>C# statement that writes one audit entry for a row of <paramref name="table"/>.</summary>
     private static string AuditWrite(TableInfo table, string action, string http, string key, string before, string after) =>
-        $"await Audit.WriteAsync(connection, {http}, {Lit(table.Name)}, {Lit(action)}, {key}, {before}, {after});";
+        $"await {AuditType}.WriteAsync(connection, {http}, {Lit(table.Name)}, {Lit(action)}, {key}, {before}, {after});";
 
     /// <summary>
     /// Wraps the statements of <paramref name="body"/> in a transaction with the audit entry, so that a change is never kept
@@ -113,15 +129,15 @@ internal static partial class Templates
     /// </summary>
     private static void AppendAuditTransaction(StringBuilder sb, string indent, Action<string> body)
     {
-        sb.AppendLine($"{indent}await Audit.BeginAsync(connection);");
+        sb.AppendLine($"{indent}await {AuditType}.BeginAsync(connection);");
         sb.AppendLine($"{indent}try");
         sb.AppendLine($"{indent}{{");
         body(indent + "    ");
-        sb.AppendLine($"{indent}    await Audit.CommitAsync(connection);");
+        sb.AppendLine($"{indent}    await {AuditType}.CommitAsync(connection);");
         sb.AppendLine($"{indent}}}");
         sb.AppendLine($"{indent}catch");
         sb.AppendLine($"{indent}{{");
-        sb.AppendLine($"{indent}    await Audit.RollbackAsync(connection);");
+        sb.AppendLine($"{indent}    await {AuditType}.RollbackAsync(connection);");
         sb.AppendLine($"{indent}    throw;");
         sb.AppendLine($"{indent}}}");
     }
@@ -509,14 +525,14 @@ internal static partial class Templates
                     var where = clauses.Count == 0 ? string.Empty : " WHERE " + string.Join(" AND ", clauses);
                     await using var connection = new SqliteConnection(connectionString);
                     await connection.OpenAsync();
-                    var total = await connection.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM " + Audit.Table + where, args);
+                    var total = await connection.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM " + {{AuditType}}.Table + where, args);
                     var pageCount = Math.Max(1, (int)Math.Ceiling(total / (double)PageSize));
                     var page = Math.Clamp(int.TryParse(request.Query["page"], out var p) ? p : 1, 1, pageCount);
                     args.Add("@limit", PageSize);
                     args.Add("@offset", (page - 1) * PageSize);
                     var entries = (await connection.QueryAsync<Entry>(
                         "SELECT id AS Id, occurred_at AS OccurredAt, user_name AS UserName, ip_address AS IpAddress, table_name AS TableName, action AS Action, "
-                        + "record_key AS RecordKey, changes AS Changes FROM " + Audit.Table + where + {{Lit(orderAndPage)}}, args)).AsList();
+                        + "record_key AS RecordKey, changes AS Changes FROM " + {{AuditType}}.Table + where + {{Lit(orderAndPage)}}, args)).AsList();
 
                     var body = new StringBuilder();
                     body.Append("<form method=\"get\" action=\"").Append(Html.Attr(Route)).Append("\" class=\"row g-2 align-items-end mb-3\">");

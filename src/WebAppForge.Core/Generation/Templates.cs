@@ -264,7 +264,7 @@ internal static partial class Templates
         if (Auditing is { CreateTable: true })
         {
             // Creates the audit log table before any request is served. Idempotent, like the login attempts table.
-            sb.AppendLine("await Audit.EnsureTableAsync(connectionString);");
+            sb.AppendLine($"await {AuditType}.EnsureTableAsync(connectionString);");
         }
 
         if (meta.EnableHealthEndpoint)
@@ -681,7 +681,7 @@ internal static partial class Templates
                         AppendKeyParameters(sb, table, pad);
                         sb.AppendLine($"{pad}if (await connection.ExecuteAsync({Lit(UpdateSql(table, updateFields))}, args) == 0)");
                         sb.AppendLine($"{pad}{{");
-                        sb.AppendLine($"{pad}    await Audit.RollbackAsync(connection);");
+                        sb.AppendLine($"{pad}    await {AuditType}.RollbackAsync(connection);");
                         sb.AppendLine($"{pad}    return Results.NotFound();");
                         sb.AppendLine($"{pad}}}");
                         sb.AppendLine();
@@ -743,7 +743,7 @@ internal static partial class Templates
                 {
                     sb.AppendLine($"{pad}if (await connection.ExecuteAsync({Lit("DELETE FROM " + QuoteIdent(table.Name) + where)}, args) == 0)");
                     sb.AppendLine($"{pad}{{");
-                    sb.AppendLine($"{pad}    await Audit.RollbackAsync(connection);");
+                    sb.AppendLine($"{pad}    await {AuditType}.RollbackAsync(connection);");
                     sb.AppendLine($"{pad}    return Results.NotFound();");
                     sb.AppendLine($"{pad}}}");
                     sb.AppendLine();
@@ -1734,7 +1734,7 @@ internal static partial class Templates
         {
             var transactional = cascadeUpdate || auditUpdate;
             var pad = transactional ? "    " : string.Empty;
-            var transaction = cascadeUpdate ? "ReferentialIntegrity" : "Audit";
+            var transaction = cascadeUpdate ? "ReferentialIntegrity" : AuditType;
             if (cascadeUpdate)
             {
                 sb.AppendLine($"        var mdNew = {MdOldNew(table, className, "item")};");

@@ -74,6 +74,7 @@ public sealed class ProjectGenerator
 
         Templates.Localized = localized;
         var ns = Identifier.Pascal(project.Name);
+        Templates.AuditNamespace = ns;
         var tables = project.Tables.Where(t => t.Generate && !Templates.IsAuditLogOf(project, t)).ToList();
         var copies = tables.Select(t => GeneratedCopy(t, project.Security)).ToList();
         Templates.MdTables = copies;
@@ -177,6 +178,22 @@ public sealed class ProjectGenerator
             foreach (var (path, content) in Localization.LocalizedSite.Files(ns, project))
             {
                 files[path] = content;
+            }
+        }
+
+        // A table named "audit" has a model class named like the audit runtime. Files that import both namespaces mean the
+        // model by the short name; the generated audit code names the runtime with its full name.
+        if (Templates.Auditing is not null && files.ContainsKey("Models/Audit.cs"))
+        {
+            var models = $"using {ns}.Models;";
+            foreach (var path in files.Keys.Where(k => k.EndsWith(".cs", StringComparison.Ordinal)).ToList())
+            {
+                var text = files[path];
+                if (text.Contains(models, StringComparison.Ordinal) && text.Contains($"using {ns}.Web;", StringComparison.Ordinal)
+                    && !text.Contains($"namespace {ns}.Web;", StringComparison.Ordinal))
+                {
+                    files[path] = text.Replace(models, models + $"\nusing Audit = {ns}.Models.Audit;", StringComparison.Ordinal);
+                }
             }
         }
 

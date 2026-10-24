@@ -114,6 +114,8 @@ public sealed class AuditSite : IAsyncLifetime
     {
         Directory.CreateDirectory(Root);
         var project = MdSupport.SampleProject(DbPath);
+        // A project table named "audit" has a model class named like the audit runtime; the site must still build.
+        project.Tables.Add(new Schema.SqliteSchemaReader().ReadTables($"Data Source={DbPath}").Single(t => t.Name == "audit"));
         project.Audit.Enabled = true;
         foreach (var name in new[] { "customers", "orders", "order_lines", "line_notes" })
         {
