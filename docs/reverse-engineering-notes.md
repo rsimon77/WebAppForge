@@ -247,3 +247,27 @@ The gaps listed above are closed:
 
 Tests: 403 Core and 348 Desktop with Northwind (Northwind adds a filtered summary checked against SQL and drill-down with
 paging), 8 Playwright for reports. Still not done: zoom on charts.
+
+## Editor redesign (2026-10-24)
+
+The editor moved from Fluent's default 32px controls and an 11-pill tab strip to a compact "Graphite" look, designed as a
+mockup first and approved before the build:
+- Shell: an app bar (menu, project name and folder, save state, search with Ctrl+K, New/Open/Save/Options, a primary
+  Generate button), a sidebar and a status bar (breadcrumb and last message). The sidebar is still the TabControl of
+  string headers, so navigation code and AutomationIds are unchanged.
+- Sections in workflow order under numbered stages: 1 Setup (Project, Database), 2 Data (Tables, Fields, Relations),
+  3 Site (Home page, Pages, Reports, Security, Languages), 4 Build (Generate). The ASP.NET tab is now Home page: it holds
+  the site title and the home page switch. The editor still opens on Database.
+- Theme: `Styles/Tokens.axaml` (surfaces, text, borders and status colours for light and dark, mapped onto Fluent's own
+  resource keys) and `Styles/Controls.axaml` (button variants primary, ghost, danger and icon; text roles; panels; banners;
+  lists; data grids; the sidebar template). Fluent runs with compact density; controls are 28px, the base font 13px (the
+  default of the font size option is now 13), radius 6 on controls and 10 on panels. The accent still follows the
+  palette chosen in Options.
+- Screens: form sections sit in a panel; two-pane sections have a panel per pane; list toolbars use icon buttons with
+  tooltips; error boxes are banners.
+- Tests: `ShellLayoutTests` renders every section in light and dark with Inter, checks the sidebar order, stages and fit,
+  and the search; set `WEBAPPFORGE_SCREENSHOTS` to a folder to keep the PNGs. Tests that picked tabs by number now pick them
+  by name.
+
+Not done yet from the mockup: inner tabs on the Fields inspector, the live field and report previews, and the side
+inspector on the Tables screen (it is still a wide grid).

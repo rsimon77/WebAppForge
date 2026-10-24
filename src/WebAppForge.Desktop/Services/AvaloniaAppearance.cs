@@ -93,6 +93,10 @@ public sealed class AvaloniaAppearance(Application application) : IAppearance
             [$"{AccentColorKey}Dark2"] = Mix(accent, Colors.Black, 0.4),
             [$"{AccentColorKey}Dark3"] = Mix(accent, Colors.Black, 0.6),
             [AccentBrushKey] = new ImmutableSolidColorBrush(accent),
+            ["AccentHoverBrush"] = new ImmutableSolidColorBrush(Mix(accent, Colors.Black, 0.15)),
+            ["AccentPressedBrush"] = new ImmutableSolidColorBrush(Mix(accent, Colors.Black, 0.3)),
+            ["AccentSubtleBrush"] = new ImmutableSolidColorBrush(Color.FromArgb(0x24, accent.R, accent.G, accent.B)),
+            ["AccentSubtleHoverBrush"] = new ImmutableSolidColorBrush(Color.FromArgb(0x38, accent.R, accent.G, accent.B)),
         };
     }
 

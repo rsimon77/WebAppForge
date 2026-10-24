@@ -188,7 +188,7 @@ public class RelationsViewTests
     }
 
     [AvaloniaFact]
-    public void FormPagesAndRelationsStaySeparateTabsInTheTabStrip()
+    public void FormPagesAndRelationsStaySeparateSectionsInTheSidebar()
     {
         var (main, _) = CustomizationTests.Project();
         // The app draws with Inter (WithInterFont in Program.cs); the headless platform would fall back to a system font whose width
@@ -199,12 +199,13 @@ public class RelationsViewTests
         Settle(window);
         var tabs = window.GetVisualDescendants().OfType<TabControl>().Single();
 
-        Assert.Equal(MainViewModel.TabNames.ToArray(), tabs.Items.OfType<TabItem>().Select(t => t.Header?.ToString() ?? string.Empty).ToArray());
-        Assert.Contains("Relations", MainViewModel.TabNames);
-        Assert.Equal("Reports", tabs.Items.OfType<TabItem>().Last().Header);
+        var headers = tabs.Items.OfType<TabItem>().Select(t => t.Header?.ToString() ?? string.Empty).ToList();
+        Assert.Equal(MainViewModel.TabNames.ToArray(), headers.ToArray());
 
-        // Every tab header fits on one row of the default window; a wrapped strip would squeeze the tab content.
-        Assert.All(tabs.Items.OfType<TabItem>(), t => Assert.Equal(0, t.Bounds.Y));
+        // Form pages live on the Pages section and links on Relations: two sidebar entries, data before site.
+        Assert.True(headers.IndexOf("Relations") < headers.IndexOf("Pages"));
+        Assert.Single(headers, h => h == "Relations");
+        Assert.Single(headers, h => h == "Pages");
     }
 
     private static T? Find<T>(Window window, string automationId) where T : Control

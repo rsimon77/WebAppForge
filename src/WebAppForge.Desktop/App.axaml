@@ -16,6 +16,7 @@
                 they win. Keep the default here, not as a direct key: direct keys would take priority over them.
             -->
             <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://WebAppForge.Desktop/Styles/Tokens.axaml" />
                 <ResourceDictionary>
                     <SolidColorBrush x:Key="AppAccentBrush">#0D6EFD</SolidColorBrush>
                 </ResourceDictionary>
@@ -34,43 +35,32 @@
             <StreamGeometry x:Key="IconStyles">M8,1.5 C4,1.5 1.5,4.5 1.5,8 C1.5,11.5 4,14.5 7.5,14.5 C8.5,14.5 8.5,13.5 8,12.5 C7.5,11.5 8.5,10.5 10,10.5 H11.5 C13.5,10.5 14.5,9.5 14.5,7.5 C14.5,4 11.5,1.5 8,1.5 Z</StreamGeometry>
             <StreamGeometry x:Key="IconAbout">M8,1.5 A6.5,6.5 0 1 0 8,14.5 A6.5,6.5 0 1 0 8,1.5 Z M8,7 V11.5 M8,4.5 V5</StreamGeometry>
 
-            <!-- Row backgrounds on the Tables tab. Light and dark variants keep the grid text readable. -->
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="RowMutedBackground">#F1F3F5</SolidColorBrush>
-                    <SolidColorBrush x:Key="RowWarningBackground">#FFF3CD</SolidColorBrush>
-                    <SolidColorBrush x:Key="ValidationBrush">#B3261E</SolidColorBrush>
-                    <SolidColorBrush x:Key="PanelBackground">#F8F9FA</SolidColorBrush>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="RowMutedBackground">#2B2F33</SolidColorBrush>
-                    <SolidColorBrush x:Key="RowWarningBackground">#4D3F12</SolidColorBrush>
-                    <SolidColorBrush x:Key="ValidationBrush">#FF8A80</SolidColorBrush>
-                    <SolidColorBrush x:Key="PanelBackground">#2B2F33</SolidColorBrush>
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme DensityStyle="Compact" />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+        <StyleInclude Source="avares://WebAppForge.Desktop/Styles/Controls.axaml" />
 
         <Style Selector="Path.icon">
             <Setter Property="Width" Value="16" />
             <Setter Property="Height" Value="16" />
             <Setter Property="Stretch" Value="Uniform" />
-            <Setter Property="Stroke" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+            <Setter Property="Stroke" Value="{DynamicResource LabelTextBrush}" />
             <Setter Property="StrokeThickness" Value="1.4" />
         </Style>
 
         <!-- Shared by the Project, Fields and Pages tabs. -->
         <Style Selector="TextBlock.label">
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0,6,0,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="{DynamicResource LabelTextBrush}" />
+            <Setter Property="Margin" Value="0,8,0,2" />
         </Style>
         <Style Selector="TextBlock.hint">
-            <Setter Property="Opacity" Value="0.7" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
         <Style Selector="TextBlock.error">
@@ -78,7 +68,8 @@
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
         <Style Selector="TextBox.code">
-            <Setter Property="FontFamily" Value="Consolas, Menlo, Courier New, monospace" />
+            <Setter Property="FontFamily" Value="{DynamicResource CodeFontFamily}" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="AcceptsReturn" Value="True" />
             <Setter Property="TextWrapping" Value="NoWrap" />
             <Setter Property="MinHeight" Value="90" />

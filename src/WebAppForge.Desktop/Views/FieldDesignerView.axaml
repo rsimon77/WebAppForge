@@ -20,293 +20,296 @@
             <ColumnDefinition Width="6*" MinWidth="300" />
         </Grid.ColumnDefinitions>
         <!-- Left: table picker, search, field commands and the field list. -->
-        <DockPanel Grid.Column="0">
-            <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Margin="0,0,0,6" Text="{Binding Tables.FieldsHeader}" />
-            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
-                <TextBlock DockPanel.Dock="Left" Text="Table" VerticalAlignment="Center" Margin="0,0,8,0" />
-                <ComboBox ItemsSource="{Binding Tables.Items}" SelectedItem="{Binding Tables.SelectedTable, Mode=TwoWay}"
-                          HorizontalAlignment="Stretch" PlaceholderText="Choose a table"
-                          AutomationProperties.AutomationId="FieldTablePicker">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </DockPanel>
-            <TextBox DockPanel.Dock="Top" Margin="0,0,0,6" Text="{Binding SearchText}" PlaceholderText="Search field names"
-                     AutomationProperties.AutomationId="FieldSearchBox" />
-            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
-                <Button Content="Move up" Margin="0,0,6,6" Command="{Binding MoveUpCommand}" IsEnabled="{Binding CanMoveUp}"
-                        AutomationProperties.AutomationId="MoveFieldUpButton" />
-                <Button Content="Move down" Margin="0,0,6,6" Command="{Binding MoveDownCommand}" IsEnabled="{Binding CanMoveDown}"
-                        AutomationProperties.AutomationId="MoveFieldDownButton" />
-                <Button Content="Reset field" Margin="0,0,6,6" Command="{Binding ResetCommand}" IsEnabled="{Binding HasField}"
-                        AutomationProperties.AutomationId="ResetFieldButton" />
-                <Button Content="Copy settings to..." Margin="0,0,6,6" Command="{Binding CopySettingsCommand}" IsEnabled="{Binding HasField}"
-                        AutomationProperties.AutomationId="CopyFieldSettingsButton" />
-            </WrapPanel>
-            <DataGrid x:Name="FieldList"
-                      ItemsSource="{Binding VisibleFields}"
-                      SelectedItem="{Binding Tables.SelectedField, Mode=TwoWay}"
-                      AutoGenerateColumns="False"
-                      CanUserSortColumns="False"
-                      GridLinesVisibility="All"
-                      SelectionMode="Single"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto"
-                      AutomationProperties.AutomationId="FieldList">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" Width="*" MinWidth="140" />
-                    <DataGridTextColumn Header="Caption" Binding="{Binding Caption}" Width="*" MinWidth="140" />
-                    <DataGridTemplateColumn Header="Type" Width="Auto">
-                        <DataGridTemplateColumn.CellTemplate>
+        <Border Classes="card" Padding="12,10" Grid.Column="0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Margin="0,0,0,6" Text="{Binding Tables.FieldsHeader}" />
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <TextBlock DockPanel.Dock="Left" Text="Table" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <ComboBox ItemsSource="{Binding Tables.Items}" SelectedItem="{Binding Tables.SelectedTable, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch" PlaceholderText="Choose a table"
+                              AutomationProperties.AutomationId="FieldTablePicker">
+                        <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <ComboBox ItemsSource="{x:Static vm:FieldTypeList.Values}"
-                                          SelectedItem="{Binding Type}"
-                                          Margin="2,0" MinWidth="110" />
+                                <TextBlock Text="{Binding Name}" />
                             </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridCheckBoxColumn Header="PK" Binding="{Binding IsPrimaryKey}" IsReadOnly="True" Width="44" MinWidth="44" />
-                    <DataGridCheckBoxColumn Header="Auto" Binding="{Binding IsAutoIncrement}" IsReadOnly="True" Width="52" MinWidth="52" />
-                    <DataGridCheckBoxColumn Header="Req" Binding="{Binding IsRequired}" IsReadOnly="True" Width="76" MinWidth="76" />
-                    <DataGridCheckBoxColumn Header="List" Binding="{Binding ShowInList}" Width="58" MinWidth="58" />
-                    <DataGridCheckBoxColumn Header="View" Binding="{Binding ShowInView}" Width="58" MinWidth="58" />
-                    <DataGridCheckBoxColumn Header="Add" Binding="{Binding ShowInAdd}" Width="52" MinWidth="52" />
-                    <DataGridCheckBoxColumn Header="Edit" Binding="{Binding ShowInEdit}" Width="52" MinWidth="52" />
-                    <DataGridCheckBoxColumn Header="Search" Binding="{Binding Searchable}" Width="76" MinWidth="76" />
-                </DataGrid.Columns>
-            </DataGrid>
-        </DockPanel>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </DockPanel>
+                <TextBox DockPanel.Dock="Top" Margin="0,0,0,6" Text="{Binding SearchText}" PlaceholderText="Search field names"
+                         AutomationProperties.AutomationId="FieldSearchBox" />
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <Button Classes="icon ghost" ToolTip.Tip="Move up" AutomationProperties.Name="Move up" Margin="0,0,2,4" Command="{Binding MoveUpCommand}" IsEnabled="{Binding CanMoveUp}"
+                            AutomationProperties.AutomationId="MoveFieldUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
+                    <Button Classes="icon ghost" ToolTip.Tip="Move down" AutomationProperties.Name="Move down" Margin="0,0,2,4" Command="{Binding MoveDownCommand}" IsEnabled="{Binding CanMoveDown}"
+                            AutomationProperties.AutomationId="MoveFieldDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
+                    <Button Content="Reset field" Margin="0,0,6,6" Command="{Binding ResetCommand}" IsEnabled="{Binding HasField}"
+                            AutomationProperties.AutomationId="ResetFieldButton" />
+                    <Button Content="Copy settings to..." Margin="0,0,6,6" Command="{Binding CopySettingsCommand}" IsEnabled="{Binding HasField}"
+                            AutomationProperties.AutomationId="CopyFieldSettingsButton" />
+                </WrapPanel>
+                <DataGrid x:Name="FieldList"
+                          ItemsSource="{Binding VisibleFields}"
+                          SelectedItem="{Binding Tables.SelectedField, Mode=TwoWay}"
+                          AutoGenerateColumns="False"
+                          CanUserSortColumns="False"
+                          GridLinesVisibility="All"
+                          SelectionMode="Single"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          AutomationProperties.AutomationId="FieldList">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" Width="*" MinWidth="140" />
+                        <DataGridTextColumn Header="Caption" Binding="{Binding Caption}" Width="*" MinWidth="140" />
+                        <DataGridTemplateColumn Header="Type" Width="Auto">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{x:Static vm:FieldTypeList.Values}"
+                                              SelectedItem="{Binding Type}"
+                                              Margin="2,0" MinWidth="110" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridCheckBoxColumn Header="PK" Binding="{Binding IsPrimaryKey}" IsReadOnly="True" Width="44" MinWidth="44" />
+                        <DataGridCheckBoxColumn Header="Auto" Binding="{Binding IsAutoIncrement}" IsReadOnly="True" Width="52" MinWidth="52" />
+                        <DataGridCheckBoxColumn Header="Req" Binding="{Binding IsRequired}" IsReadOnly="True" Width="76" MinWidth="76" />
+                        <DataGridCheckBoxColumn Header="List" Binding="{Binding ShowInList}" Width="58" MinWidth="58" />
+                        <DataGridCheckBoxColumn Header="View" Binding="{Binding ShowInView}" Width="58" MinWidth="58" />
+                        <DataGridCheckBoxColumn Header="Add" Binding="{Binding ShowInAdd}" Width="52" MinWidth="52" />
+                        <DataGridCheckBoxColumn Header="Edit" Binding="{Binding ShowInEdit}" Width="52" MinWidth="52" />
+                        <DataGridCheckBoxColumn Header="Search" Binding="{Binding Searchable}" Width="76" MinWidth="76" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
 
         <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
 
         <!-- Right: the property panel of the selected field. -->
-        <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="8" Margin="0,0,8,0">
-                <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
-                        BorderBrush="{DynamicResource ValidationBrush}">
-                    <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="FieldMessageText" />
-                </Border>
-                <TextBlock Classes="hint" IsVisible="{Binding !HasField}" Text="{Binding NoFieldText}"
-                           AutomationProperties.AutomationId="NoFieldText" />
+        <Border Classes="card" Padding="12,10" Grid.Column="2">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="8" Margin="0,0,8,0">
+                    <Border IsVisible="{Binding HasMessage}" Classes="banner error">
+                        <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="FieldMessageText" />
+                    </Border>
+                    <TextBlock Classes="hint" IsVisible="{Binding !HasField}" Text="{Binding NoFieldText}"
+                               AutomationProperties.AutomationId="NoFieldText" />
 
-                <StackPanel Spacing="8" IsVisible="{Binding HasField}">
+                    <StackPanel Spacing="8" IsVisible="{Binding HasField}">
 
-                    <Expander Header="Basic" IsExpanded="True" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="4" Margin="0,4,0,0">
-                            <TextBlock Classes="label" Text="Caption" />
-                            <TextBox Text="{Binding Caption}" AutomationProperties.AutomationId="FieldCaptionBox" />
-                            <StackPanel Orientation="Horizontal" Spacing="24">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Type" />
-                                    <TextBlock Text="{Binding TypeText}" AutomationProperties.AutomationId="FieldTypeText" />
+                        <Expander Header="Basic" IsExpanded="True" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="4" Margin="0,4,0,0">
+                                <TextBlock Classes="label" Text="Caption" />
+                                <TextBox Text="{Binding Caption}" AutomationProperties.AutomationId="FieldCaptionBox" />
+                                <StackPanel Orientation="Horizontal" Spacing="24">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Type" />
+                                        <TextBlock Text="{Binding TypeText}" AutomationProperties.AutomationId="FieldTypeText" />
+                                    </StackPanel>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Key" />
+                                        <TextBlock Text="{Binding KeyFlags}" AutomationProperties.AutomationId="FieldKeyText" />
+                                    </StackPanel>
                                 </StackPanel>
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Key" />
-                                    <TextBlock Text="{Binding KeyFlags}" AutomationProperties.AutomationId="FieldKeyText" />
+                                <CheckBox Content="Required" IsChecked="{Binding Required}" AutomationProperties.AutomationId="FieldRequiredCheck" />
+                                <WrapPanel>
+                                    <CheckBox Content="Show in list" Margin="0,0,16,0" IsChecked="{Binding ShowInList}" AutomationProperties.AutomationId="FieldShowInListCheck" />
+                                    <CheckBox Content="Show in view" Margin="0,0,16,0" IsChecked="{Binding ShowInView}" AutomationProperties.AutomationId="FieldShowInViewCheck" />
+                                    <CheckBox Content="Show in add" Margin="0,0,16,0" IsChecked="{Binding ShowInAdd}" AutomationProperties.AutomationId="FieldShowInAddCheck" />
+                                    <CheckBox Content="Show in edit" Margin="0,0,16,0" IsChecked="{Binding ShowInEdit}" AutomationProperties.AutomationId="FieldShowInEditCheck" />
+                                    <CheckBox Content="Searchable" Margin="0,0,16,0" IsChecked="{Binding Searchable}" AutomationProperties.AutomationId="FieldSearchableCheck" />
+                                    <CheckBox Content="Sortable" IsChecked="{Binding Sortable}" AutomationProperties.AutomationId="FieldSortableCheck" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander Header="Edit control" IsExpanded="True" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="4" Margin="0,4,0,0">
+                                <TextBlock Classes="label" Text="Control" />
+                                <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.EditControls}" SelectedItem="{Binding Control}"
+                                          MinWidth="200" AutomationProperties.AutomationId="FieldControlCombo" />
+                                <TextBlock Classes="label" Text="Help text" />
+                                <TextBox Text="{Binding HelpText}" AutomationProperties.AutomationId="FieldHelpTextBox" />
+                                <TextBlock Classes="label" Text="Placeholder" />
+                                <TextBox Text="{Binding Placeholder}" AutomationProperties.AutomationId="FieldPlaceholderBox" />
+                                <TextBlock Classes="label" Text="Tooltip" />
+                                <TextBox Text="{Binding Tooltip}" AutomationProperties.AutomationId="FieldTooltipBox" />
+                                <TextBlock Classes="label" Text="Default value (add form)" />
+                                <TextBox Text="{Binding DefaultValue}" AutomationProperties.AutomationId="FieldDefaultValueBox" />
+                                <TextBlock Classes="label" Text="Group (heading above related fields)" />
+                                <TextBox Text="{Binding Group}" AutomationProperties.AutomationId="FieldGroupBox" />
+                                <WrapPanel>
+                                    <CheckBox Content="Read-only on edit" Margin="0,0,16,0" IsChecked="{Binding ReadOnlyOnEdit}" AutomationProperties.AutomationId="FieldReadOnlyOnEditCheck" />
+                                    <CheckBox Content="Auto focus" IsChecked="{Binding AutoFocus}" AutomationProperties.AutomationId="FieldAutoFocusCheck" />
+                                </WrapPanel>
+                                <StackPanel IsVisible="{Binding IsTextArea}" Spacing="4">
+                                    <TextBlock Classes="label" Text="Rows (1-50)" />
+                                    <TextBox Text="{Binding RowsText}" Width="120" HorizontalAlignment="Left" AutomationProperties.AutomationId="FieldRowsBox" />
                                 </StackPanel>
                             </StackPanel>
-                            <CheckBox Content="Required" IsChecked="{Binding Required}" AutomationProperties.AutomationId="FieldRequiredCheck" />
-                            <WrapPanel>
-                                <CheckBox Content="Show in list" Margin="0,0,16,0" IsChecked="{Binding ShowInList}" AutomationProperties.AutomationId="FieldShowInListCheck" />
-                                <CheckBox Content="Show in view" Margin="0,0,16,0" IsChecked="{Binding ShowInView}" AutomationProperties.AutomationId="FieldShowInViewCheck" />
-                                <CheckBox Content="Show in add" Margin="0,0,16,0" IsChecked="{Binding ShowInAdd}" AutomationProperties.AutomationId="FieldShowInAddCheck" />
-                                <CheckBox Content="Show in edit" Margin="0,0,16,0" IsChecked="{Binding ShowInEdit}" AutomationProperties.AutomationId="FieldShowInEditCheck" />
-                                <CheckBox Content="Searchable" Margin="0,0,16,0" IsChecked="{Binding Searchable}" AutomationProperties.AutomationId="FieldSearchableCheck" />
-                                <CheckBox Content="Sortable" IsChecked="{Binding Sortable}" AutomationProperties.AutomationId="FieldSortableCheck" />
-                            </WrapPanel>
-                        </StackPanel>
-                    </Expander>
+                        </Expander>
 
-                    <Expander Header="Edit control" IsExpanded="True" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="4" Margin="0,4,0,0">
-                            <TextBlock Classes="label" Text="Control" />
-                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.EditControls}" SelectedItem="{Binding Control}"
-                                      MinWidth="200" AutomationProperties.AutomationId="FieldControlCombo" />
-                            <TextBlock Classes="label" Text="Help text" />
-                            <TextBox Text="{Binding HelpText}" AutomationProperties.AutomationId="FieldHelpTextBox" />
-                            <TextBlock Classes="label" Text="Placeholder" />
-                            <TextBox Text="{Binding Placeholder}" AutomationProperties.AutomationId="FieldPlaceholderBox" />
-                            <TextBlock Classes="label" Text="Tooltip" />
-                            <TextBox Text="{Binding Tooltip}" AutomationProperties.AutomationId="FieldTooltipBox" />
-                            <TextBlock Classes="label" Text="Default value (add form)" />
-                            <TextBox Text="{Binding DefaultValue}" AutomationProperties.AutomationId="FieldDefaultValueBox" />
-                            <TextBlock Classes="label" Text="Group (heading above related fields)" />
-                            <TextBox Text="{Binding Group}" AutomationProperties.AutomationId="FieldGroupBox" />
-                            <WrapPanel>
-                                <CheckBox Content="Read-only on edit" Margin="0,0,16,0" IsChecked="{Binding ReadOnlyOnEdit}" AutomationProperties.AutomationId="FieldReadOnlyOnEditCheck" />
-                                <CheckBox Content="Auto focus" IsChecked="{Binding AutoFocus}" AutomationProperties.AutomationId="FieldAutoFocusCheck" />
-                            </WrapPanel>
-                            <StackPanel IsVisible="{Binding IsTextArea}" Spacing="4">
-                                <TextBlock Classes="label" Text="Rows (1-50)" />
-                                <TextBox Text="{Binding RowsText}" Width="120" HorizontalAlignment="Left" AutomationProperties.AutomationId="FieldRowsBox" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Expander>
-
-                    <Expander Header="Options" IsExpanded="True" IsVisible="{Binding ShowOptions}" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="6" Margin="0,4,0,0">
-                            <TextBlock Classes="hint" Text="Fixed choices for a drop-down or radio group. Leave empty when the choices come from a lookup." />
-                            <DataGrid HorizontalScrollBarVisibility="Auto" x:Name="OptionsGrid" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption, Mode=TwoWay}"
-                                      AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="220"
-                                      CellEditEnded="OnOptionCellEditEnded" AutomationProperties.AutomationId="FieldOptionsGrid">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" MinWidth="90" />
-                                    <DataGridTextColumn Header="Text" Binding="{Binding Text}" Width="*" MinWidth="90" />
-                                </DataGrid.Columns>
-                            </DataGrid>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Content="Add option" Command="{Binding AddOptionCommand}" AutomationProperties.AutomationId="AddOptionButton" />
-                                <Button Content="Remove option" Command="{Binding RemoveOptionCommand}" AutomationProperties.AutomationId="RemoveOptionButton" />
-                            </StackPanel>
-                            <TextBlock Classes="error" Text="{Binding OptionsMessage}" IsVisible="{Binding HasOptionsMessage}" />
-                        </StackPanel>
-                    </Expander>
-
-                    <Expander Header="Lookup" IsVisible="{Binding ShowOptions}" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="4" Margin="0,4,0,0">
-                            <TextBlock Classes="label" Text="Table" />
-                            <ComboBox ItemsSource="{Binding LookupTables}" SelectedItem="{Binding LookupTable}" MinWidth="220"
-                                      AutomationProperties.AutomationId="LookupTableCombo" />
-                            <StackPanel Spacing="4" IsEnabled="{Binding HasLookupTable}">
-                                <TextBlock Classes="label" Text="Key field (stored in this field)" />
-                                <ComboBox ItemsSource="{Binding LookupFields}" SelectedItem="{Binding LookupKeyField}" MinWidth="220"
-                                          AutomationProperties.AutomationId="LookupKeyFieldCombo" />
-                                <TextBlock Classes="label" Text="Display field (shown to the user)" />
-                                <ComboBox ItemsSource="{Binding LookupFields}" SelectedItem="{Binding LookupDisplayField}" MinWidth="220"
-                                          AutomationProperties.AutomationId="LookupDisplayFieldCombo" />
-                                <TextBlock Classes="label" Text="Filter (SQL condition without WHERE)" />
-                                <TextBox Text="{Binding LookupFilter}" AutomationProperties.AutomationId="LookupFilterBox" />
-                                <TextBlock Classes="label" Text="Order field" />
-                                <ComboBox ItemsSource="{Binding LookupOrderChoices}" SelectedItem="{Binding LookupOrderField}" MinWidth="220"
-                                          AutomationProperties.AutomationId="LookupOrderFieldCombo" />
-                                <CheckBox Content="Show the display text in list and view pages" IsChecked="{Binding LookupShowDisplayInView}"
-                                          AutomationProperties.AutomationId="LookupShowDisplayCheck" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Expander>
-
-                    <Expander Header="Validation" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="4" Margin="0,4,0,0">
-                            <StackPanel Orientation="Horizontal" Spacing="16">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Min length" />
-                                    <TextBox Text="{Binding MinLengthText}" Width="110" AutomationProperties.AutomationId="FieldMinLengthBox" />
-                                </StackPanel>
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Max length (0: none)" />
-                                    <TextBox Text="{Binding MaxLengthText}" Width="110" AutomationProperties.AutomationId="FieldMaxLengthBox" />
-                                </StackPanel>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="16">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Min" />
-                                    <TextBox Text="{Binding MinText}" Width="110" AutomationProperties.AutomationId="FieldMinBox" />
-                                </StackPanel>
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Max" />
-                                    <TextBox Text="{Binding MaxText}" Width="110" AutomationProperties.AutomationId="FieldMaxBox" />
-                                </StackPanel>
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Step" />
-                                    <TextBox Text="{Binding StepText}" Width="110" AutomationProperties.AutomationId="FieldStepBox" />
-                                </StackPanel>
-                            </StackPanel>
-                            <TextBlock Classes="label" Text="Pattern (regular expression)" />
-                            <TextBox Text="{Binding Pattern}" FontFamily="Consolas, Menlo, Courier New, monospace" AutomationProperties.AutomationId="FieldPatternBox" />
-                            <TextBlock Classes="label" Text="Test the pattern with a sample (the whole text must match)" />
-                            <TextBox Text="{Binding PatternTestText}" PlaceholderText="Type a sample value" AutomationProperties.AutomationId="PatternTestBox" />
-                            <TextBlock Text="{Binding PatternTest.Message}" TextWrapping="Wrap" FontWeight="SemiBold"
-                                       AutomationProperties.AutomationId="PatternTestResultText" />
-                            <TextBlock Classes="label" Text="Pattern message" />
-                            <TextBox Text="{Binding PatternMessage}" AutomationProperties.AutomationId="FieldPatternMessageBox" />
-                            <TextBlock Classes="label" Text="Required message" />
-                            <TextBox Text="{Binding RequiredMessage}" AutomationProperties.AutomationId="FieldRequiredMessageBox" />
-                        </StackPanel>
-                    </Expander>
-
-                    <Expander Header="Display" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="4" Margin="0,4,0,0">
-                            <TextBlock Classes="label" Text="Format" />
-                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.ViewFormats}" SelectedItem="{Binding Format}" MinWidth="200"
-                                      AutomationProperties.AutomationId="FieldFormatCombo" />
-                            <TextBlock Classes="label" Text="Format string (for example N2, C, yyyy-MM-dd)" />
-                            <TextBox Text="{Binding FormatString}" AutomationProperties.AutomationId="FieldFormatStringBox" />
-                            <TextBlock Classes="label" Text="Preview" />
-                            <Border Padding="8" CornerRadius="4" BorderThickness="1" Background="{DynamicResource PanelBackground}"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-                                <TextBlock Text="{Binding FormatPreview}" AutomationProperties.AutomationId="FormatPreviewText" />
-                            </Border>
-                            <TextBlock Classes="label" Text="Dates stored as (number columns, used by reports)" />
-                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.DateStorages}" SelectedItem="{Binding DateStorage}" MinWidth="200"
-                                      IsEnabled="{Binding CanStoreDates}" AutomationProperties.AutomationId="FieldDateStorageCombo" />
-                            <StackPanel Orientation="Horizontal" Spacing="16" IsEnabled="{Binding IsBooleanFormat}">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="True text" />
-                                    <TextBox Text="{Binding TrueText}" Width="150" AutomationProperties.AutomationId="FieldTrueTextBox" />
-                                </StackPanel>
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="False text" />
-                                    <TextBox Text="{Binding FalseText}" Width="150" AutomationProperties.AutomationId="FieldFalseTextBox" />
-                                </StackPanel>
-                            </StackPanel>
-                            <TextBlock Classes="label" Text="Badge rules (used by the Badge format)" />
-                            <StackPanel Spacing="6" IsEnabled="{Binding IsBadgeFormat}">
-                                <DataGrid HorizontalScrollBarVisibility="Auto" x:Name="BadgeRulesGrid" ItemsSource="{Binding BadgeRules}" SelectedItem="{Binding SelectedRule, Mode=TwoWay}"
+                        <Expander Header="Options" IsExpanded="True" IsVisible="{Binding ShowOptions}" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="6" Margin="0,4,0,0">
+                                <TextBlock Classes="hint" Text="Fixed choices for a drop-down or radio group. Leave empty when the choices come from a lookup." />
+                                <DataGrid HorizontalScrollBarVisibility="Auto" x:Name="OptionsGrid" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption, Mode=TwoWay}"
                                           AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="220"
-                                          AutomationProperties.AutomationId="BadgeRulesGrid">
+                                          CellEditEnded="OnOptionCellEditEnded" AutomationProperties.AutomationId="FieldOptionsGrid">
                                     <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="Operator" Width="Auto">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Operators}" SelectedItem="{Binding Operator}"
-                                                              Margin="2,0" MinWidth="130" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
                                         <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" MinWidth="90" />
-                                        <DataGridTemplateColumn Header="Style" Width="Auto">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <ComboBox ItemsSource="{x:Static vm:ContextStyles.Names}" SelectedItem="{Binding Style}"
-                                                              ItemTemplate="{StaticResource StyleItemTemplate}" Margin="2,0" MinWidth="130" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
                                         <DataGridTextColumn Header="Text" Binding="{Binding Text}" Width="*" MinWidth="90" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Content="Add rule" Command="{Binding AddBadgeRuleCommand}" AutomationProperties.AutomationId="AddBadgeRuleButton" />
-                                    <Button Content="Remove rule" Command="{Binding RemoveBadgeRuleCommand}" AutomationProperties.AutomationId="RemoveBadgeRuleButton" />
+                                    <Button Content="Add option" Command="{Binding AddOptionCommand}" AutomationProperties.AutomationId="AddOptionButton" />
+                                    <Button Content="Remove option" Command="{Binding RemoveOptionCommand}" AutomationProperties.AutomationId="RemoveOptionButton" />
                                 </StackPanel>
+                                <TextBlock Classes="error" Text="{Binding OptionsMessage}" IsVisible="{Binding HasOptionsMessage}" />
                             </StackPanel>
-                        </StackPanel>
-                    </Expander>
+                        </Expander>
 
-                    <Expander Header="Style" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="4" Margin="0,4,0,0">
-                            <StackPanel Orientation="Horizontal" Spacing="16">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Width (120px, 20%, auto)" />
-                                    <TextBox Text="{Binding Width}" Width="150" AutomationProperties.AutomationId="FieldWidthBox" />
-                                </StackPanel>
-                                <StackPanel Spacing="2">
-                                    <TextBlock Classes="label" Text="Align" />
-                                    <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.TextAligns}" SelectedItem="{Binding Align}" MinWidth="130"
-                                              AutomationProperties.AutomationId="FieldAlignCombo" />
+                        <Expander Header="Lookup" IsVisible="{Binding ShowOptions}" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="4" Margin="0,4,0,0">
+                                <TextBlock Classes="label" Text="Table" />
+                                <ComboBox ItemsSource="{Binding LookupTables}" SelectedItem="{Binding LookupTable}" MinWidth="220"
+                                          AutomationProperties.AutomationId="LookupTableCombo" />
+                                <StackPanel Spacing="4" IsEnabled="{Binding HasLookupTable}">
+                                    <TextBlock Classes="label" Text="Key field (stored in this field)" />
+                                    <ComboBox ItemsSource="{Binding LookupFields}" SelectedItem="{Binding LookupKeyField}" MinWidth="220"
+                                              AutomationProperties.AutomationId="LookupKeyFieldCombo" />
+                                    <TextBlock Classes="label" Text="Display field (shown to the user)" />
+                                    <ComboBox ItemsSource="{Binding LookupFields}" SelectedItem="{Binding LookupDisplayField}" MinWidth="220"
+                                              AutomationProperties.AutomationId="LookupDisplayFieldCombo" />
+                                    <TextBlock Classes="label" Text="Filter (SQL condition without WHERE)" />
+                                    <TextBox Text="{Binding LookupFilter}" AutomationProperties.AutomationId="LookupFilterBox" />
+                                    <TextBlock Classes="label" Text="Order field" />
+                                    <ComboBox ItemsSource="{Binding LookupOrderChoices}" SelectedItem="{Binding LookupOrderField}" MinWidth="220"
+                                              AutomationProperties.AutomationId="LookupOrderFieldCombo" />
+                                    <CheckBox Content="Show the display text in list and view pages" IsChecked="{Binding LookupShowDisplayInView}"
+                                              AutomationProperties.AutomationId="LookupShowDisplayCheck" />
                                 </StackPanel>
                             </StackPanel>
-                            <TextBlock Classes="label" Text="CSS class" />
-                            <TextBox Text="{Binding CssClass}" AutomationProperties.AutomationId="FieldCssClassBox" />
-                            <TextBlock Classes="label" Text="Inline style" />
-                            <TextBox Text="{Binding InlineStyle}" AutomationProperties.AutomationId="FieldInlineStyleBox" />
-                        </StackPanel>
-                    </Expander>
+                        </Expander>
+
+                        <Expander Header="Validation" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="4" Margin="0,4,0,0">
+                                <StackPanel Orientation="Horizontal" Spacing="16">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Min length" />
+                                        <TextBox Text="{Binding MinLengthText}" Width="110" AutomationProperties.AutomationId="FieldMinLengthBox" />
+                                    </StackPanel>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Max length (0: none)" />
+                                        <TextBox Text="{Binding MaxLengthText}" Width="110" AutomationProperties.AutomationId="FieldMaxLengthBox" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="16">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Min" />
+                                        <TextBox Text="{Binding MinText}" Width="110" AutomationProperties.AutomationId="FieldMinBox" />
+                                    </StackPanel>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Max" />
+                                        <TextBox Text="{Binding MaxText}" Width="110" AutomationProperties.AutomationId="FieldMaxBox" />
+                                    </StackPanel>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Step" />
+                                        <TextBox Text="{Binding StepText}" Width="110" AutomationProperties.AutomationId="FieldStepBox" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock Classes="label" Text="Pattern (regular expression)" />
+                                <TextBox Text="{Binding Pattern}" FontFamily="Consolas, Menlo, Courier New, monospace" AutomationProperties.AutomationId="FieldPatternBox" />
+                                <TextBlock Classes="label" Text="Test the pattern with a sample (the whole text must match)" />
+                                <TextBox Text="{Binding PatternTestText}" PlaceholderText="Type a sample value" AutomationProperties.AutomationId="PatternTestBox" />
+                                <TextBlock Text="{Binding PatternTest.Message}" TextWrapping="Wrap" FontWeight="SemiBold"
+                                           AutomationProperties.AutomationId="PatternTestResultText" />
+                                <TextBlock Classes="label" Text="Pattern message" />
+                                <TextBox Text="{Binding PatternMessage}" AutomationProperties.AutomationId="FieldPatternMessageBox" />
+                                <TextBlock Classes="label" Text="Required message" />
+                                <TextBox Text="{Binding RequiredMessage}" AutomationProperties.AutomationId="FieldRequiredMessageBox" />
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander Header="Display" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="4" Margin="0,4,0,0">
+                                <TextBlock Classes="label" Text="Format" />
+                                <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.ViewFormats}" SelectedItem="{Binding Format}" MinWidth="200"
+                                          AutomationProperties.AutomationId="FieldFormatCombo" />
+                                <TextBlock Classes="label" Text="Format string (for example N2, C, yyyy-MM-dd)" />
+                                <TextBox Text="{Binding FormatString}" AutomationProperties.AutomationId="FieldFormatStringBox" />
+                                <TextBlock Classes="label" Text="Preview" />
+                                <Border Padding="8" CornerRadius="4" BorderThickness="1" Background="{DynamicResource PanelBackground}"
+                                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                                    <TextBlock Text="{Binding FormatPreview}" AutomationProperties.AutomationId="FormatPreviewText" />
+                                </Border>
+                                <TextBlock Classes="label" Text="Dates stored as (number columns, used by reports)" />
+                                <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.DateStorages}" SelectedItem="{Binding DateStorage}" MinWidth="200"
+                                          IsEnabled="{Binding CanStoreDates}" AutomationProperties.AutomationId="FieldDateStorageCombo" />
+                                <StackPanel Orientation="Horizontal" Spacing="16" IsEnabled="{Binding IsBooleanFormat}">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="True text" />
+                                        <TextBox Text="{Binding TrueText}" Width="150" AutomationProperties.AutomationId="FieldTrueTextBox" />
+                                    </StackPanel>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="False text" />
+                                        <TextBox Text="{Binding FalseText}" Width="150" AutomationProperties.AutomationId="FieldFalseTextBox" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock Classes="label" Text="Badge rules (used by the Badge format)" />
+                                <StackPanel Spacing="6" IsEnabled="{Binding IsBadgeFormat}">
+                                    <DataGrid HorizontalScrollBarVisibility="Auto" x:Name="BadgeRulesGrid" ItemsSource="{Binding BadgeRules}" SelectedItem="{Binding SelectedRule, Mode=TwoWay}"
+                                              AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="220"
+                                              AutomationProperties.AutomationId="BadgeRulesGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTemplateColumn Header="Operator" Width="Auto">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Operators}" SelectedItem="{Binding Operator}"
+                                                                  Margin="2,0" MinWidth="130" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" MinWidth="90" />
+                                            <DataGridTemplateColumn Header="Style" Width="Auto">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ComboBox ItemsSource="{x:Static vm:ContextStyles.Names}" SelectedItem="{Binding Style}"
+                                                                  ItemTemplate="{StaticResource StyleItemTemplate}" Margin="2,0" MinWidth="130" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTextColumn Header="Text" Binding="{Binding Text}" Width="*" MinWidth="90" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="Add rule" Command="{Binding AddBadgeRuleCommand}" AutomationProperties.AutomationId="AddBadgeRuleButton" />
+                                        <Button Classes="icon ghost" ToolTip.Tip="Remove rule" AutomationProperties.Name="Remove rule" Margin="0,0,2,4" Command="{Binding RemoveBadgeRuleCommand}" AutomationProperties.AutomationId="RemoveBadgeRuleButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander Header="Style" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="4" Margin="0,4,0,0">
+                                <StackPanel Orientation="Horizontal" Spacing="16">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Width (120px, 20%, auto)" />
+                                        <TextBox Text="{Binding Width}" Width="150" AutomationProperties.AutomationId="FieldWidthBox" />
+                                    </StackPanel>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Classes="label" Text="Align" />
+                                        <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.TextAligns}" SelectedItem="{Binding Align}" MinWidth="130"
+                                                  AutomationProperties.AutomationId="FieldAlignCombo" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock Classes="label" Text="CSS class" />
+                                <TextBox Text="{Binding CssClass}" AutomationProperties.AutomationId="FieldCssClassBox" />
+                                <TextBlock Classes="label" Text="Inline style" />
+                                <TextBox Text="{Binding InlineStyle}" AutomationProperties.AutomationId="FieldInlineStyleBox" />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </ScrollViewer>
+            </ScrollViewer>
+        </Border>
     </Grid>
 </UserControl>

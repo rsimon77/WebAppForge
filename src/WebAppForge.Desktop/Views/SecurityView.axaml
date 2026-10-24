@@ -1,73 +1,75 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="WebAppForge.Desktop.Views.SecurityView">
-    <StackPanel Spacing="8" Margin="12" MaxWidth="600" HorizontalAlignment="Left">
-        <CheckBox Content="Require sign-in (cookie login against a generated table)" IsChecked="{Binding Security.Enabled}"
-                  AutomationProperties.AutomationId="SignInCheckBox" />
+    <Border Classes="card" Margin="12" MaxWidth="600" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <StackPanel Spacing="8">
+            <CheckBox Content="Require sign-in (cookie login against a generated table)" IsChecked="{Binding Security.Enabled}"
+                      AutomationProperties.AutomationId="SignInCheckBox" />
 
-        <!-- The groups below are accordions: each can be collapsed to keep the tab short. -->
-        <Expander Header="Login options" IsExpanded="True" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="8" Margin="0,4,0,0">
-                <TextBlock Text="User table" FontWeight="SemiBold" />
-                <ComboBox ItemsSource="{Binding Security.UserTables}"
-                          SelectedItem="{Binding Security.UserTable}"
-                          PlaceholderText="Choose a table marked Generate"
-                          HorizontalAlignment="Stretch" />
+            <!-- The groups below are accordions: each can be collapsed to keep the tab short. -->
+            <Expander Header="Login options" IsExpanded="True" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="8" Margin="0,4,0,0">
+                    <TextBlock Text="User table" FontWeight="SemiBold" />
+                    <ComboBox ItemsSource="{Binding Security.UserTables}"
+                              SelectedItem="{Binding Security.UserTable}"
+                              PlaceholderText="Choose a table marked Generate"
+                              HorizontalAlignment="Stretch" />
 
-                <TextBlock Text="User name field" FontWeight="SemiBold" Margin="0,8,0,0" />
-                <ComboBox ItemsSource="{Binding Security.UserNameFields}"
-                          SelectedItem="{Binding Security.UserNameField}"
-                          PlaceholderText="Choose a field of the user table"
-                          HorizontalAlignment="Stretch" />
-            </StackPanel>
-        </Expander>
+                    <TextBlock Text="User name field" FontWeight="SemiBold" Margin="0,8,0,0" />
+                    <ComboBox ItemsSource="{Binding Security.UserNameFields}"
+                              SelectedItem="{Binding Security.UserNameField}"
+                              PlaceholderText="Choose a field of the user table"
+                              HorizontalAlignment="Stretch" />
+                </StackPanel>
+            </Expander>
 
-        <Expander Header="Password options" IsExpanded="True" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="8" Margin="0,4,0,0">
-                <TextBlock Text="Password field (stores the password hash)" FontWeight="SemiBold" />
-                <ComboBox ItemsSource="{Binding Security.PasswordFields}"
-                          SelectedItem="{Binding Security.PasswordField}"
-                          PlaceholderText="Choose a field of the user table"
-                          HorizontalAlignment="Stretch" />
+            <Expander Header="Password options" IsExpanded="True" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="8" Margin="0,4,0,0">
+                    <TextBlock Text="Password field (stores the password hash)" FontWeight="SemiBold" />
+                    <ComboBox ItemsSource="{Binding Security.PasswordFields}"
+                              SelectedItem="{Binding Security.PasswordField}"
+                              PlaceholderText="Choose a field of the user table"
+                              HorizontalAlignment="Stretch" />
 
-                <CheckBox Content="Track failed sign-in attempts" IsChecked="{Binding Security.TrackFailedAttempts}" Margin="0,8,0,0" />
-                <StackPanel Orientation="Horizontal" Spacing="16" IsEnabled="{Binding Security.TrackFailedAttempts}">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Max failed attempts" />
-                        <TextBox Width="180" Text="{Binding Security.MaxFailedAttemptsText}" />
-                    </StackPanel>
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Window (minutes)" />
-                        <TextBox Width="180" Text="{Binding Security.FailedAttemptsWindowText}" />
+                    <CheckBox Content="Track failed sign-in attempts" IsChecked="{Binding Security.TrackFailedAttempts}" Margin="0,8,0,0" />
+                    <StackPanel Orientation="Horizontal" Spacing="16" IsEnabled="{Binding Security.TrackFailedAttempts}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Max failed attempts" />
+                            <TextBox Width="180" Text="{Binding Security.MaxFailedAttemptsText}" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Window (minutes)" />
+                            <TextBox Width="180" Text="{Binding Security.FailedAttemptsWindowText}" />
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </Expander>
+            </Expander>
 
-        <Expander Header="Permissions" IsExpanded="True" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="8" Margin="0,4,0,0">
-                <TextBlock Text="Level field (integer, optional: enables user level security)" FontWeight="SemiBold" />
-                <ComboBox ItemsSource="{Binding Security.UserLevelFields}"
-                          SelectedItem="{Binding Security.LevelField}"
-                          IsEnabled="{Binding Security.Enabled}"
-                          HorizontalAlignment="Stretch" />
+            <Expander Header="Permissions" IsExpanded="True" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="8" Margin="0,4,0,0">
+                    <TextBlock Text="Level field (integer, optional: enables user level security)" FontWeight="SemiBold" />
+                    <ComboBox ItemsSource="{Binding Security.UserLevelFields}"
+                              SelectedItem="{Binding Security.LevelField}"
+                              IsEnabled="{Binding Security.Enabled}"
+                              HorizontalAlignment="Stretch" />
 
-                <CheckBox Content="Allow registration (new users can sign up)" IsChecked="{Binding Security.AllowRegistration}"
-                          IsEnabled="{Binding Security.Enabled}" Margin="0,8,0,0" />
-                <CheckBox Content="Allow change password (signed-in users can change their password)" IsChecked="{Binding Security.AllowChangePassword}"
-                          IsEnabled="{Binding Security.Enabled}" />
-            </StackPanel>
-        </Expander>
+                    <CheckBox Content="Allow registration (new users can sign up)" IsChecked="{Binding Security.AllowRegistration}"
+                              IsEnabled="{Binding Security.Enabled}" Margin="0,8,0,0" />
+                    <CheckBox Content="Allow change password (signed-in users can change their password)" IsChecked="{Binding Security.AllowChangePassword}"
+                              IsEnabled="{Binding Security.Enabled}" />
+                </StackPanel>
+            </Expander>
 
-        <TextBlock IsVisible="{Binding Security.HasInputMessage}" Text="{Binding Security.InputMessage}"
-                   Foreground="#B3261E" TextWrapping="Wrap" />
+            <TextBlock IsVisible="{Binding Security.HasInputMessage}" Text="{Binding Security.InputMessage}"
+                       Foreground="#B3261E" TextWrapping="Wrap" />
 
-        <Border IsVisible="{Binding Security.HasValidationMessage}" Padding="8" Margin="0,8,0,0"
-                BorderThickness="1" BorderBrush="#B3261E" CornerRadius="4">
-            <TextBlock Text="{Binding Security.ValidationMessage}" Foreground="#B3261E" TextWrapping="Wrap" />
-        </Border>
+            <Border IsVisible="{Binding Security.HasValidationMessage}" Padding="8" Margin="0,8,0,0"
+                    BorderThickness="1" BorderBrush="#B3261E" CornerRadius="4">
+                <TextBlock Text="{Binding Security.ValidationMessage}" Foreground="#B3261E" TextWrapping="Wrap" />
+            </Border>
 
-        <TextBlock TextWrapping="Wrap" Opacity="0.7" Margin="0,8,0,0"
-                   Text="When sign-in is enabled, every page and API route needs a signed-in user except /login and /logout. The user table must be marked Generate on the Tables tab. Generate is disabled while these settings are invalid." />
-    </StackPanel>
+            <TextBlock TextWrapping="Wrap" Opacity="0.7" Margin="0,8,0,0"
+                       Text="When sign-in is enabled, every page and API route needs a signed-in user except /login and /logout. The user table must be marked Generate on the Tables tab. Generate is disabled while these settings are invalid." />
+        </StackPanel>
+    </Border>
 </UserControl>

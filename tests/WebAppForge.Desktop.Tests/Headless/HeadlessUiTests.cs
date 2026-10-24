@@ -115,7 +115,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 4);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Security"));
 
         EnableLoginThroughControls(window);
         Assert.Null(main.Security.ValidationMessage);
@@ -143,7 +143,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         var users = main.Current.Tables[0];
         var box = ViewLevelBox(window, users);
 
@@ -162,7 +162,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         var users = main.Current.Tables[0];
         var box = ViewLevelBox(window, users);
 
@@ -180,7 +180,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         var users = main.Current.Tables[0];
 
         var combo = OwnerCombo(window, users);
@@ -199,7 +199,7 @@ public class HeadlessUiTests
         var window = ShowWindow(main);
         var users = main.Current.Tables[0];
 
-        SelectTab(window, 4);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Security"));
         EnableLoginThroughControls(window);
         Assert.True(main.Security.CanGenerate);
 
@@ -210,7 +210,7 @@ public class HeadlessUiTests
         Assert.False(main.Security.CanGenerate);
         Assert.Contains("must be a text column", main.Security.ValidationMessage);
 
-        SelectTab(window, 5);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Generate"));
         var generate = window.GetVisualDescendants().OfType<Button>().Single(b => b.Content as string == "Generate");
         Assert.False(generate.IsEnabled);
     }
@@ -220,7 +220,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 4);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Security"));
         EnableLoginThroughControls(window);
         Settle(window);
 

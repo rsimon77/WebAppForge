@@ -164,10 +164,10 @@ public class OptionsWindowTests
         Assert.IsType<TextBlock>(ById<Control>(window, "BreadcrumbText"));
         Assert.IsType<TextBox>(ById<Control>(window, "SqlitePathBox"));
 
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         Assert.IsType<ComboBox>(ById<Control>(window, "PageSizeCombo"));
 
-        SelectTab(window, 4);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Security"));
         Assert.IsType<CheckBox>(ById<Control>(window, "SignInCheckBox"));
         window.Close();
     }
@@ -191,7 +191,7 @@ public class OptionsWindowTests
         }
 
         Assert.True(app.TryGetResource(AvaloniaAppearance.FontSizeKey, null, out var restored));
-        Assert.Equal(14d, restored);
+        Assert.Equal((double)AppSettings.DefaultUiFontSize, restored);
         Assert.DoesNotContain(app.Styles.OfType<Avalonia.Styling.Style>(), s => s.Setters.OfType<Avalonia.Styling.Setter>().Any(x => x.Property == DataGrid.RowHeightProperty));
     }
 

@@ -193,7 +193,7 @@ public class SettingsTests
     public void BreadcrumbShowsTheProjectName()
     {
         var main = ProjectWithTables();
-        main.ActiveTabIndex = 0;
+        main.ActiveTabIndex = MainViewModel.TabNames.ToList().IndexOf("Database");
 
         main.ProjectName = "Shop";
 

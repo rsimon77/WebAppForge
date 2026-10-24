@@ -1,0 +1,255 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:WebAppForge.Desktop.Views">
+    <!-- Control styles of the editor. Colours and sizes come from Styles/Tokens.axaml. -->
+
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+
+    <!-- Buttons: secondary by default; .primary, .ghost, .danger and .icon variants. -->
+    <Style Selector="Button">
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.primary">
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button.ghost">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ControlFillBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.danger">
+        <Setter Property="Foreground" Value="{DynamicResource ValidationBrush}" />
+    </Style>
+    <Style Selector="Button.icon">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.icon Path, Button.ghost Path">
+        <Setter Property="Stroke" Value="{DynamicResource LabelTextBrush}" />
+    </Style>
+    <Style Selector="Button.primary Path">
+        <Setter Property="Stroke" Value="White" />
+    </Style>
+
+    <!-- Text inputs and pickers keep Fluent's templates at the compact size. -->
+    <Style Selector="TextBox">
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox">
+        <Setter Property="MinHeight" Value="28" />
+    </Style>
+    <Style Selector="NumericUpDown">
+        <Setter Property="MinHeight" Value="28" />
+    </Style>
+
+    <!-- Text roles. -->
+    <Style Selector="TextBlock.title">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.panelTitle">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.section">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="0.5" />
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+    </Style>
+
+    <!-- Panels and messages. -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource PanelCornerRadius}" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+    <Style Selector="Border.banner">
+        <Setter Property="Background" Value="{DynamicResource InfoBannerBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource InfoBannerBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+    <Style Selector="Border.banner.error">
+        <Setter Property="Background" Value="{DynamicResource ErrorBannerBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ErrorBannerBorder}" />
+    </Style>
+
+    <!-- Expanders read as section headings inside a panel: no box, a semibold title, a hover fill. -->
+    <Style Selector="Expander">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Expander /template/ ToggleButton#ExpanderHeader">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <!-- Lists: rounded rows with a soft accent selection. -->
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="MinHeight" Value="30" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentSubtleHoverBrush}" />
+    </Style>
+
+    <!-- Data grids: white panel, horizontal lines only, compact rows, quiet headers. -->
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="RowHeight" Value="34" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
+        <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="12,0" />
+    </Style>
+    <Style Selector="DataGridCell">
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="DataGridCell ComboBox, DataGridCell TextBox, DataGridCell NumericUpDown">
+        <Setter Property="MinHeight" Value="26" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="CheckBox">
+        <Setter Property="MinHeight" Value="28" />
+    </Style>
+    <Style Selector="Menu">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Menu > MenuItem">
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="GridSplitter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!--
+        The sidebar: a TabControl with the strip on the left. A TabItem with a Tag starts a stage and shows the Tag as its
+        heading; the icon is looked up from the section name. Headers stay plain strings.
+    -->
+    <Style Selector="TabControl.nav">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" />
+            </ItemsPanelTemplate>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DockPanel>
+                    <Border DockPanel.Dock="Left" Width="212" Background="{DynamicResource SidebarBrush}"
+                            BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,1,0">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <Border Padding="10,4,10,10">
+                                <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                            </Border>
+                        </ScrollViewer>
+                    </Border>
+                    <TextBlock DockPanel.Dock="Top" Classes="title" Margin="24,16,24,2"
+                               Text="{Binding SelectedItem.Header, RelativeSource={RelativeSource TemplatedParent}}" />
+                    <ContentPresenter Name="PART_SelectedContentHost" Margin="12,0,12,4"
+                                      Content="{TemplateBinding SelectedContent}"
+                                      ContentTemplate="{TemplateBinding SelectedContentTemplate}"
+                                      HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+                </DockPanel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl.nav > TabItem">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel>
+                    <TextBlock Classes="section" Text="{TemplateBinding Tag}" Margin="10,14,0,6"
+                               IsVisible="{TemplateBinding Tag, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <Border Name="PART_NavItem" Height="30" CornerRadius="6" Padding="10,0" Background="Transparent"
+                            BorderBrush="Transparent" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Path Name="PART_NavIcon" Width="16" Height="16" Stretch="Uniform" StrokeThickness="1.4"
+                                  Stroke="{DynamicResource LabelTextBrush}"
+                                  Data="{Binding Header, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static views:NavIconConverter.Instance}}" />
+                            <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Header}"
+                                              Foreground="{DynamicResource LabelTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl.nav > TabItem:pointerover /template/ Border#PART_NavItem">
+        <Setter Property="Background" Value="{DynamicResource ControlFillHoverBrush}" />
+    </Style>
+    <Style Selector="TabControl.nav > TabItem:selected /template/ Border#PART_NavItem">
+        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+    </Style>
+    <Style Selector="TabControl.nav > TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TabControl.nav > TabItem:selected /template/ Path#PART_NavIcon">
+        <Setter Property="Stroke" Value="{DynamicResource AppAccentBrush}" />
+    </Style>
+</Styles>

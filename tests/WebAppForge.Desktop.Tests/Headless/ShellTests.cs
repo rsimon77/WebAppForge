@@ -28,7 +28,7 @@ public class ShellTests
     {
         var main = ProjectWithTables();
         var window = ShowWindow(main);
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         var users = main.Current.Tables[0];
         main.Tables.SelectedTable = users;
         Settle(window);
@@ -50,7 +50,7 @@ public class ShellTests
         var window = ShowWindow(main);
         Assert.True(HasVisibleText(window, "Project1 > Database"));
 
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         Assert.True(HasVisibleText(window, "Project1 > Tables > Users"));
 
         var logins = main.Current.Tables[1];
@@ -86,7 +86,7 @@ public class ShellTests
         main.Tables.Reload();
 
         var window = ShowWindow(main);
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
 
         var rows = TablesGrid(window).GetVisualDescendants().OfType<DataGridRow>().ToList();
         var auditRow = rows.Single(r => r.DataContext == audit);
