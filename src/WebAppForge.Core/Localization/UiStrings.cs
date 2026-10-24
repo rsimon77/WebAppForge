@@ -197,7 +197,52 @@ public static class UiStrings
         new("impMax", "{0} must be at most {1}."),
     ];
 
-    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).Concat(Audit).Concat(ImportExport).ToDictionary(s => s.Id);
+    /// <summary>
+    /// Texts of the ASP.NET Core Identity pages (user and role management, sign-in messages). Enumerated only when the project keeps
+    /// its users with ASP.NET Core Identity.
+    /// </summary>
+    public static IReadOnlyList<UiString> Identity { get; } =
+    [
+        new("idUsers", "Users"),
+        new("idRoles", "Roles"),
+        new("idEmail", "E-mail"),
+        new("idEmailConfirmed", "E-mail confirmed"),
+        new("idLevel", "User level"),
+        new("idRoleName", "Role name"),
+        new("idLocked", "Locked"),
+        new("idLock", "Lock"),
+        new("idUnlock", "Unlock"),
+        new("idSetPassword", "Set password"),
+        new("idAddUser", "Add user"),
+        new("idAddRole", "Add role"),
+        new("idEditUser", "Edit user {0}"),
+        new("idEditRole", "Edit role {0}"),
+        new("idNoUsers", "No users match."),
+        new("idNoRoles", "There are no roles yet."),
+        new("idCreated", "The record has been created."),
+        new("idSaved", "The changes have been saved."),
+        new("idDeleted", "The record has been deleted."),
+        new("idPasswordSet", "The password has been set."),
+        new("idNotSelf", "You cannot do this to your own account."),
+        new("idKeepAdmin", "You cannot lower your own level below the administrator level."),
+        new("idNotFound", "The user or role was not found."),
+        new("idNotNumber", "The user level must be a whole number."),
+        new("idNotAllowed", "You cannot log in until your account has been confirmed."),
+        new("idRegistrationPending", "Registration complete. An administrator must confirm your account before you can log in."),
+        new("idAdminOnly", "Only administrators can open this page."),
+        new("idInvalidUserName", "The user name '{0}' is not valid."),
+        new("idRoleTaken", "The role name '{0}' is already taken."),
+        new("idInvalidRoleName", "The role name '{0}' is not valid."),
+        new("idInvalidEmail", "The e-mail address '{0}' is not valid."),
+        new("idPasswordDigit", "The password must contain a digit."),
+        new("idPasswordUpper", "The password must contain an uppercase letter."),
+        new("idPasswordLower", "The password must contain a lowercase letter."),
+        new("idPasswordSymbol", "The password must contain a character that is not a letter or a digit."),
+        new("idConcurrency", "The record was changed by someone else. Try again."),
+        new("idError", "The change could not be saved."),
+    ];
+
+    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).Concat(Audit).Concat(ImportExport).Concat(Identity).ToDictionary(s => s.Id);
 
     /// <summary>The English text of a UI string. Throws for an unknown id, which is a bug in the generator.</summary>
     public static string English(string id) =>

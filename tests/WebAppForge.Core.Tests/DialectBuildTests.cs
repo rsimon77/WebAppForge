@@ -15,6 +15,7 @@ public class DialectBuildTests
         "masterdetail" => MasterDetail(root),
         "audited" => Audited(root),
         "exchange" => Exchange(),
+        "identity" => IdentityTests.Sample(Path.Combine(root, "identity.db")),
         _ => ReportGenerationTests.WithReports("secure"),
     };
 
@@ -82,6 +83,8 @@ public class DialectBuildTests
     [InlineData(DatabaseProviders.MySql, "masterdetail")]
     [InlineData(DatabaseProviders.MySql, "reports")]
     [InlineData(DatabaseProviders.MySql, "exchange")]
+    [InlineData(DatabaseProviders.SqlServer, "identity")]
+    [InlineData(DatabaseProviders.MySql, "identity")]
     public async Task SamplesBuildForEveryServerWithoutSqliteLeftovers(string provider, string sample)
     {
         var root = MdSupport.TempFolder();
@@ -120,6 +123,24 @@ public class DialectBuildTests
                     Assert.Contains("CREATE TABLE IF NOT EXISTS `audit_trail`", audit);
                     Assert.Contains("START TRANSACTION", audit);
                     Assert.Contains("LIMIT @limit OFFSET @offset", page);
+                }
+            }
+
+            if (sample == "identity")
+            {
+                var setup = files["Security/SiteIdentity.cs"];
+                var admin = files["Pages/UserAdminPages.cs"];
+                if (DatabaseProviders.IsSqlServer(provider))
+                {
+                    Assert.Contains("IF OBJECT_ID(N'AspNetUsers', N'U') IS NULL CREATE TABLE [AspNetUsers]", setup);
+                    Assert.Contains("FROM [AspNetUsers]", files["Security/IdentityStores.cs"]);
+                    Assert.Contains("OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY", admin);
+                }
+                else
+                {
+                    Assert.Contains("CREATE TABLE IF NOT EXISTS `AspNetUsers`", setup);
+                    Assert.Contains("FROM `AspNetUsers`", files["Security/IdentityStores.cs"]);
+                    Assert.Contains("LIMIT @limit OFFSET @offset", admin);
                 }
             }
 

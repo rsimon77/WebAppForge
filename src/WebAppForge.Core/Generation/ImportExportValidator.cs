@@ -18,7 +18,7 @@ public static class ImportExportRules
 
     /// <summary>True for the users table of the login security: its password hash and level never leave the site, and it has no import.</summary>
     public static bool IsUserTable(Project project, TableInfo table) =>
-        project.Security.Enabled && Same(table.Name, project.Security.UserTable);
+        project.Security.Enabled && !project.Security.UsesIdentity && Same(table.Name, project.Security.UserTable);
 
     /// <summary>
     /// True when a field is part of the export and the import: not secret, not binary, not the owner field (the site sets it),
@@ -43,11 +43,11 @@ public static class ImportExportRules
     }
 
     public static bool CanExport(Project project, TableInfo table) =>
-        project.ImportExport.Enabled && table.Generate && table.ImportExport.Export
+        project.ImportExport.Enabled && table.Generate && table.ImportExport.Export && !Schema.IdentitySchema.IsIdentityTable(project.Security, table.Name)
         && project.ImportExport.ExportFormats != DataFormats.None && Fields(project, table).Count > 0;
 
     public static bool CanImport(Project project, TableInfo table) =>
-        project.ImportExport.Enabled && table.Generate && table.ImportExport.Import && !IsUserTable(project, table)
+        project.ImportExport.Enabled && table.Generate && table.ImportExport.Import && !IsUserTable(project, table) && !Schema.IdentitySchema.IsIdentityTable(project.Security, table.Name)
         && project.ImportExport.ImportFormats != DataFormats.None && Fields(project, table).Count > 0;
 
     /// <summary>True when the generated site has an export or an import for at least one table.</summary>
