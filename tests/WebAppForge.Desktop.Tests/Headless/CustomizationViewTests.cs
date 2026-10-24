@@ -96,6 +96,17 @@ public class CustomizationViewTests
         Assert.True(Find<TextBox>(window, "FieldRowsBox")!.IsEffectivelyVisible);
 
         Assert.Equal("Sample text", Find<TextBlock>(window, "FormatPreviewText")!.Text);
+        // Only number columns can store dates as numbers.
+        Assert.False(Find<ComboBox>(window, "FieldDateStorageCombo")!.IsEffectivelyEnabled);
+        main.Tables.SelectedField = customers.Fields.Single(f => f.Name == "Age");
+        Settle(window);
+        ExpandAll(window);
+        Find<ComboBox>(window, "FieldDateStorageCombo")!.SelectedItem = DateStorage.UnixMilliseconds;
+        Settle(window);
+        Assert.Equal(DateStorage.UnixMilliseconds, customers.Fields.Single(f => f.Name == "Age").DateStorage);
+        main.Tables.SelectedField = name;
+        Settle(window);
+        ExpandAll(window);
         Assert.NotNull(Find<TextBox>(window, "PatternTestBox"));
         Find<TextBox>(window, "FieldPatternBox")!.Text = "[a-z]+";
         Find<TextBox>(window, "PatternTestBox")!.Text = "abc";

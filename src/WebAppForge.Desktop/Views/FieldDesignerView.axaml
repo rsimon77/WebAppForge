@@ -239,6 +239,9 @@
                                     BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
                                 <TextBlock Text="{Binding FormatPreview}" AutomationProperties.AutomationId="FormatPreviewText" />
                             </Border>
+                            <TextBlock Classes="label" Text="Dates stored as (number columns, used by reports)" />
+                            <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.DateStorages}" SelectedItem="{Binding DateStorage}" MinWidth="200"
+                                      IsEnabled="{Binding CanStoreDates}" AutomationProperties.AutomationId="FieldDateStorageCombo" />
                             <StackPanel Orientation="Horizontal" Spacing="16" IsEnabled="{Binding IsBooleanFormat}">
                                 <StackPanel Spacing="2">
                                     <TextBlock Classes="label" Text="True text" />

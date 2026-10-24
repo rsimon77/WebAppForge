@@ -18,6 +18,8 @@
            lookup, currency, badge, row style, pattern validation, and en/hu localization (manual Hungarian entries).
   relations : customers (text key), orders, order_lines (composite key), categories, products with master/detail links
            (restrict, cascade, set null; expandable row, offcanvas and modal previews) and multi-page forms (tabs, pills, wizard, accordion).
+  reports : regions and 24 sales (Unix-time stamp column) with a summary (date range and pick-list filters, drill-down),
+           a chart, a crosstab, a calendar and a dashboard. No security.
   shop   : customers and orders tables, no security.
   secure : users (username, password, level), notes (owner = user name), reports (EditMinLevel 2),
            login, registration and change password enabled, failed-attempt lockout after 5 failures.
@@ -35,7 +37,7 @@ param(
     [string]$Target,
 
     [Parameter(Mandatory)]
-    [ValidateSet('shop', 'secure', 'designed', 'relations')]
+    [ValidateSet('shop', 'secure', 'designed', 'relations', 'reports')]
     [string]$Scenario,
 
     [string]$PasswordHashFile
@@ -80,6 +82,10 @@ dotnet build $csproj.FullName -nologo -v q
 if ($LASTEXITCODE -ne 0) { throw "dotnet build of the generated site failed" }
 
 $exe = Join-Path $Target "code\bin\Debug\net10.0\$appName.exe"
+if (-not (Test-Path -LiteralPath $exe)) {
+    # macOS and Linux build the app host without an extension.
+    $exe = Join-Path $Target "code/bin/Debug/net10.0/$appName"
+}
 if (-not (Test-Path -LiteralPath $exe)) { throw "Built program not found: $exe" }
 
 # 4. Start on a free loopback port.

@@ -808,6 +808,22 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
 
     public bool IsBadgeFormat => Format == ViewFormat.Badge;
 
+    /// <summary>Only number columns can hold dates as numbers; date and text columns hold them as text.</summary>
+    public bool CanStoreDates => Field is { Type: FieldType.Integer or FieldType.Decimal };
+
+    /// <summary>How a number column holds dates, used by the reports to group by month, filter by date and fill calendars.</summary>
+    public DateStorage DateStorage
+    {
+        get => Field?.DateStorage ?? DateStorage.Text;
+        set
+        {
+            if (Field is { } selected && CanStoreDates)
+            {
+                Put(selected.DateStorage, value, v => selected.DateStorage = v);
+            }
+        }
+    }
+
     public ValueRule? SelectedRule
     {
         get => _selectedRule;

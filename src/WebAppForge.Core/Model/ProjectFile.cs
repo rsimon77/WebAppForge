@@ -88,7 +88,8 @@ public static class ProjectFile
                     new XAttribute("inView", field.ShowInView),
                     new XAttribute("inAdd", field.ShowInAdd),
                     new XAttribute("inEdit", field.ShowInEdit),
-                    new XAttribute("searchable", field.Searchable));
+                    new XAttribute("searchable", field.Searchable),
+                    field.DateStorage != DateStorage.Text ? new XAttribute("dateStorage", field.DateStorage.ToString()) : null);
                 CustomizationXml.AppendFieldUi(fieldElement, field.Ui);
                 tableElement.Add(fieldElement);
             }
@@ -115,6 +116,7 @@ public static class ProjectFile
 
         LocalizationXml.Append(root, project.Localization);
         CustomizationXml.AppendMeta(root, project.Meta);
+        ReportXml.Append(root, project.Reports);
 
         return new XDocument(new XDeclaration("1.0", "utf-8", null), root);
     }
@@ -249,6 +251,7 @@ public static class ProjectFile
                     ShowInEdit = ReadBool(fieldElement, "inEdit", true),
                     Searchable = ReadBool(fieldElement, "searchable", true),
                     Ui = CustomizationXml.ReadFieldUi(fieldElement),
+                    DateStorage = Enum.TryParse<DateStorage>(fieldElement.Attribute("dateStorage")?.Value, out var storage) && Enum.IsDefined(storage) ? storage : DateStorage.Text,
                 });
             }
 
@@ -257,6 +260,8 @@ public static class ProjectFile
 
             project.Tables.Add(table);
         }
+
+        ReportXml.Read(root, project.Reports);
 
         return project;
     }

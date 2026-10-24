@@ -55,7 +55,39 @@ public static class UiStrings
         new("passwordChanged", "Your password has been changed."),
     ];
 
-    private static readonly Dictionary<string, UiString> ById = All.ToDictionary(s => s.Id);
+    /// <summary>
+    /// Fixed texts of the report pages. They are kept apart from <see cref="All"/> so that the translation store of a project without
+    /// reports stays as it was; <see cref="LocalizationKeys.Enumerate"/> adds them only when a report is generated.
+    /// </summary>
+    public static IReadOnlyList<UiString> Reports { get; } =
+    [
+        new("reportTotal", "Total"),
+        new("reportGrandTotal", "Grand total"),
+        new("reportEmpty", "(empty)"),
+        new("reportNoData", "No data."),
+        new("reportMoreColumns", "Only the first {0} columns are shown; the totals include every column."),
+        new("reportMoreRows", "Only the first {0} rows are listed; the totals include every row."),
+        new("reportPrevious", "Previous"),
+        new("reportNext", "Next"),
+        new("reportThisMonth", "This month"),
+        new("reportValue", "Value"),
+        new("reportCount", "Count"),
+        new("reportSum", "Sum"),
+        new("reportAverage", "Average"),
+        new("reportMin", "Min"),
+        new("reportMax", "Max"),
+        new("reportOf", "{0} of {1}"),
+        new("reports", "Reports"),
+        new("reportFrom", "From"),
+        new("reportTo", "To"),
+        new("reportApply", "Apply"),
+        new("reportClear", "Clear"),
+        new("reportAll", "(all)"),
+        new("reportRowCount", "{0} rows"),
+        new("reportBack", "Back to the report"),
+    ];
+
+    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).ToDictionary(s => s.Id);
 
     /// <summary>The English text of a UI string. Throws for an unknown id, which is a bug in the generator.</summary>
     public static string English(string id) =>

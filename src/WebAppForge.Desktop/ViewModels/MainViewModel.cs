@@ -15,7 +15,7 @@ namespace WebAppForge.Desktop.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     /// <summary>Tab names in TabControl order. <see cref="ActiveTabIndex"/> indexes this list.</summary>
-    public static IReadOnlyList<string> TabNames { get; } = ["Database", "Tables", "Fields", "ASP.NET", "Security", "Generate", "Project", "Pages", "Languages", "Relations"];
+    public static IReadOnlyList<string> TabNames { get; } = ["Database", "Tables", "Fields", "ASP.NET", "Security", "Generate", "Project", "Pages", "Languages", "Relations", "Reports"];
 
     private readonly IDialogService _dialogs;
     private readonly SettingsStore? _store;
@@ -67,6 +67,7 @@ public partial class MainViewModel : ViewModelBase
         PageDesigner = new PageDesignerViewModel(this);
         Languages = new LanguagesViewModel(this);
         Relations = new RelationsViewModel(this);
+        Reports = new ReportsViewModel(this);
 
         Settings = store?.Load() ?? new AppSettings();
         _idle = new SessionIdleTracker(TimeSpan.FromMinutes(Settings.SessionTimeoutMinutes), DateTime.UtcNow);
@@ -101,6 +102,9 @@ public partial class MainViewModel : ViewModelBase
 
     /// <summary>The Relations tab (master/detail links and their validation).</summary>
     public RelationsViewModel Relations { get; }
+
+    /// <summary>The Reports tab (summary, crosstab, chart, calendar and dashboard pages).</summary>
+    public ReportsViewModel Reports { get; }
 
     /// <summary>Build runner, site runner, translation providers and other machine services of the Generate and Languages tabs. Tests replace them.</summary>
     public ToolServices Tools { get; init; } = new();
@@ -147,6 +151,11 @@ public partial class MainViewModel : ViewModelBase
             if (tab == "Relations" && Relations.SelectedLink is { } relation && !string.IsNullOrWhiteSpace(relation.Link.DetailTable))
             {
                 parts.Add(relation.Link.DetailTable);
+            }
+
+            if (tab == "Reports" && Reports.SelectedName is { } report)
+            {
+                parts.Add(report);
             }
 
             if (tab == "Fields" && Tables.SelectedField is { } selectedField)
@@ -443,6 +452,7 @@ public partial class MainViewModel : ViewModelBase
         PageDesigner.Reload();
         Languages.Reload();
         Relations.Reload();
+        Reports.Reload();
         _savedSnapshot = Snapshot(project);
         Status = status;
     }

@@ -1,5 +1,7 @@
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Fonts.Inter;
+using Avalonia.Media;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
@@ -189,11 +191,17 @@ public class RelationsViewTests
     public void FormPagesAndRelationsStaySeparateTabsInTheTabStrip()
     {
         var (main, _) = CustomizationTests.Project();
-        var window = ShowWindow(main);
+        // The app draws with Inter (WithInterFont in Program.cs); the headless platform would fall back to a system font whose width
+        // differs per machine, so the window uses Inter here too.
+        FontManager.Current.AddFontCollection(new InterFontCollection());
+        var window = new MainWindow { DataContext = main, FontFamily = new FontFamily("fonts:Inter#Inter") };
+        window.Show();
+        Settle(window);
         var tabs = window.GetVisualDescendants().OfType<TabControl>().Single();
 
         Assert.Equal(MainViewModel.TabNames.ToArray(), tabs.Items.OfType<TabItem>().Select(t => t.Header?.ToString() ?? string.Empty).ToArray());
-        Assert.Equal("Relations", tabs.Items.OfType<TabItem>().Last().Header);
+        Assert.Contains("Relations", MainViewModel.TabNames);
+        Assert.Equal("Reports", tabs.Items.OfType<TabItem>().Last().Header);
 
         // Every tab header fits on one row of the default window; a wrapped strip would squeeze the tab content.
         Assert.All(tabs.Items.OfType<TabItem>(), t => Assert.Equal(0, t.Bounds.Y));

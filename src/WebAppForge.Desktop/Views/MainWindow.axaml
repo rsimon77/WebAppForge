@@ -9,6 +9,8 @@
     <Window.Styles>
         <!-- Pill tabs: each header is a rounded capsule; the selected one is filled with the accent colour. -->
         <Style Selector="TabControl.pills > TabItem">
+            <!-- Fluent's 24px tab headers do not fit eleven tabs on one row of the default window. -->
+            <Setter Property="FontSize" Value="16" />
             <Setter Property="Template">
                 <ControlTemplate>
                     <Border x:Name="PART_Border" CornerRadius="16" Padding="10,6" Margin="2,4"
@@ -144,6 +146,9 @@
             </TabItem>
             <TabItem Header="Relations">
                 <views:RelationsView />
+            </TabItem>
+            <TabItem Header="Reports">
+                <views:ReportsView />
             </TabItem>
         </TabControl>
     </DockPanel>
