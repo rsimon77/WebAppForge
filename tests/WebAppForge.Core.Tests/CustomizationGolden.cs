@@ -11,6 +11,9 @@ namespace WebAppForge.Core.Tests;
 /// became translatable: Permissions.cs answers in the language of the request, and the English store gained the three texts.
 /// The localized Program.cs and strings.en.json hashes were updated deliberately when project texts became translatable: the home
 /// page title is looked up under "site.title", and the English store gained that key.
+/// The localized Strings.cs, Html.cs and OrderItemsPages.cs hashes were updated deliberately when dates and numbers followed the
+/// visitor's language: Strings.cs gained the culture helpers, Html.Encode formats dates and numbers with them, and the decimal field
+/// of the order items form reads the visitor's decimal separator.
 /// </summary>
 internal static class CustomizationGolden
 {
@@ -22,7 +25,7 @@ internal static class CustomizationGolden
         localized/Endpoints/OrderLinesEndpoints.cs d4c8dfc80a951e9d
         localized/Endpoints/UsersEndpoints.cs 4dcca3ed7d874f84
         localized/LocShop.csproj 2dc238918d7c97f0
-        localized/Localization/Strings.cs 3df468507f47da20
+        localized/Localization/Strings.cs b5972768d9006d79
         localized/Localization/strings.de.json ca3d163bab055381
         localized/Localization/strings.en.json 33cb9d3eb1da7546
         localized/Models/AuditLog.cs a70a54b8072eba00
@@ -35,7 +38,7 @@ internal static class CustomizationGolden
         localized/Pages/AuthPages.cs 378f0e84f5102ce8
         localized/Pages/CodesPages.cs 807fe3ec487844ff
         localized/Pages/NotesPages.cs 430c17ea644db3e4
-        localized/Pages/OrderItemsPages.cs a6028474a0bcfb34
+        localized/Pages/OrderItemsPages.cs a1e5499b52216b04
         localized/Pages/OrderLinesPages.cs c495ab348d33be12
         localized/Pages/UserAccountPages.cs 68b4e82f64cc8414
         localized/Pages/UsersPages.cs 09192a7048838baf
@@ -44,7 +47,7 @@ internal static class CustomizationGolden
         localized/Security/Passwords.cs 41009637792cf9b8
         localized/Security/Permissions.cs 20eee32b5f140015
         localized/Web/Db.cs b5489f929792b77d
-        localized/Web/Html.cs 5d4916cd46de86d2
+        localized/Web/Html.cs a4a8cc8eefc3926e
         plain/Endpoints/AuditLogEndpoints.cs 215162fd8fe2cdaf
         plain/Endpoints/CodesEndpoints.cs 895428f2300cc5e5
         plain/Endpoints/OrderItemsEndpoints.cs d43b76ae0538af38
