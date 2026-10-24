@@ -728,6 +728,7 @@ internal static partial class Templates
         }
 
         AppendCustomStatics(sb, className, table);
+        AppendGridStatics(sb, table);
         if (Designed(table))
         {
             AppendDesignStatics(sb, table);
@@ -946,6 +947,15 @@ internal static partial class Templates
             sb.AppendLine("        {");
             sb.AppendLine("            order = \" ORDER BY \" + SortColumns[sortIndex] + (request.Query[\"dir\"].ToString() == \"desc\" ? \" DESC\" : \" ASC\") + SortTieBreak;");
             sb.AppendLine("        }");
+            if (design.FilterBuilder)
+            {
+                // The sort levels of the filter builder apply when no column header sorts the list.
+                sb.AppendLine("        else if (GridKit.Order(request, SortFields, SortColumns) is { } levels)");
+                sb.AppendLine("        {");
+                sb.AppendLine("            order = levels + SortTieBreak;");
+                sb.AppendLine("        }");
+            }
+
             sb.AppendLine();
         }
 
@@ -993,6 +1003,11 @@ internal static partial class Templates
             }
 
             sb.AppendLine("            .Append(\"</div>\");");
+        }
+
+        if (UsesGridTools(table))
+        {
+            sb.AppendLine($"        body.Append(GridKit.Panel(request, Route, GridColumns, GridSorts, {(design.FilterBuilder ? "true" : "false")}, {(design.QuickFilter ? "true" : "false")}, {(design.ResetButton ? "true" : "false")}));");
         }
 
         if (sizes.Count > 0)
@@ -1237,6 +1252,17 @@ internal static partial class Templates
         sb.AppendLine("            parameters.Add(new KeyValuePair<string, object>(name, \"%\" + value + \"%\"));");
         sb.AppendLine("        }");
         sb.AppendLine();
+        var gridDesign = table.Designs.List;
+        if (gridDesign.FilterBuilder || gridDesign.QuickFilter)
+        {
+            sb.AppendLine($"        var grid = GridKit.Where(request, GridColumns, parameters, {(gridDesign.FilterBuilder ? "true" : "false")}, {(gridDesign.QuickFilter ? "true" : "false")});");
+            sb.AppendLine("        if (grid.Length > 0)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            clauses.Add(grid);");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+        }
+
         if (IsOwned(table))
         {
             sb.AppendLine("        clauses.Add(OwnerColumn + \" = @owner\");");

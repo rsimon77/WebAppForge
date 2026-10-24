@@ -87,7 +87,44 @@ public static class UiStrings
         new("reportBack", "Back to the report"),
     ];
 
-    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).ToDictionary(s => s.Id);
+    /// <summary>
+    /// Fixed texts of the filter builder, quick filter and reset button of the list pages. Like <see cref="Reports"/> they are kept
+    /// apart from <see cref="All"/> and enumerated only when a generated list uses them.
+    /// </summary>
+    public static IReadOnlyList<UiString> Grid { get; } =
+    [
+        new("gridFilter", "Filter and sort"),
+        new("gridQuick", "Quick filter"),
+        new("gridQuickHint", "Every word must match. Use \"a phrase\", column:value or -word to leave rows out."),
+        new("gridMatch", "Match"),
+        new("gridMatchAll", "all conditions"),
+        new("gridMatchAny", "any condition"),
+        new("gridColumn", "(column)"),
+        new("gridOperator", "Operator"),
+        new("gridValue", "Value"),
+        new("gridAnd", "and"),
+        new("gridOr", "or"),
+        new("gridApply", "Apply"),
+        new("gridReset", "Reset"),
+        new("gridRemove", "Remove"),
+        new("gridSortBy", "Sort by"),
+        new("gridThenBy", "then by"),
+        new("gridNoSort", "(default order)"),
+        new("gridDirection", "Direction"),
+        new("gridAscending", "ascending"),
+        new("gridDescending", "descending"),
+        new("gridContains", "contains"),
+        new("gridNotContains", "does not contain"),
+        new("gridStartsWith", "starts with"),
+        new("gridEndsWith", "ends with"),
+        new("gridBetween", "between"),
+        new("gridIsYes", "is yes"),
+        new("gridIsNo", "is no"),
+        new("gridIsEmpty", "is empty"),
+        new("gridNotEmpty", "is not empty"),
+    ];
+
+    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).ToDictionary(s => s.Id);
 
     /// <summary>The English text of a UI string. Throws for an unknown id, which is a bug in the generator.</summary>
     public static string English(string id) =>

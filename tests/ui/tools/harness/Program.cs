@@ -367,6 +367,11 @@ static Project BuildReports(string db)
     sales.Fields.Single(f => f.Name == "paid").Type = FieldType.Boolean;
     sales.Fields.Single(f => f.Name == "day").Type = FieldType.Date;
     sales.Fields.Single(f => f.Name == "stamp").DateStorage = DateStorage.UnixSeconds;
+    // The sales list has every grid tool; grid.spec.mjs drives them.
+    sales.Designs.List.FilterBuilder = true;
+    sales.Designs.List.QuickFilter = true;
+    sales.Designs.List.ResetButton = true;
+    sales.Pages.PageSize = 50;
 
     var summary = new ReportInfo { Name = "sales", Caption = "Sales by region", SourceTable = "sales", DateFilterField = "day", MenuGroup = "Reports" };
     summary.Groups.Add(new ReportGroup { Field = "region" });

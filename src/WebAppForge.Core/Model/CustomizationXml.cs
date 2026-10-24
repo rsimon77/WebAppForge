@@ -274,6 +274,9 @@ internal static class CustomizationXml
         Bool(e, "hover", design.Hover, d.Hover);
         Bool(e, "bordered", design.Bordered, d.Bordered);
         Bool(e, "showActionsFirst", design.ShowActionsFirst, d.ShowActionsFirst);
+        Bool(e, "filterBuilder", design.FilterBuilder, d.FilterBuilder);
+        Bool(e, "quickFilter", design.QuickFilter, d.QuickFilter);
+        Bool(e, "resetButton", design.ResetButton, d.ResetButton);
         Str(e, "addButtonText", design.AddButtonText, d.AddButtonText);
         Str(e, "emptyText", design.EmptyText, d.EmptyText);
 
@@ -321,6 +324,9 @@ internal static class CustomizationXml
         design.Hover = ReadBool(e, "hover", d.Hover);
         design.Bordered = ReadBool(e, "bordered", d.Bordered);
         design.ShowActionsFirst = ReadBool(e, "showActionsFirst", d.ShowActionsFirst);
+        design.FilterBuilder = ReadBool(e, "filterBuilder", d.FilterBuilder);
+        design.QuickFilter = ReadBool(e, "quickFilter", d.QuickFilter);
+        design.ResetButton = ReadBool(e, "resetButton", d.ResetButton);
         design.AddButtonText = ReadStr(e, "addButtonText", d.AddButtonText);
         design.EmptyText = ReadStr(e, "emptyText", d.EmptyText);
 

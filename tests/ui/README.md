@@ -11,7 +11,7 @@ ASP.NET Core site in a real browser. They do not drive the Avalonia desktop wind
 | `tools/harness/` | Console project (references `src\WebAppForge.Core`). Recreates the SQLite database for a scenario and calls `ProjectGenerator.Generate` |
 | `tools/generate-site.ps1` | Harness, then `dotnet build` of the generated site, then start it on a free port |
 | `tools/stop-site.ps1` | Stops the site started for a target folder |
-| `specs/*.spec.mjs` | Test files. `shop.spec.mjs` uses `UI_BASE_URL`; `secure-*.spec.mjs` use `UI_SECURE_BASE_URL`; `designed.spec.mjs` uses `UI_DESIGNED_BASE_URL`; `relations.spec.mjs` uses `UI_RELATIONS_BASE_URL`; `reports.spec.mjs` uses `UI_REPORTS_BASE_URL` |
+| `specs/*.spec.mjs` | Test files. `shop.spec.mjs` uses `UI_BASE_URL`; `secure-*.spec.mjs` use `UI_SECURE_BASE_URL`; `designed.spec.mjs` uses `UI_DESIGNED_BASE_URL`; `relations.spec.mjs` uses `UI_RELATIONS_BASE_URL`; `reports.spec.mjs` and `grid.spec.mjs` use `UI_REPORTS_BASE_URL` |
 | `.sites/` | Generated sites, databases and logs (recreated on each run) |
 
 Scenarios:
@@ -36,7 +36,8 @@ Scenarios:
 - `reports`: `regions` (North, South, West) and `sales` (24 rows; sale n has region N/S/W in turn, month (n-1)/4+1 of 2024
   on day 3, 10, 17 or 24, amount n * 10.5, paid when n is even, and a Unix-time `stamp` column). Reports: a summary by
   region and month with a date range, region and paid pick lists and drill-down; a chart of the stamp by month; a
-  crosstab of region by paid; a calendar with a region filter; a dashboard. No login. The tests only read data.
+  crosstab of region by paid; a calendar with a region filter; a dashboard. The sales list has the filter and sort panel,
+  the quick filter and the reset button (`grid.spec.mjs`). No login. The tests only read data.
 
 ## Commands
 
@@ -84,8 +85,8 @@ recreates them, so the seed data is the same on every run. Run a single file wit
 
 ## Notes
 
-- `reports.spec.mjs` does not import `helpers.mjs`, so it runs alone:
-  `$env:UI_REPORTS_BASE_URL=...; npx playwright test specs/reports.spec.mjs`. Its charts are server-side SVG, so it does not
+- `reports.spec.mjs` and `grid.spec.mjs` do not import `helpers.mjs`, so they run alone:
+  `$env:UI_REPORTS_BASE_URL=...; npx playwright test specs/reports.spec.mjs specs/grid.spec.mjs`. Its charts are server-side SVG, so it does not
   need the Bootstrap script from the CDN. `generate-site.ps1` starts the extensionless app host on macOS and Linux.
 
 - Lockout state is kept in memory per site process. `secure-lockout.spec.mjs` uses a freshly registered user, so the

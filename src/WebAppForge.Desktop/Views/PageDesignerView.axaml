@@ -279,6 +279,15 @@
                                 <CheckBox Content="Bordered" Margin="0,0,16,0" IsChecked="{Binding Bordered}" AutomationProperties.AutomationId="BorderedCheck" />
                                 <CheckBox Content="Actions first" IsChecked="{Binding ShowActionsFirst}" AutomationProperties.AutomationId="ActionsFirstCheck" />
                             </WrapPanel>
+                            <TextBlock Classes="label" Text="Searching, filtering and sorting" />
+                            <WrapPanel>
+                                <CheckBox Content="Filter and sort builder" Margin="0,0,16,0" IsChecked="{Binding FilterBuilder}" AutomationProperties.AutomationId="FilterBuilderCheck"
+                                          ToolTip.Tip="Conditions per column (contains, =, &gt;, between, empty...) joined by all or any, and up to three sort levels." />
+                                <CheckBox Content="Quick filter box" Margin="0,0,16,0" IsChecked="{Binding QuickFilter}" AutomationProperties.AutomationId="QuickFilterCheck"
+                                          ToolTip.Tip="Every word must match some column. &quot;Phrases&quot;, column:value and -word (leave out) are understood." />
+                                <CheckBox Content="Reset button" IsChecked="{Binding ResetButton}" AutomationProperties.AutomationId="ResetButtonCheck"
+                                          ToolTip.Tip="Clears the search, the filters and the sorting of the list." />
+                            </WrapPanel>
                             <TextBlock Classes="label" Text="Page size options (comma list, for example 10, 25, 50)" />
                             <TextBox Text="{Binding PageSizeOptionsText}" AutomationProperties.AutomationId="PageSizeOptionsBox" />
                             <TextBlock Classes="label" Text="Add button text" />

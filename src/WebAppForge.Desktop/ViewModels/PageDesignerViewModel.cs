@@ -536,6 +536,24 @@ public partial class PageDesignerViewModel : EditorViewModelBase
         return (sizes, null);
     }
 
+    public bool FilterBuilder
+    {
+        get => Design?.FilterBuilder ?? false;
+        set => SetDesign(value, d => d.FilterBuilder, (d, v) => d.FilterBuilder = v);
+    }
+
+    public bool QuickFilter
+    {
+        get => Design?.QuickFilter ?? false;
+        set => SetDesign(value, d => d.QuickFilter, (d, v) => d.QuickFilter = v);
+    }
+
+    public bool ResetButton
+    {
+        get => Design?.ResetButton ?? false;
+        set => SetDesign(value, d => d.ResetButton, (d, v) => d.ResetButton = v);
+    }
+
     public bool StickyHeader
     {
         get => Design?.StickyHeader ?? false;
