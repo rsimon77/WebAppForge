@@ -87,9 +87,9 @@ nothing about the dialect work.
   tools, master/detail with integrity, reports, login with lockout, and the editor's report preview. Tests run every
   feature against real SQL Server 2022 and MySQL 8.4 when `WEBAPPFORGE_SQLSERVER` and `WEBAPPFORGE_MYSQL` are set.
 - Each new database needs a dialect, a schema reader and a run of the server tests.
-- The last identity value on SQL Server is read with `@@IDENTITY`, because the insert runs as an earlier command on the
-  same connection. A trigger on the table that inserts into another identity table would make it return the wrong
-  value; `OUTPUT INSERTED` would avoid that if it ever matters.
+- On SQL Server an insert returns its identity in the same batch (`SELECT CAST(SCOPE_IDENTITY() AS bigint)` after the
+  INSERT), so identity values that triggers create in other tables are ignored. `OUTPUT INSERTED` is not used because
+  SQL Server refuses it on tables with triggers. A test inserts into a table whose trigger writes to an audit table.
 - On MySQL, a cascade or set-null rule from a table to itself fails with error 1093, because MySQL cannot update a table
   that a subquery of the same statement reads.
 - Revisit EF Core when Pomelo supports the .NET version the sites target, or when users ask for a `DbContext` to extend

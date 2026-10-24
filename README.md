@@ -69,6 +69,9 @@ export WEBAPPFORGE_SQLSERVER='Server=127.0.0.1,1433;User ID=sa;Password=Forge-Te
 export WEBAPPFORGE_MYSQL='Server=127.0.0.1;Port=3306;User ID=root;Password=forge-test-42'
 dotnet test WebAppForge.slnx
 ```
+
+The CI workflow in `.github/workflows/ci.yml` runs the strict build and the Core and Desktop tests, with Northwind, SQL
+Server and MySQL, on every push to and pull request into `develop` and `main`.
  The report tests generate a Northwind site with every
 report kind and check its numbers against the database. The FlaUI tests need Windows and a built desktop app. The browser tests in
 `tests/ui` need Node.js; see its README.

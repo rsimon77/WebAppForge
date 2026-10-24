@@ -76,6 +76,12 @@ internal abstract class SqlDialect
     /// <summary>SQL that returns the identity value of the last insert on the same connection.</summary>
     public abstract string LastInsertId { get; }
 
+    /// <summary>
+    /// SQL appended to an INSERT so that the same batch returns the new identity value, or null when <see cref="LastInsertId"/> can
+    /// run as a command of its own (SQL Server's SCOPE_IDENTITY() only sees inserts of its own batch).
+    /// </summary>
+    public virtual string? IdentityAfterInsert => null;
+
     /// <summary>True when GROUP BY can name select-list positions and subqueries (not SQL Server).</summary>
     public virtual bool GroupsByPosition => true;
 
@@ -223,8 +229,12 @@ internal abstract class SqlDialect
 
         public override string Limit(int rows) => string.Empty;
 
-        // @@IDENTITY, not SCOPE_IDENTITY(): the insert ran as an earlier command of the connection, so it is out of scope here.
-        public override string LastInsertId => "SELECT CAST(@@IDENTITY AS bigint)";
+        // Inserts return their identity in the same batch (IdentityAfterInsert); this is only the fallback.
+        public override string LastInsertId => "SELECT CAST(SCOPE_IDENTITY() AS bigint)";
+
+        // SCOPE_IDENTITY() ignores identity values that triggers create in other tables, unlike @@IDENTITY. OUTPUT INSERTED is
+        // not used, because SQL Server refuses it on a table with triggers.
+        public override string? IdentityAfterInsert => "; SELECT CAST(SCOPE_IDENTITY() AS bigint)";
 
         public override bool GroupsByPosition => false;
 

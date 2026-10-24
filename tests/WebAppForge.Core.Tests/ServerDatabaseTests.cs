@@ -148,7 +148,8 @@ public abstract class ServerSite : ReportSiteBase
         sales.Designs.List.QuickFilter = true;
         sales.Designs.List.ResetButton = true;
 
-        var lines = new DetailLink { DetailTable = "order_lines", OnDelete = DeleteRule.Cascade, FilterAndSort = true };
+        // After a new order is saved its edit page opens, so the redirect shows which identity value the site read.
+        var lines = new DetailLink { DetailTable = "order_lines", OnDelete = DeleteRule.Cascade, FilterAndSort = true, ShowOnAdd = true };
         lines.Links.Add(new KeyLink { MasterField = "id", DetailField = "order_id" });
         T("orders").Details.Add(lines);
 
@@ -234,7 +235,9 @@ public sealed class SqlServerSite : ServerSite
             version rowversion, total AS (amount * 2));
         CREATE TABLE orders (id int IDENTITY(1,1) PRIMARY KEY, customer nvarchar(100) NOT NULL, placed datetime2 NULL);
         CREATE TABLE order_lines (id int IDENTITY(1,1) PRIMARY KEY, order_id int NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
-            product nvarchar(100) NOT NULL, qty int NOT NULL DEFAULT 1)
+            product nvarchar(100) NOT NULL, qty int NOT NULL DEFAULT 1);
+        CREATE TABLE audit (id int IDENTITY(1000,1) PRIMARY KEY, what nvarchar(50) NOT NULL);
+        CREATE TRIGGER orders_audit ON orders AFTER INSERT AS INSERT INTO audit (what) SELECT 'order' FROM inserted
         """;
 }
 
@@ -250,7 +253,9 @@ public sealed class MySqlSite : ServerSite
             total DECIMAL(12,2) GENERATED ALWAYS AS (amount * 2) VIRTUAL, FOREIGN KEY (region) REFERENCES regions (code));
         CREATE TABLE orders (id INT AUTO_INCREMENT PRIMARY KEY, customer VARCHAR(100) NOT NULL, placed DATETIME NULL);
         CREATE TABLE order_lines (id INT AUTO_INCREMENT PRIMARY KEY, order_id INT NOT NULL, product VARCHAR(100) NOT NULL, qty INT NOT NULL DEFAULT 1,
-            FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE)
+            FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE);
+        CREATE TABLE audit (id INT AUTO_INCREMENT PRIMARY KEY, what VARCHAR(50) NOT NULL) AUTO_INCREMENT = 1000;
+        CREATE TRIGGER orders_audit AFTER INSERT ON orders FOR EACH ROW INSERT INTO audit (what) VALUES ('order')
         """;
 }
 
@@ -272,7 +277,7 @@ public abstract class ServerSiteTests<TSite> where TSite : ServerSite
         }
 
         var tables = _site.SchemaTables;
-        Assert.Equal(["order_lines", "orders", "regions", "sales", "users"], tables.Select(t => t.Name).Order(StringComparer.Ordinal));
+        Assert.Equal(["audit", "order_lines", "orders", "regions", "sales", "users"], tables.Select(t => t.Name).Order(StringComparer.Ordinal));
         var sales = tables.Single(t => t.Name == "sales");
         Assert.Equal(["id", "owner", "region", "day", "amount", "paid", "note", "stamp", "photo"], sales.Fields.Select(f => f.Name));
         FieldType TypeOf(string name) => sales.Fields.Single(f => f.Name == name).Type;
@@ -435,6 +440,15 @@ public abstract class ServerSiteTests<TSite> where TSite : ServerSite
         using var added = await _site.PostFormAsync(ann, "/orders/add", "/orders/add", new() { ["customer"] = "Form & Co", ["placed"] = "2024-08-01T09:15" });
         Assert.Equal(HttpStatusCode.Redirect, added.StatusCode);
         var id = Convert.ToInt64(await _site.Scalar("SELECT MAX(id) FROM orders"));
+
+        // The insert trigger also creates an audit row (identity from 1000); the site must read the order's own identity.
+        Assert.True(Convert.ToInt64(await _site.Scalar("SELECT MAX(id) FROM audit")) >= 1000);
+        Assert.StartsWith($"/orders/edit/{id}", added.Headers.Location?.OriginalString);
+        using var api = await ann.PostAsJsonAsync("/api/orders", new { customer = "Api order", placed = (string?)null });
+        Assert.Equal(HttpStatusCode.Created, api.StatusCode);
+        var apiId = (await api.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt64();
+        Assert.Equal(Convert.ToInt64(await _site.Scalar("SELECT MAX(id) FROM orders")), apiId);
+        Assert.Equal("Api order", Convert.ToString(await _site.Scalar($"SELECT customer FROM orders WHERE id = {apiId}")));
         Assert.Equal("Form & Co", Convert.ToString(await _site.Scalar($"SELECT customer FROM orders WHERE id = {id}")));
         Assert.Contains("Form &amp; Co", await ann.GetStringAsync($"/orders/view/{id}"));
 

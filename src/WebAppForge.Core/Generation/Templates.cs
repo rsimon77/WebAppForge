@@ -618,10 +618,19 @@ internal static partial class Templates
             sb.AppendLine("            await using var connection = new SqliteConnection(connectionString);");
             sb.AppendLine("            await connection.OpenAsync();");
             sb.AppendLine("            await using var command = connection.CreateCommand();");
-            sb.AppendLine($"            command.CommandText = {Lit(InsertSql(table, insertFields))};");
+            var identityInBatch = keys.Count == 1 && keys[0].IsAutoIncrement && Db.IdentityAfterInsert is not null;
+            sb.AppendLine($"            command.CommandText = {Lit(InsertSql(table, insertFields) + (identityInBatch ? Db.IdentityAfterInsert : string.Empty))};");
             AppendParameters(sb, insertFields, "item", className, "            ");
-            sb.AppendLine("            await command.ExecuteNonQueryAsync();");
-            if (keys.Count == 1 && keys[0].IsAutoIncrement)
+            if (identityInBatch)
+            {
+                sb.AppendLine($"            item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await command.ExecuteScalarAsync());");
+            }
+            else
+            {
+                sb.AppendLine("            await command.ExecuteNonQueryAsync();");
+            }
+
+            if (keys.Count == 1 && keys[0].IsAutoIncrement && !identityInBatch)
             {
                 sb.AppendLine($"            command.CommandText = {Lit(Db.LastInsertId)};");
                 sb.AppendLine($"            item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await command.ExecuteScalarAsync());");
@@ -1504,7 +1513,8 @@ internal static partial class Templates
         {
             // A new master record opens its edit page, so detail rows can be added right away.
             var keys = table.PrimaryKeys;
-            if (keys.Count == 1 && keys[0].IsAutoIncrement)
+            // InsertItem already read the identity when the dialect returns it from the insert itself.
+            if (keys.Count == 1 && keys[0].IsAutoIncrement && Db.IdentityAfterInsert is null)
             {
                 sb.AppendLine("        await using (var idCommand = connection.CreateCommand())");
                 sb.AppendLine("        {");
@@ -1824,9 +1834,13 @@ internal static partial class Templates
         sb.AppendLine($"    private static async Task InsertItem(SqliteConnection connection, {className} item)");
         sb.AppendLine("    {");
         sb.AppendLine("        await using var command = connection.CreateCommand();");
-        sb.AppendLine($"        command.CommandText = {Lit(InsertSql(table, insertFields))};");
+        var keys = table.PrimaryKeys;
+        var identityInBatch = keys.Count == 1 && keys[0].IsAutoIncrement && Db.IdentityAfterInsert is not null;
+        sb.AppendLine($"        command.CommandText = {Lit(InsertSql(table, insertFields) + (identityInBatch ? Db.IdentityAfterInsert : string.Empty))};");
         AppendParameters(sb, insertFields, "item", className, "        ");
-        sb.AppendLine("        await command.ExecuteNonQueryAsync();");
+        sb.AppendLine(identityInBatch
+            ? $"        item.{PropName(className, keys[0])} = ({CSharpType(keys[0], forceNonNull: true)})Convert.ToInt64(await command.ExecuteScalarAsync());"
+            : "        await command.ExecuteNonQueryAsync();");
         sb.AppendLine("    }");
         sb.AppendLine();
     }

@@ -22,7 +22,8 @@
 
 2. Commit your work in small, focused commits.
 3. Push the branch and open a pull request **into `develop`**.
-4. Make sure the build and tests pass locally before asking for review (see below).
+4. Make sure the build and tests pass locally before asking for review (see below). CI runs them again on the pull
+   request, including the SQL Server and MySQL tests.
 5. Merge the pull request into `develop`, then delete the branch.
 
 Never commit directly to `develop` or `main`, and never branch from `main` for regular work.
