@@ -89,6 +89,9 @@ public sealed class DetailLink
 
     public bool AllowDelete { get; set; } = true;
 
+    /// <summary>A quick filter box, sortable column headers and a reset link above the grid on the master's view page.</summary>
+    public bool FilterAndSort { get; set; }
+
     /// <summary>Name of the form page (see <see cref="FormPageDef"/>) that hosts the grid. Empty = below the form.</summary>
     public string FormPage { get; set; } = string.Empty;
 }

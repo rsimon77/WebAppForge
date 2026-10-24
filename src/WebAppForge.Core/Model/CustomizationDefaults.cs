@@ -87,6 +87,9 @@ internal static class CustomizationDefaults
             && design.Hover == d.Hover
             && design.Bordered == d.Bordered
             && design.ShowActionsFirst == d.ShowActionsFirst
+            && design.FilterBuilder == d.FilterBuilder
+            && design.QuickFilter == d.QuickFilter
+            && design.ResetButton == d.ResetButton
             && design.AddButtonText == d.AddButtonText
             && design.EmptyText == d.EmptyText;
     }

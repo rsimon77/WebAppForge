@@ -96,6 +96,8 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
 
     protected override void Changed()
     {
+        RaisePreview();
+        OnPropertyChanged(nameof(ShowOptionsSection));
         OnPropertyChanged(nameof(FormatPreview));
         OnPropertyChanged(nameof(PatternTest));
         OnPropertyChanged(nameof(ShowOptions));
@@ -357,6 +359,102 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
 
     /// <summary>Static options (and the lookup) apply to select and radio controls.</summary>
     public bool ShowOptions => Control is EditControl.Select or EditControl.Radio;
+
+    // ---- sections (the inner tabs of the inspector) ----
+
+    /// <summary>The sections of the inspector, shown one at a time.</summary>
+    public static IReadOnlyList<string> Sections { get; } = ["General", "Editing", "Validation", "Display", "Style"];
+
+    private string _section = "General";
+
+    /// <summary>The section on show. Setting an unknown name is ignored.</summary>
+    public string Section
+    {
+        get => _section;
+        set
+        {
+            if (value is null || !Sections.Contains(value) || _section == value)
+            {
+                return;
+            }
+
+            _section = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ShowGeneral));
+            OnPropertyChanged(nameof(ShowEditing));
+            OnPropertyChanged(nameof(ShowOptionsSection));
+            OnPropertyChanged(nameof(ShowValidation));
+            OnPropertyChanged(nameof(ShowDisplay));
+            OnPropertyChanged(nameof(ShowStyle));
+        }
+    }
+
+    public bool ShowGeneral => _section == "General";
+
+    public bool ShowEditing => _section == "Editing";
+
+    /// <summary>Options and lookup belong to the Editing section and only to select and radio controls.</summary>
+    public bool ShowOptionsSection => ShowEditing && ShowOptions;
+
+    public bool ShowValidation => _section == "Validation";
+
+    public bool ShowDisplay => _section == "Display";
+
+    public bool ShowStyle => _section == "Style";
+
+    // ---- live preview: the field as the generated form and list show it ----
+
+    /// <summary>The edit control the generated form uses: the chosen one, or the one the field type implies for Auto.</summary>
+    public EditControl EffectiveControl => Field is not { } f ? EditControl.TextBox : Control != EditControl.Auto ? Control : f.Type switch
+    {
+        FieldType.Boolean => EditControl.Checkbox,
+        FieldType.Date => EditControl.Date,
+        FieldType.DateTime => EditControl.DateTime,
+        FieldType.Integer or FieldType.Decimal => EditControl.Number,
+        _ => EditControl.TextBox,
+    };
+
+    public string PreviewLabel => Field is not { } f ? string.Empty
+        : (string.IsNullOrWhiteSpace(f.Caption) ? f.Name : f.Caption) + (f.IsRequired ? " *" : string.Empty);
+
+    /// <summary>The placeholder, or a hint of the input for date and number controls.</summary>
+    public string PreviewPlaceholder => Placeholder.Length > 0 ? Placeholder : EffectiveControl switch
+    {
+        EditControl.Date => "yyyy-mm-dd",
+        EditControl.DateTime => "yyyy-mm-dd hh:mm",
+        EditControl.Time => "hh:mm",
+        EditControl.Number => "0",
+        EditControl.Email => "name@example.com",
+        EditControl.Url => "https://",
+        _ => string.Empty,
+    };
+
+    public bool PreviewIsCheck => EffectiveControl == EditControl.Checkbox;
+
+    public bool PreviewIsChoice => EffectiveControl is EditControl.Select or EditControl.Radio;
+
+    public bool PreviewIsArea => EffectiveControl == EditControl.TextArea;
+
+    public bool PreviewIsHidden => EffectiveControl is EditControl.Hidden or EditControl.ReadOnly;
+
+    public bool PreviewIsInput => !PreviewIsCheck && !PreviewIsChoice && !PreviewIsArea && !PreviewIsHidden;
+
+    /// <summary>What the form shows instead of an input for hidden and read-only fields.</summary>
+    public string PreviewHiddenText => EffectiveControl == EditControl.Hidden ? "Not shown in the form" : "Shown as text, not editable";
+
+    public bool PreviewHasHelp => HelpText.Length > 0;
+
+    private void RaisePreview()
+    {
+        foreach (var name in new[]
+                 {
+                     nameof(EffectiveControl), nameof(PreviewLabel), nameof(PreviewPlaceholder), nameof(PreviewIsCheck), nameof(PreviewIsChoice),
+                     nameof(PreviewIsArea), nameof(PreviewIsHidden), nameof(PreviewIsInput), nameof(PreviewHiddenText), nameof(PreviewHasHelp),
+                 })
+        {
+            OnPropertyChanged(name);
+        }
+    }
 
     public FieldOption? SelectedOption
     {
@@ -807,6 +905,22 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
     public bool IsBooleanFormat => Field is { } f && (f.Type == FieldType.Boolean || f.Ui.Format == ViewFormat.Boolean);
 
     public bool IsBadgeFormat => Format == ViewFormat.Badge;
+
+    /// <summary>Only number columns can hold dates as numbers; date and text columns hold them as text.</summary>
+    public bool CanStoreDates => Field is { Type: FieldType.Integer or FieldType.Decimal };
+
+    /// <summary>How a number column holds dates, used by the reports to group by month, filter by date and fill calendars.</summary>
+    public DateStorage DateStorage
+    {
+        get => Field?.DateStorage ?? DateStorage.Text;
+        set
+        {
+            if (Field is { } selected && CanStoreDates)
+            {
+                Put(selected.DateStorage, value, v => selected.DateStorage = v);
+            }
+        }
+    }
 
     public ValueRule? SelectedRule
     {

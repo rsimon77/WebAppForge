@@ -1,5 +1,7 @@
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Fonts.Inter;
+using Avalonia.Media;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
@@ -55,6 +57,7 @@ public class RelationsViewTests
         Find<ComboBox>(window, "OnDeleteCombo")!.SelectedItem = main.Relations.DeleteRuleOptions.Single(o => o.Rule == DeleteRule.Cascade);
         Find<ComboBox>(window, "PreviewModeCombo")!.SelectedItem = main.Relations.PreviewChoices.Single(c => c.Value == DetailPreview.Modal);
         Find<TextBox>(window, "DetailPageSizeBox")!.Text = "50";
+        Find<CheckBox>(window, "DetailFilterAndSortCheck")!.IsChecked = true;
         Settle(window);
 
         Assert.Equal("Customer orders", link.Caption);
@@ -62,6 +65,7 @@ public class RelationsViewTests
         Assert.Equal(DeleteRule.Cascade, link.OnDelete);
         Assert.Equal(DetailPreview.Modal, link.Preview);
         Assert.Equal(50, link.PageSize);
+        Assert.True(link.FilterAndSort);
         Assert.True(HasVisibleText(window, "Delete the detail records together with the master record, in one transaction."));
 
         Find<TextBox>(window, "DetailPageSizeBox")!.Text = "500";
@@ -186,17 +190,24 @@ public class RelationsViewTests
     }
 
     [AvaloniaFact]
-    public void FormPagesAndRelationsStaySeparateTabsInTheTabStrip()
+    public void FormPagesAndRelationsStaySeparateSectionsInTheSidebar()
     {
         var (main, _) = CustomizationTests.Project();
-        var window = ShowWindow(main);
+        // The app draws with Inter (WithInterFont in Program.cs); the headless platform would fall back to a system font whose width
+        // differs per machine, so the window uses Inter here too.
+        FontManager.Current.AddFontCollection(new InterFontCollection());
+        var window = new MainWindow { DataContext = main, FontFamily = new FontFamily("fonts:Inter#Inter") };
+        window.Show();
+        Settle(window);
         var tabs = window.GetVisualDescendants().OfType<TabControl>().Single();
 
-        Assert.Equal(MainViewModel.TabNames.ToArray(), tabs.Items.OfType<TabItem>().Select(t => t.Header?.ToString() ?? string.Empty).ToArray());
-        Assert.Equal("Relations", tabs.Items.OfType<TabItem>().Last().Header);
+        var headers = tabs.Items.OfType<TabItem>().Select(t => t.Header?.ToString() ?? string.Empty).ToList();
+        Assert.Equal(MainViewModel.TabNames.ToArray(), headers.ToArray());
 
-        // Every tab header fits on one row of the default window; a wrapped strip would squeeze the tab content.
-        Assert.All(tabs.Items.OfType<TabItem>(), t => Assert.Equal(0, t.Bounds.Y));
+        // Form pages live on the Pages section and links on Relations: two sidebar entries, data before site.
+        Assert.True(headers.IndexOf("Relations") < headers.IndexOf("Pages"));
+        Assert.Single(headers, h => h == "Relations");
+        Assert.Single(headers, h => h == "Pages");
     }
 
     private static T? Find<T>(Window window, string automationId) where T : Control

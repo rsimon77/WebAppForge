@@ -41,6 +41,9 @@ public sealed class ProjectGenerator
         var tables = project.Tables.Where(t => t.Generate).ToList();
         var copies = tables.Select(t => GeneratedCopy(t, project.Security)).ToList();
         Templates.MdTables = copies;
+        ReportValidator.Validate(project, copies);
+        var reports = project.Reports.Where(r => r.Generate).ToList();
+        Templates.Reports = reports;
         var files = new Dictionary<string, string>
         {
             [$"{ns}.csproj"] = Templates.Csproj(SqliteVersion, project.Meta),
@@ -59,6 +62,12 @@ public sealed class ProjectGenerator
         if (tables.Any(Templates.Designed) || copies.Any(Templates.UsesPreviewContainers))
         {
             files["Web/PageKit.cs"] = Templates.PageKitRuntime(ns);
+        }
+
+        // The filter builder, quick filter and reset button have their own runtime, written only when a list or detail grid uses them.
+        if (Templates.UsesGridKit(copies))
+        {
+            files["Web/GridKit.cs"] = Templates.GridKitRuntime(ns);
         }
 
         // Multi-page forms need their own runtime, written only when a table splits a page into pages.
@@ -109,8 +118,14 @@ public sealed class ProjectGenerator
             AddLoginFiles(files, ns, project.Security, tables);
         }
 
+        if (reports.Count > 0)
+        {
+            AddReportFiles(files, ns, project.Security, reports, copies);
+        }
+
         Templates.Localized = false;
         Templates.MdTables = [];
+        Templates.Reports = [];
         if (localized)
         {
             foreach (var (path, content) in Localization.LocalizedSite.Files(ns, project))
@@ -236,6 +251,23 @@ public sealed class ProjectGenerator
         }
 
         return copy;
+    }
+
+    /// <summary>
+    /// Adds Web/ReportKit.cs and one Reports/{Name}Report.cs per report. A report reads the generated copy of its table, so the
+    /// fields the site hides stay hidden and the table's owner and view level apply. User Level security also needs Permissions.cs.
+    /// </summary>
+    private static void AddReportFiles(Dictionary<string, string> files, string ns, SecuritySettings security, IReadOnlyList<ReportInfo> reports, IReadOnlyList<TableInfo> copies)
+    {
+        var levelSecured = HasUserLevelSecurity(security);
+        var resolved = reports
+            .Select(r => (Report: r, Table: r.Kind == ReportKind.Dashboard ? null : copies.First(t => string.Equals(t.Name, r.SourceTable.Trim(), StringComparison.OrdinalIgnoreCase))))
+            .ToList();
+        files["Web/ReportKit.cs"] = Templates.ReportKitRuntime(ns);
+        foreach (var (report, table) in resolved)
+        {
+            files[$"Reports/{Templates.ReportClass(report)}.cs"] = Templates.ReportPage(ns, report, table, resolved, levelSecured);
+        }
     }
 
     /// <summary>True when User Level security is on: login is enabled and a user level field is named.</summary>

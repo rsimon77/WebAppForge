@@ -28,6 +28,7 @@ public class MasterDetailXmlTests
         Assert.False(detail.AllowAdd);
         Assert.False(detail.AllowEdit);
         Assert.False(detail.AllowDelete);
+        Assert.True(detail.FilterAndSort);
         Assert.Equal("Items", detail.FormPage);
         Assert.Equal(["order_id", "region"], detail.Links.Select(l => l.DetailField));
         Assert.Equal(["id", "region_code"], detail.Links.Select(l => l.MasterField));
@@ -75,7 +76,7 @@ public class MasterDetailXmlTests
 
         var detail = table.Element("details")!.Element("detail")!;
         Assert.Equal(
-            ["table", "caption", "showOnView", "showOnEdit", "showOnAdd", "preview", "onDelete", "onUpdate", "pageSize", "allowAdd", "allowEdit", "allowDelete", "formPage"],
+            ["table", "caption", "showOnView", "showOnEdit", "showOnAdd", "preview", "onDelete", "onUpdate", "pageSize", "allowAdd", "allowEdit", "allowDelete", "filterAndSort", "formPage"],
             detail.Attributes().Select(a => a.Name.LocalName));
         Assert.Equal(2, detail.Elements("link").Count());
         Assert.Equal("id", (string?)detail.Elements("link").First().Attribute("master"));
@@ -216,6 +217,7 @@ public class MasterDetailXmlTests
             AllowAdd = false,
             AllowEdit = false,
             AllowDelete = false,
+            FilterAndSort = true,
             FormPage = "Items",
         };
         detail.Links.Add(new KeyLink { MasterField = "id", DetailField = "order_id" });

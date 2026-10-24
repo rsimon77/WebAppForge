@@ -121,6 +121,11 @@ internal static partial class Templates
         }
 
         sb.AppendLine($"using {ns}.Pages;");
+        if (Reports.Count > 0)
+        {
+            sb.AppendLine($"using {ns}.Reports;");
+        }
+
         sb.AppendLine($"using {ns}.Web;");
         sb.AppendLine();
         sb.AppendLine("var builder = WebApplication.CreateBuilder(args);");
@@ -241,6 +246,14 @@ internal static partial class Templates
                     ? $"    ({Lit(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}, {Lit(Token(table.Ui.Icon))}),"
                     : $"    ({TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}),");
             }
+
+            foreach (var report in MenuReports())
+            {
+                sb.AppendLine(groupedMenu
+                    ? $"    ({Lit(report.MenuGroup)}, {ReportText(report)}, {Lit(ReportRoute(report))}, \"\"),"
+                    : $"    ({ReportText(report)}, {Lit(ReportRoute(report))}),");
+            }
+
             if (secure && security.AllowChangePassword)
             {
                 sb.AppendLine($"}}) + Html.Link(\"/changepassword\", {Ui("changePassword")}) + AuthPages.LogoutForm(context, antiforgery)));");
@@ -259,6 +272,11 @@ internal static partial class Templates
             var className = Identifier.Pascal(table.Name);
             sb.AppendLine($"{target}.Map{className}Endpoints(connectionString);");
             sb.AppendLine($"{target}.Map{className}Pages(connectionString);");
+        }
+
+        foreach (var report in Reports)
+        {
+            sb.AppendLine($"{target}.Map{ReportClass(report)}(connectionString);");
         }
 
         sb.AppendLine();
@@ -710,6 +728,7 @@ internal static partial class Templates
         }
 
         AppendCustomStatics(sb, className, table);
+        AppendGridStatics(sb, table);
         if (Designed(table))
         {
             AppendDesignStatics(sb, table);
@@ -928,6 +947,15 @@ internal static partial class Templates
             sb.AppendLine("        {");
             sb.AppendLine("            order = \" ORDER BY \" + SortColumns[sortIndex] + (request.Query[\"dir\"].ToString() == \"desc\" ? \" DESC\" : \" ASC\") + SortTieBreak;");
             sb.AppendLine("        }");
+            if (design.FilterBuilder)
+            {
+                // The sort levels of the filter builder apply when no column header sorts the list.
+                sb.AppendLine("        else if (GridKit.Order(request, SortFields, SortColumns) is { } levels)");
+                sb.AppendLine("        {");
+                sb.AppendLine("            order = levels + SortTieBreak;");
+                sb.AppendLine("        }");
+            }
+
             sb.AppendLine();
         }
 
@@ -975,6 +1003,11 @@ internal static partial class Templates
             }
 
             sb.AppendLine("            .Append(\"</div>\");");
+        }
+
+        if (UsesGridTools(table))
+        {
+            sb.AppendLine($"        body.Append(GridKit.Panel(request, Route, GridColumns, GridSorts, {(design.FilterBuilder ? "true" : "false")}, {(design.QuickFilter ? "true" : "false")}, {(design.ResetButton ? "true" : "false")}));");
         }
 
         if (sizes.Count > 0)
@@ -1219,6 +1252,17 @@ internal static partial class Templates
         sb.AppendLine("            parameters.Add(new KeyValuePair<string, object>(name, \"%\" + value + \"%\"));");
         sb.AppendLine("        }");
         sb.AppendLine();
+        var gridDesign = table.Designs.List;
+        if (gridDesign.FilterBuilder || gridDesign.QuickFilter)
+        {
+            sb.AppendLine($"        var grid = GridKit.Where(request, GridColumns, parameters, {(gridDesign.FilterBuilder ? "true" : "false")}, {(gridDesign.QuickFilter ? "true" : "false")});");
+            sb.AppendLine("        if (grid.Length > 0)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            clauses.Add(grid);");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+        }
+
         if (IsOwned(table))
         {
             sb.AppendLine("        clauses.Add(OwnerColumn + \" = @owner\");");
@@ -1267,7 +1311,7 @@ internal static partial class Templates
         var viewLinks = MdViewLinks(table);
         foreach (var l in viewLinks)
         {
-            sb.AppendLine($"        var md{l.Index} = await DetailGrid{l.Index}(context, connection, item, false);");
+            sb.AppendLine($"        var md{l.Index} = await DetailGrid{l.Index}(context, connection, item, false{MdToolsArg(l, true)});");
         }
 
         var (hostedGrids, belowGrids) = MdPlacement(table, viewLinks, IsPagedView(table), l => $"md{l.Index}");

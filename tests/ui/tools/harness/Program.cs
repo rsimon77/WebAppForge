@@ -1,5 +1,5 @@
 // UI test site harness. Builds a fresh SQLite database for a named scenario, then generates the ASP.NET Core
-// site for it with ProjectGenerator. Usage: harness <shop|secure|designed|relations> <siteFolder> <passwordHashFile>
+// site for it with ProjectGenerator. Usage: harness <shop|secure|designed|relations|reports> <siteFolder> <passwordHashFile>
 // The database is always recreated, so every run starts from the same seed data.
 using WebAppForge.Core.Generation;
 using WebAppForge.Core.Model;
@@ -8,7 +8,7 @@ using Microsoft.Data.Sqlite;
 
 if (args.Length != 3)
 {
-    Console.Error.WriteLine("usage: harness <shop|secure|designed|relations> <siteFolder> <passwordHashFile>");
+    Console.Error.WriteLine("usage: harness <shop|secure|designed|relations|reports> <siteFolder> <passwordHashFile>");
     return 2;
 }
 
@@ -31,6 +31,7 @@ Project project = scenario switch
     "secure" => BuildSecure(db, passwordHash),
     "designed" => BuildDesigned(db),
     "relations" => BuildRelations(db),
+    "reports" => BuildReports(db),
     _ => throw new ArgumentException($"unknown scenario '{scenario}'"),
 };
 
@@ -332,6 +333,76 @@ static Project BuildRelations(string db)
     orders.Designs.Add.MultiPage = MultiPageMode.Pills;
     orders.Designs.Edit.MultiPage = MultiPageMode.Tabs;
 
+    return project;
+}
+
+static Project BuildReports(string db)
+{
+    using (var c = Open(db))
+    {
+        Exec(c,
+            "CREATE TABLE regions (code TEXT PRIMARY KEY, title TEXT NOT NULL);" +
+            "CREATE TABLE sales (id INTEGER PRIMARY KEY AUTOINCREMENT, region TEXT NOT NULL, day TEXT NOT NULL, amount REAL NOT NULL, paid INTEGER NOT NULL, note TEXT NOT NULL, stamp INTEGER NOT NULL);" +
+            "INSERT INTO regions (code, title) VALUES ('N', 'North'), ('S', 'South'), ('W', 'West');");
+
+        // Sale n (1..24): region N, S, W in turn; month (n-1)/4+1 of 2024 on day 3, 10, 17 or 24; amount n * 10.5; paid when n is even.
+        // stamp is the same day as Unix seconds (noon UTC). reports.spec.mjs computes its expectations from this rule.
+        using var tx = c.BeginTransaction();
+        for (var n = 1; n <= 24; n++)
+        {
+            var region = "NSW"[(n - 1) % 3];
+            var day = new DateTime(2024, (n - 1) / 4 + 1, (n - 1) % 4 * 7 + 3, 12, 0, 0, DateTimeKind.Utc);
+            var amount = (n * 10.5).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            ExecTx(c, tx, $"INSERT INTO sales (region, day, amount, paid, note, stamp) VALUES ('{region}', '{day:yyyy-MM-dd}', {amount}, {(n % 2 == 0 ? 1 : 0)}, 'Sale {n:00}', {new DateTimeOffset(day).ToUnixTimeSeconds()});");
+        }
+
+        tx.Commit();
+    }
+
+    var project = new Project { Name = "reports" };
+    project.Database.Path = db;
+    project.Tables.AddRange(new SqliteSchemaReader().ReadTables($"Data Source={db}"));
+    var sales = project.Tables.Single(t => t.Name == "sales");
+    sales.Fields.Single(f => f.Name == "region").Ui.Lookup = new FieldLookup { Table = "regions", KeyField = "code", DisplayField = "title" };
+    sales.Fields.Single(f => f.Name == "paid").Type = FieldType.Boolean;
+    sales.Fields.Single(f => f.Name == "day").Type = FieldType.Date;
+    sales.Fields.Single(f => f.Name == "stamp").DateStorage = DateStorage.UnixSeconds;
+    // The sales list has every grid tool; grid.spec.mjs drives them.
+    sales.Designs.List.FilterBuilder = true;
+    sales.Designs.List.QuickFilter = true;
+    sales.Designs.List.ResetButton = true;
+    sales.Pages.PageSize = 50;
+    // The view page of a region lists its sales with the detail grid's quick filter and header sort.
+    var regionSales = new DetailLink { DetailTable = "sales", PageSize = 20, FilterAndSort = true };
+    regionSales.Links.Add(new KeyLink { MasterField = "code", DetailField = "region" });
+    project.Tables.Single(t => t.Name == "regions").Details.Add(regionSales);
+
+    var summary = new ReportInfo { Name = "sales", Caption = "Sales by region", SourceTable = "sales", DateFilterField = "day", MenuGroup = "Reports" };
+    summary.Groups.Add(new ReportGroup { Field = "region" });
+    summary.Groups.Add(new ReportGroup { Field = "day", Interval = DateInterval.Month });
+    summary.Aggregates.Add(new ReportAggregate { Function = AggregateFunction.Count });
+    summary.Aggregates.Add(new ReportAggregate { Function = AggregateFunction.Sum, Field = "amount", Caption = "Amount" });
+    summary.FilterFields.AddRange(["region", "paid"]);
+    summary.DetailColumns.AddRange(["note", "day", "amount"]);
+    project.Reports.Add(summary);
+
+    project.Reports.Add(new ReportInfo
+    {
+        Name = "monthly", Caption = "Amount per month", Kind = ReportKind.Chart, SourceTable = "sales", RowField = "stamp",
+        RowInterval = DateInterval.Month, ValueField = "amount", Function = AggregateFunction.Sum, MenuGroup = "Reports",
+    });
+    project.Reports.Add(new ReportInfo
+    {
+        Name = "grid", Caption = "Sales by region and payment", Kind = ReportKind.Crosstab, SourceTable = "sales", RowField = "region",
+        ColumnField = "paid", MenuGroup = "Reports",
+    });
+    var calendar = new ReportInfo { Name = "days", Caption = "Sales calendar", Kind = ReportKind.Calendar, SourceTable = "sales", DateField = "day", TitleField = "note", MenuGroup = "Reports" };
+    calendar.FilterFields.Add("region");
+    project.Reports.Add(calendar);
+    var board = new ReportInfo { Name = "board", Caption = "Overview", Kind = ReportKind.Dashboard, MenuGroup = "Reports" };
+    board.Items.Add(new DashboardItem { Report = "monthly", Width = 8 });
+    board.Items.Add(new DashboardItem { Report = "grid", Width = 4 });
+    project.Reports.Add(board);
     return project;
 }
 

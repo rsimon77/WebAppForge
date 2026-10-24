@@ -15,72 +15,89 @@
             <Setter Property="Background" Value="{DynamicResource RowWarningBackground}" />
         </Style>
     </UserControl.Styles>
-    <DockPanel Margin="12">
-        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7"
-                   Text="Select a row to edit its fields on the Fields tab. Muted rows are not generated; yellow rows have no primary key." />
-        <Border DockPanel.Dock="Top" IsVisible="{Binding Security.HasValidationMessage}" Padding="8" Margin="0,0,0,8"
-                BorderThickness="1" BorderBrush="#B3261E" CornerRadius="4">
-            <TextBlock Text="{Binding Security.ValidationMessage}" Foreground="#B3261E" TextWrapping="Wrap" />
+    <Grid Margin="12" RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,16,300">
+        <TextBlock Grid.ColumnSpan="3" Classes="hint" Margin="0,0,0,8"
+                   Text="Select a table to edit it on the right, or its fields on the Fields section. Muted rows are not generated; yellow rows have no primary key." />
+        <Border Grid.Row="1" Grid.ColumnSpan="3" Classes="banner error" Margin="0,0,0,8" IsVisible="{Binding Security.HasValidationMessage}">
+            <TextBlock Classes="error" Text="{Binding Security.ValidationMessage}" />
         </Border>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-            <TextBlock Text="Page size for the selected table" VerticalAlignment="Center" />
-            <ComboBox Name="PageSizeCombo" AutomationProperties.AutomationId="PageSizeCombo"
-                      ItemsSource="{Binding Tables.PageSizeChoices}"
-                      SelectedItem="{Binding Tables.SelectedPageSize, Mode=TwoWay}"
-                      IsEnabled="{Binding Tables.HasSelectedTable}"
-                      MinWidth="100" />
-        </StackPanel>
-        <DataGrid HorizontalScrollBarVisibility="Auto" Name="TablesGrid" AutomationProperties.AutomationId="TablesGrid"
+
+        <DataGrid Grid.Row="2" HorizontalScrollBarVisibility="Auto" Name="TablesGrid" AutomationProperties.AutomationId="TablesGrid"
                   ItemsSource="{Binding Tables.Items}"
                   SelectedItem="{Binding Tables.SelectedTable, Mode=TwoWay}"
                   AutoGenerateColumns="False"
                   CanUserSortColumns="True"
-                  GridLinesVisibility="All"
+                  GridLinesVisibility="Horizontal"
                   SelectionMode="Single"
                   LoadingRow="OnRowPrepared"
                   CellEditEnded="OnCellEditEnded">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Table" Binding="{Binding Name}" IsReadOnly="True" Width="*" MinWidth="120" />
+                <DataGridTextColumn Header="Table" Binding="{Binding Name}" IsReadOnly="True" Width="*" MinWidth="120" FontWeight="Medium" />
                 <DataGridCheckBoxColumn Header="Generate" Binding="{Binding Generate}" />
-                <DataGridTextColumn Header="Caption" Binding="{Binding Caption}" Width="*" MinWidth="120" />
-                <DataGridTextColumn Header="Filter (WHERE)" Binding="{Binding Filter}" Width="2*" MinWidth="120" />
-                <DataGridTemplateColumn Header="Owner field" Width="Auto">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <ComboBox ItemsSource="{Binding Converter={StaticResource OwnerFieldChoices}}"
-                                      SelectedItem="{Binding OwnerField, Mode=OneWay, Converter={StaticResource OwnerFieldDisplay}}"
-                                      SelectionChanged="OnOwnerFieldSelectionChanged"
-                                      Margin="2,0" MinWidth="140" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="View level" Width="Auto">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBox Text="{Binding ViewMinLevel, Mode=OneWay, StringFormat={}{0}}"
-                                     TextChanged="OnViewLevelTextChanged"
-                                     MinWidth="90" Margin="2,0" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Edit level" Width="Auto">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBox Text="{Binding EditMinLevel, Mode=OneWay, StringFormat={}{0}}"
-                                     TextChanged="OnEditLevelTextChanged"
-                                     MinWidth="90" Margin="2,0" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Page size" Binding="{Binding Pages.PageSize}" />
-                <DataGridCheckBoxColumn Header="List" Binding="{Binding Pages.List}" />
-                <DataGridCheckBoxColumn Header="View" Binding="{Binding Pages.View}" />
-                <DataGridCheckBoxColumn Header="Add" Binding="{Binding Pages.Add}" />
-                <DataGridCheckBoxColumn Header="Copy" Binding="{Binding Pages.Copy}" />
-                <DataGridCheckBoxColumn Header="Edit" Binding="{Binding Pages.Edit}" />
-                <DataGridCheckBoxColumn Header="Delete" Binding="{Binding Pages.Delete}" />
-                <DataGridCheckBoxColumn Header="Search" Binding="{Binding Pages.Search}" />
+                <DataGridTextColumn Header="Caption" Binding="{Binding Caption}" IsReadOnly="True" Width="*" MinWidth="120" />
+                <DataGridTextColumn Header="Key" Binding="{Binding Converter={x:Static vm:TableSummary.Key}}" IsReadOnly="True" Width="Auto" />
+                <DataGridTextColumn Header="Pages" Binding="{Binding Converter={x:Static vm:TableSummary.Pages}}" IsReadOnly="True" Width="Auto" />
+                <DataGridTextColumn Header="Fields" Binding="{Binding Converter={x:Static vm:TableSummary.FieldCount}}" IsReadOnly="True" Width="Auto" />
             </DataGrid.Columns>
         </DataGrid>
-    </DockPanel>
+
+        <!-- Inspector: every setting of the selected table. Edits write the model and refresh the table's row. -->
+        <Border Grid.Row="2" Grid.Column="2" Classes="card" Padding="0" VerticalAlignment="Top"
+                AutomationProperties.AutomationId="TableInspector">
+            <DockPanel DataContext="{Binding Tables.SelectedTable}" IsEnabled="{Binding $parent[UserControl].DataContext.Tables.HasSelectedTable}">
+                <Border DockPanel.Dock="Top" Padding="16,12" BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="0,0,0,1">
+                    <StackPanel Spacing="2">
+                        <TextBlock Classes="panelTitle" Text="{Binding Name, FallbackValue='No table selected'}" AutomationProperties.AutomationId="TableInspectorTitle" />
+                        <TextBlock Classes="hint" Text="{Binding Converter={x:Static vm:TableSummary.Details}}" />
+                    </StackPanel>
+                </Border>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="16,6,16,16">
+                        <TextBlock Classes="section" Text="GENERAL" Margin="0,8,0,0" />
+                        <TextBlock Classes="label" Text="Caption" />
+                        <TextBox Text="{Binding Caption}" LostFocus="OnInspectorEdited" AutomationProperties.AutomationId="TableCaptionBox" />
+                        <TextBlock Classes="label" Text="Filter (SQL without WHERE)" />
+                        <TextBox Text="{Binding Filter}" FontFamily="{DynamicResource CodeFontFamily}" FontSize="12"
+                                 LostFocus="OnInspectorEdited" AutomationProperties.AutomationId="TableFilterBox" />
+                        <CheckBox Content="Generate this table" IsChecked="{Binding Generate}" Click="OnInspectorEdited" Margin="0,6,0,0"
+                                  AutomationProperties.AutomationId="TableGenerateCheck" />
+
+                        <TextBlock Classes="section" Text="PAGES" Margin="0,16,0,2" />
+                        <WrapPanel>
+                            <CheckBox Content="List" IsChecked="{Binding Pages.List}" Click="OnInspectorEdited" Margin="0,0,14,0" AutomationProperties.AutomationId="TablePageListCheck" />
+                            <CheckBox Content="View" IsChecked="{Binding Pages.View}" Click="OnInspectorEdited" Margin="0,0,14,0" AutomationProperties.AutomationId="TablePageViewCheck" />
+                            <CheckBox Content="Add" IsChecked="{Binding Pages.Add}" Click="OnInspectorEdited" Margin="0,0,14,0" AutomationProperties.AutomationId="TablePageAddCheck" />
+                            <CheckBox Content="Copy" IsChecked="{Binding Pages.Copy}" Click="OnInspectorEdited" Margin="0,0,14,0" AutomationProperties.AutomationId="TablePageCopyCheck" />
+                            <CheckBox Content="Edit" IsChecked="{Binding Pages.Edit}" Click="OnInspectorEdited" Margin="0,0,14,0" AutomationProperties.AutomationId="TablePageEditCheck" />
+                            <CheckBox Content="Delete" IsChecked="{Binding Pages.Delete}" Click="OnInspectorEdited" Margin="0,0,14,0" AutomationProperties.AutomationId="TablePageDeleteCheck" />
+                            <CheckBox Content="Search" IsChecked="{Binding Pages.Search}" Click="OnInspectorEdited" Margin="0,0,14,0" AutomationProperties.AutomationId="TablePageSearchCheck" />
+                        </WrapPanel>
+                        <DockPanel Margin="0,6,0,0">
+                            <ComboBox DockPanel.Dock="Right" Name="PageSizeCombo" AutomationProperties.AutomationId="PageSizeCombo"
+                                      ItemsSource="{Binding $parent[UserControl].DataContext.Tables.PageSizeChoices}"
+                                      SelectedItem="{Binding $parent[UserControl].DataContext.Tables.SelectedPageSize, Mode=TwoWay}"
+                                      MinWidth="90" />
+                            <TextBlock Classes="label" Text="Rows per page" VerticalAlignment="Center" Margin="0" />
+                        </DockPanel>
+
+                        <TextBlock Classes="section" Text="ACCESS" Margin="0,16,0,0" />
+                        <TextBlock Classes="label" Text="Owner field (rows belong to the signed-in user)" TextWrapping="Wrap" />
+                        <ComboBox ItemsSource="{Binding Converter={StaticResource OwnerFieldChoices}}"
+                                  SelectedItem="{Binding OwnerField, Mode=OneWay, Converter={StaticResource OwnerFieldDisplay}}"
+                                  SelectionChanged="OnOwnerFieldSelectionChanged" HorizontalAlignment="Stretch"
+                                  AutomationProperties.AutomationId="TableOwnerFieldCombo" />
+                        <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,Auto">
+                            <TextBlock Classes="label" Text="View level" />
+                            <TextBox Grid.Row="1" Text="{Binding ViewMinLevel, Mode=OneWay, StringFormat={}{0}}" TextChanged="OnViewLevelTextChanged"
+                                     AutomationProperties.AutomationId="TableViewLevelBox" />
+                            <TextBlock Grid.Column="2" Classes="label" Text="Edit level" />
+                            <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding EditMinLevel, Mode=OneWay, StringFormat={}{0}}" TextChanged="OnEditLevelTextChanged"
+                                     AutomationProperties.AutomationId="TableEditLevelBox" />
+                        </Grid>
+                        <TextBlock Classes="hint" Margin="0,6,0,0" Text="Levels apply when the Security section names a user level field. 0 means any signed-in user." />
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </Grid>
 </UserControl>

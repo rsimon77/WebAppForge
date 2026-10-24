@@ -11,7 +11,7 @@ ASP.NET Core site in a real browser. They do not drive the Avalonia desktop wind
 | `tools/harness/` | Console project (references `src\WebAppForge.Core`). Recreates the SQLite database for a scenario and calls `ProjectGenerator.Generate` |
 | `tools/generate-site.ps1` | Harness, then `dotnet build` of the generated site, then start it on a free port |
 | `tools/stop-site.ps1` | Stops the site started for a target folder |
-| `specs/*.spec.mjs` | Test files. `shop.spec.mjs` uses `UI_BASE_URL`; `secure-*.spec.mjs` use `UI_SECURE_BASE_URL`; `designed.spec.mjs` uses `UI_DESIGNED_BASE_URL`; `relations.spec.mjs` uses `UI_RELATIONS_BASE_URL` |
+| `specs/*.spec.mjs` | Test files. `shop.spec.mjs` uses `UI_BASE_URL`; `secure-*.spec.mjs` use `UI_SECURE_BASE_URL`; `designed.spec.mjs` uses `UI_DESIGNED_BASE_URL`; `relations.spec.mjs` uses `UI_RELATIONS_BASE_URL`; `reports.spec.mjs` and `grid.spec.mjs` use `UI_REPORTS_BASE_URL` |
 | `.sites/` | Generated sites, databases and logs (recreated on each run) |
 
 Scenarios:
@@ -33,6 +33,13 @@ Scenarios:
   "Lines" form page), Categories -> Products (SetNull, modal preview). Customers forms: Main/Contact/Notes pages, Add =
   Tabs, Edit = Wizard, View = Accordion. Orders forms: Header/Lines pages, Add = Pills, Edit = Tabs.
 
+- `reports`: `regions` (North, South, West) and `sales` (24 rows; sale n has region N/S/W in turn, month (n-1)/4+1 of 2024
+  on day 3, 10, 17 or 24, amount n * 10.5, paid when n is even, and a Unix-time `stamp` column). Reports: a summary by
+  region and month with a date range, region and paid pick lists and drill-down; a chart of the stamp by month; a
+  crosstab of region by paid; a calendar with a region filter; a dashboard. The sales list has the filter and sort panel,
+  the quick filter and the reset button, and the view page of a region lists its sales in a
+  detail grid with a quick filter and sortable headers (`grid.spec.mjs`). No login. The tests only read data.
+
 ## Commands
 
 Run from `tests\ui` in PowerShell. Install once:
@@ -50,6 +57,7 @@ Generate and start the sites (each prints `UI_BASE_URL=...`):
 .\tools\generate-site.ps1 -Target .\.sites\secure -Scenario secure
 .\tools\generate-site.ps1 -Target .\.sites\designed -Scenario designed
 .\tools\generate-site.ps1 -Target .\.sites\relations -Scenario relations
+.\tools\generate-site.ps1 -Target .\.sites\reports -Scenario reports
 ```
 
 Run the tests with all base URLs set:
@@ -59,6 +67,7 @@ $env:UI_BASE_URL        = (Get-Content .\.sites\shop\site.json   | ConvertFrom-J
 $env:UI_SECURE_BASE_URL = (Get-Content .\.sites\secure\site.json | ConvertFrom-Json).baseUrl
 $env:UI_DESIGNED_BASE_URL = (Get-Content .\.sites\designed\site.json | ConvertFrom-Json).baseUrl
 $env:UI_RELATIONS_BASE_URL = (Get-Content .\.sites\relations\site.json | ConvertFrom-Json).baseUrl
+$env:UI_REPORTS_BASE_URL = (Get-Content .\.sites\reports\site.json | ConvertFrom-Json).baseUrl
 npx playwright test
 ```
 
@@ -69,12 +78,17 @@ Stop the sites:
 .\tools\stop-site.ps1 -Target .\.sites\secure
 .\tools\stop-site.ps1 -Target .\.sites\designed
 .\tools\stop-site.ps1 -Target .\.sites\relations
+.\tools\stop-site.ps1 -Target .\.sites\reports
 ```
 
 Each `generate-site.ps1` run stops any site still recorded in its target folder, deletes the old database and code, and
 recreates them, so the seed data is the same on every run. Run a single file with `npx playwright test specs/shop.spec.mjs`.
 
 ## Notes
+
+- `reports.spec.mjs` and `grid.spec.mjs` do not import `helpers.mjs`, so they run alone:
+  `$env:UI_REPORTS_BASE_URL=...; npx playwright test specs/reports.spec.mjs specs/grid.spec.mjs`. Its charts are server-side SVG, so it does not
+  need the Bootstrap script from the CDN. `generate-site.ps1` starts the extensionless app host on macOS and Linux.
 
 - Lockout state is kept in memory per site process. `secure-lockout.spec.mjs` uses a freshly registered user, so the
   other tests are not affected. Restart the secure site (generate it again) to clear it.

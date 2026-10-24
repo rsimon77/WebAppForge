@@ -342,6 +342,9 @@ public class CustomizationXmlTests
         design.Hover = false;
         design.Bordered = true;
         design.ShowActionsFirst = true;
+        design.FilterBuilder = true;
+        design.QuickFilter = true;
+        design.ResetButton = true;
         design.AddButtonText = "New one";
         design.EmptyText = "Nothing here";
     }

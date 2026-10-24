@@ -11,6 +11,9 @@ public partial class MainWindow : Window
 {
     private readonly DispatcherTimer _sessionTimer = new() { Interval = TimeSpan.FromSeconds(15) };
 
+    /// <summary>Keeps the "Saved / Unsaved changes" note next to the project name current.</summary>
+    private readonly DispatcherTimer _saveStateTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+
     public MainWindow()
     {
         InitializeComponent();
@@ -31,9 +34,32 @@ public partial class MainWindow : Window
             }
         };
         _sessionTimer.Start();
+        _saveStateTimer.Tick += (_, _) => (DataContext as MainViewModel)?.RefreshSaveState();
+        _saveStateTimer.Start();
+
+        // Ctrl+K jumps to the search box; picking a result opens that section, table, field or report.
+        AddHandler(InputElement.KeyDownEvent, OnSearchShortcut, RoutingStrategies.Tunnel);
+        SearchBox.GotFocus += (_, _) =>
+        {
+            if (DataContext is MainViewModel main)
+            {
+                SearchBox.ItemsSource = main.SearchEntries();
+            }
+        };
+        SearchBox.SelectionChanged += (_, _) =>
+        {
+            if (SearchBox.SelectedItem is SearchEntry entry && DataContext is MainViewModel main)
+            {
+                main.GoTo(entry);
+                SearchBox.SelectedItem = null;
+                SearchBox.Text = string.Empty;
+            }
+        };
+
         Closed += (_, _) =>
         {
             _sessionTimer.Stop();
+            _saveStateTimer.Stop();
 
             // A site started from the Generate tab must not outlive the editor.
             (DataContext as MainViewModel)?.Generate.Shutdown();
@@ -52,6 +78,15 @@ public partial class MainWindow : Window
                 _subscribed.ExitRequested += OnExitRequested;
             }
         };
+    }
+
+    private void OnSearchShortcut(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.K && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            SearchBox.Focus();
+            e.Handled = true;
+        }
     }
 
     private MainViewModel? _subscribed;

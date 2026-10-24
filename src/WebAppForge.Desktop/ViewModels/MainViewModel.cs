@@ -14,8 +14,15 @@ namespace WebAppForge.Desktop.ViewModels;
 /// <summary>Owns the open project, project file commands, settings, the status line and the tab view models.</summary>
 public partial class MainViewModel : ViewModelBase
 {
-    /// <summary>Tab names in TabControl order. <see cref="ActiveTabIndex"/> indexes this list.</summary>
-    public static IReadOnlyList<string> TabNames { get; } = ["Database", "Tables", "Fields", "ASP.NET", "Security", "Generate", "Project", "Pages", "Languages", "Relations"];
+    /// <summary>
+    /// Section names in sidebar order, which follows the work: set up the project, shape the data, design the site, build it.
+    /// <see cref="ActiveTabIndex"/> indexes this list.
+    /// </summary>
+    public static IReadOnlyList<string> TabNames { get; } = ["Project", "Database", "Tables", "Fields", "Relations", "Home page", "Pages", "Reports", "Security", "Languages", "Generate"];
+
+    /// <summary>The stages of the sidebar and the section each one starts with.</summary>
+    public static IReadOnlyList<(string Stage, string FirstSection)> Stages { get; } =
+        [("1 · SETUP", "Project"), ("2 · DATA", "Tables"), ("3 · SITE", "Home page"), ("4 · BUILD", "Generate")];
 
     private readonly IDialogService _dialogs;
     private readonly SettingsStore? _store;
@@ -67,6 +74,10 @@ public partial class MainViewModel : ViewModelBase
         PageDesigner = new PageDesignerViewModel(this);
         Languages = new LanguagesViewModel(this);
         Relations = new RelationsViewModel(this);
+        Reports = new ReportsViewModel(this);
+
+        // A session starts where the work starts: connecting the database.
+        _activeTabIndex = TabNames.ToList().IndexOf("Database");
 
         Settings = store?.Load() ?? new AppSettings();
         _idle = new SessionIdleTracker(TimeSpan.FromMinutes(Settings.SessionTimeoutMinutes), DateTime.UtcNow);
@@ -101,6 +112,9 @@ public partial class MainViewModel : ViewModelBase
 
     /// <summary>The Relations tab (master/detail links and their validation).</summary>
     public RelationsViewModel Relations { get; }
+
+    /// <summary>The Reports tab (summary, crosstab, chart, calendar and dashboard pages).</summary>
+    public ReportsViewModel Reports { get; }
 
     /// <summary>Build runner, site runner, translation providers and other machine services of the Generate and Languages tabs. Tests replace them.</summary>
     public ToolServices Tools { get; init; } = new();
@@ -149,6 +163,11 @@ public partial class MainViewModel : ViewModelBase
                 parts.Add(relation.Link.DetailTable);
             }
 
+            if (tab == "Reports" && Reports.SelectedName is { } report)
+            {
+                parts.Add(report);
+            }
+
             if (tab == "Fields" && Tables.SelectedField is { } selectedField)
             {
                 parts.Add(selectedField.Name);
@@ -186,6 +205,77 @@ public partial class MainViewModel : ViewModelBase
     }
 
     /// <summary>Shows the idle notice once the timeout has passed without input. The window calls this on a timer.</summary>
+    /// <summary>"Saved", "Unsaved changes" or "Not saved yet", shown next to the project name.</summary>
+    public string SaveState => ProjectPath is null ? "Not saved yet" : _dirtyShown ? "Unsaved changes" : "Saved";
+
+    public bool HasUnsavedChanges => _dirtyShown;
+
+    private bool _dirtyShown;
+
+    /// <summary>Re-reads whether the project has unsaved changes. The window calls this on a short timer and after commands.</summary>
+    public void RefreshSaveState()
+    {
+        var dirty = IsDirty;
+        if (dirty != _dirtyShown)
+        {
+            _dirtyShown = dirty;
+            OnPropertyChanged(nameof(HasUnsavedChanges));
+        }
+
+        OnPropertyChanged(nameof(SaveState));
+    }
+
+    // ---- search (Ctrl+K) ------------------------------------------------------------------------
+
+    /// <summary>Sections, tables, fields and reports of the open project, for the search box.</summary>
+    public IReadOnlyList<SearchEntry> SearchEntries()
+    {
+        var entries = new List<SearchEntry>();
+        foreach (var tab in TabNames)
+        {
+            entries.Add(new SearchEntry(tab, "Section", () => ActiveTabIndex = TabNames.ToList().IndexOf(tab)));
+        }
+
+        foreach (var table in Current.Tables)
+        {
+            entries.Add(new SearchEntry(table.Name, "Table", () =>
+            {
+                ActiveTabIndex = TabNames.ToList().IndexOf("Tables");
+                Tables.SelectedTable = table;
+            }));
+            foreach (var field in table.Fields)
+            {
+                entries.Add(new SearchEntry(table.Name + "." + field.Name, "Field", () =>
+                {
+                    ActiveTabIndex = TabNames.ToList().IndexOf("Fields");
+                    Tables.SelectedTable = table;
+                    Tables.SelectedField = field;
+                }));
+            }
+        }
+
+        foreach (var report in Current.Reports)
+        {
+            entries.Add(new SearchEntry(report.Name, "Report", () =>
+            {
+                ActiveTabIndex = TabNames.ToList().IndexOf("Reports");
+                Reports.SelectedRow = Reports.Reports.FirstOrDefault(r => ReferenceEquals(r.Report, report));
+            }));
+        }
+
+        return entries;
+    }
+
+    /// <summary>Opens the place a search entry names.</summary>
+    public void GoTo(SearchEntry? entry)
+    {
+        if (entry is not null)
+        {
+            entry.Open();
+            Status = $"{entry.Kind}: {entry.Text}";
+        }
+    }
+
     public void CheckSession(DateTime now)
     {
         if (_idle.IsIdle(now))
@@ -443,8 +533,10 @@ public partial class MainViewModel : ViewModelBase
         PageDesigner.Reload();
         Languages.Reload();
         Relations.Reload();
+        Reports.Reload();
         _savedSnapshot = Snapshot(project);
         Status = status;
+        RefreshSaveState();
     }
 
     private void WriteProject(string path)
@@ -455,6 +547,7 @@ public partial class MainViewModel : ViewModelBase
             ProjectPath = path;
             _savedSnapshot = Snapshot(Current);
             Status = $"Saved {path}.";
+            RefreshSaveState();
             NoteRecent(path);
         }
         catch (Exception ex)
@@ -488,4 +581,10 @@ public partial class MainViewModel : ViewModelBase
         => string.IsNullOrEmpty(path) || Path.IsPathRooted(path)
             ? path
             : ProjectPaths.ToRelative(newFolder, ProjectPaths.Resolve(oldFolder, path));
+}
+
+/// <summary>One result of the search box: what it names, its kind (Section, Table, Field, Report) and how to open it.</summary>
+public sealed record SearchEntry(string Text, string Kind, Action Open)
+{
+    public override string ToString() => Text;
 }

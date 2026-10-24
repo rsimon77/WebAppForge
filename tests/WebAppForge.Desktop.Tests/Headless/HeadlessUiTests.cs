@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -83,16 +84,15 @@ public class HeadlessUiTests
 
     private static DataGrid TablesGrid(Window window) => window.GetVisualDescendants().OfType<DataGrid>().Single();
 
+    /// <summary>The owner picker of the Tables inspector, which shows the selected table.</summary>
     private static ComboBox OwnerCombo(Window window, TableInfo table)
-        => TablesGrid(window).GetVisualDescendants().OfType<ComboBox>().Single(c => c.DataContext == table);
+        => window.GetVisualDescendants().OfType<ComboBox>()
+            .Single(c => AutomationProperties.GetAutomationId(c) == "TableOwnerFieldCombo" && c.DataContext == table);
 
-    /// <summary>
-    /// The View level box of a row. The row's visible text boxes are, in column order, the View level box then the
-    /// Edit level box. (The owner picker's internal text box is hidden and is skipped.)
-    /// </summary>
+    /// <summary>The View level box of the Tables inspector, which shows the selected table.</summary>
     private static TextBox ViewLevelBox(Window window, TableInfo table)
-        => TablesGrid(window).GetVisualDescendants().OfType<TextBox>()
-            .First(t => t.DataContext == table && t.IsEffectivelyVisible);
+        => window.GetVisualDescendants().OfType<TextBox>()
+            .Single(t => AutomationProperties.GetAutomationId(t) == "TableViewLevelBox" && t.DataContext == table);
 
     private static void EnableLoginThroughControls(Window window)
     {
@@ -115,7 +115,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 4);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Security"));
 
         EnableLoginThroughControls(window);
         Assert.Null(main.Security.ValidationMessage);
@@ -143,7 +143,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         var users = main.Current.Tables[0];
         var box = ViewLevelBox(window, users);
 
@@ -162,7 +162,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         var users = main.Current.Tables[0];
         var box = ViewLevelBox(window, users);
 
@@ -180,7 +180,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 1);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Tables"));
         var users = main.Current.Tables[0];
 
         var combo = OwnerCombo(window, users);
@@ -199,7 +199,7 @@ public class HeadlessUiTests
         var window = ShowWindow(main);
         var users = main.Current.Tables[0];
 
-        SelectTab(window, 4);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Security"));
         EnableLoginThroughControls(window);
         Assert.True(main.Security.CanGenerate);
 
@@ -210,7 +210,7 @@ public class HeadlessUiTests
         Assert.False(main.Security.CanGenerate);
         Assert.Contains("must be a text column", main.Security.ValidationMessage);
 
-        SelectTab(window, 5);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Generate"));
         var generate = window.GetVisualDescendants().OfType<Button>().Single(b => b.Content as string == "Generate");
         Assert.False(generate.IsEnabled);
     }
@@ -220,7 +220,7 @@ public class HeadlessUiTests
     {
         var main = ProjectWithLogins();
         var window = ShowWindow(main);
-        SelectTab(window, 4);
+        SelectTab(window, MainViewModel.TabNames.ToList().IndexOf("Security"));
         EnableLoginThroughControls(window);
         Settle(window);
 

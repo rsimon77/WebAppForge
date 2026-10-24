@@ -4,146 +4,187 @@
         x:Class="WebAppForge.Desktop.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="WebAppForge"
-        Width="1100" Height="720" MinWidth="800" MinHeight="520">
+        Width="1100" Height="720" MinWidth="860" MinHeight="520">
 
-    <Window.Styles>
-        <!-- Pill tabs: each header is a rounded capsule; the selected one is filled with the accent colour. -->
-        <Style Selector="TabControl.pills > TabItem">
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border x:Name="PART_Border" CornerRadius="16" Padding="10,6" Margin="2,4"
-                            Background="Transparent">
-                        <ContentPresenter x:Name="PART_ContentPresenter"
-                                          Content="{TemplateBinding Header}"
-                                          HorizontalContentAlignment="Center"
-                                          VerticalContentAlignment="Center" />
-                    </Border>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="TabControl.pills > TabItem:selected /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
-        </Style>
-        <Style Selector="TabControl.pills > TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-        <Style Selector="TabControl.pills > TabItem:selected /template/ ContentPresenter#PART_ContentPresenter TextBlock">
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-    </Window.Styles>
 
     <Window.KeyBindings>
         <KeyBinding Gesture="Ctrl+Q" Command="{Binding ExitCommand}" />
         <KeyBinding Gesture="Ctrl+," Command="{Binding ShowOptionsCommand}" />
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveProjectCommand}" />
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenProjectCommand}" />
     </Window.KeyBindings>
 
     <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="File">
-                <MenuItem Header="New" Command="{Binding NewProjectCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconNew}" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Open..." Command="{Binding OpenProjectCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconOpen}" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Save" Command="{Binding SaveProjectCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSave}" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Save As..." Command="{Binding SaveAsCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSaveAs}" /></MenuItem.Icon>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="Exit" Command="{Binding ExitCommand}" InputGesture="Ctrl+Q">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconExit}" /></MenuItem.Icon>
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Edit">
-                <MenuItem Header="Connect to database" Command="{Binding Database.ConnectCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconConnect}" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Show Tables tab" Command="{Binding ShowTablesTabCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconTable}" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Show Fields tab" Command="{Binding ShowFieldsTabCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconTable}" /></MenuItem.Icon>
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Tools">
-                <MenuItem Header="Generate" Command="{Binding Generate.GenerateCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconGenerate}" /></MenuItem.Icon>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="Options..." Command="{Binding ShowOptionsCommand}" InputGesture="Ctrl+,">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSettings}" /></MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Custom styles..." Command="{Binding ChooseCustomStylesCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconStyles}" /></MenuItem.Icon>
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Help">
-                <MenuItem Header="About WebAppForge" Command="{Binding AboutCommand}">
-                    <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconAbout}" /></MenuItem.Icon>
-                </MenuItem>
-            </MenuItem>
-        </Menu>
-
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="8">
-            <Button Content="New" Command="{Binding NewProjectCommand}" />
-            <Button Content="Open..." Command="{Binding OpenProjectCommand}" />
-            <Button Content="Save" Command="{Binding SaveProjectCommand}" />
-            <Button Content="Save As..." Command="{Binding SaveAsCommand}" />
-            <TextBlock Text="Project name" VerticalAlignment="Center" Margin="16,0,0,0" />
-            <TextBox Text="{Binding ProjectName}" Width="220" AutomationProperties.AutomationId="ProjectNameBox" />
-            <TextBlock Text="Folder:" VerticalAlignment="Center" Margin="16,0,0,0" />
-            <TextBlock Text="{Binding FolderDisplay}" VerticalAlignment="Center" />
-        </StackPanel>
-
-        <TextBlock DockPanel.Dock="Top" Margin="16,0,8,6" FontWeight="SemiBold" Opacity="0.75"
-                   Text="{Binding Breadcrumb}" AutomationProperties.AutomationId="BreadcrumbText" />
-
-        <Border DockPanel.Dock="Bottom" Padding="8,4" BorderThickness="0,1,0,0"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-            <DockPanel>
-                <!-- Non-blocking: shown after the idle timeout, hidden by the next input. -->
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8"
-                            IsVisible="{Binding IsSessionIdle}">
-                    <TextBlock Text="Session idle. Save now?" VerticalAlignment="Center" />
-                    <Button Content="Save" Command="{Binding SaveProjectCommand}" />
+        <!-- App bar: brand and menu, the project, search, and the main commands. -->
+        <Border DockPanel.Dock="Top" Height="48" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1" Padding="12,0">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*,2*,*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border Width="22" Height="22" CornerRadius="6" Background="{DynamicResource AppAccentBrush}">
+                        <Path Data="{StaticResource IconLogo}" Stroke="White" StrokeThickness="1.8" Width="12" Height="10" Stretch="Uniform" />
+                    </Border>
+                    <TextBlock Text="WebAppForge" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                <Menu Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0">
+                    <MenuItem Header="File">
+                        <MenuItem Header="New" Command="{Binding NewProjectCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconNew}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Open..." Command="{Binding OpenProjectCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconOpen}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Save" Command="{Binding SaveProjectCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSave}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Save As..." Command="{Binding SaveAsCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSaveAs}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Header="Exit" Command="{Binding ExitCommand}" InputGesture="Ctrl+Q">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconExit}" /></MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="Edit">
+                        <MenuItem Header="Connect to database" Command="{Binding Database.ConnectCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconConnect}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Show Tables tab" Command="{Binding ShowTablesTabCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconTable}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Show Fields tab" Command="{Binding ShowFieldsTabCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconTable}" /></MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="Tools">
+                        <MenuItem Header="Generate" Command="{Binding Generate.GenerateCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconGenerate}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Header="Options..." Command="{Binding ShowOptionsCommand}" InputGesture="Ctrl+,">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSettings}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Custom styles..." Command="{Binding ChooseCustomStylesCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconStyles}" /></MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="Help">
+                        <MenuItem Header="About WebAppForge" Command="{Binding AboutCommand}">
+                            <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconAbout}" /></MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                </Menu>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <Border Background="{DynamicResource ControlFillBrush}" CornerRadius="6" Padding="2,0,10,0">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBox Text="{Binding ProjectName}" Width="140" FontWeight="SemiBold" BorderThickness="0" Background="Transparent"
+                                     ToolTip.Tip="Project name" AutomationProperties.Name="Project name" AutomationProperties.AutomationId="ProjectNameBox" />
+                            <TextBlock Text="{Binding ProjectFolder}" Classes="muted" VerticalAlignment="Center" MaxWidth="170" TextTrimming="LeadingCharacterEllipsis"
+                                       IsVisible="{Binding ProjectFolder, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                       ToolTip.Tip="{Binding ProjectFolder}" AutomationProperties.AutomationId="ProjectFolderText" />
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Ellipse Width="7" Height="7" Fill="{DynamicResource SuccessBrush}" IsVisible="{Binding !HasUnsavedChanges}" />
+                        <Ellipse Width="7" Height="7" Fill="{DynamicResource WarningBrush}" IsVisible="{Binding HasUnsavedChanges}" />
+                        <TextBlock Text="{Binding SaveState}" FontSize="12" Classes="muted" AutomationProperties.AutomationId="SaveStateText" />
+                    </StackPanel>
+                </StackPanel>
+                <Border Grid.Column="4" MinWidth="200" MaxWidth="340" Height="30" Margin="12,0" CornerRadius="8" Background="{DynamicResource ControlFillBrush}" Padding="10,0,6,0">
+                    <DockPanel>
+                        <Path DockPanel.Dock="Left" Data="{StaticResource IconSearch}" Width="14" Height="14" Stretch="Uniform"
+                              Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.6" VerticalAlignment="Center" />
+                        <Border DockPanel.Dock="Right" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="4"
+                                Padding="5,1" VerticalAlignment="Center">
+                            <TextBlock Text="Ctrl K" FontSize="11" Classes="muted" />
+                        </Border>
+                        <AutoCompleteBox x:Name="SearchBox" FilterMode="Contains" MinimumPrefixLength="1" BorderThickness="0" Background="Transparent"
+                                         PlaceholderText="Search the project" VerticalAlignment="Center"
+                                         AutomationProperties.Name="Search" AutomationProperties.AutomationId="SearchBox">
+                            <AutoCompleteBox.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Kind}" Classes="muted" FontSize="11" Margin="12,0,0,0" />
+                                        <TextBlock Text="{Binding Text}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </AutoCompleteBox.ItemTemplate>
+                        </AutoCompleteBox>
+                    </DockPanel>
+                </Border>
+                <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                    <Button Classes="icon ghost" Command="{Binding NewProjectCommand}" ToolTip.Tip="New project" AutomationProperties.Name="New">
+                        <Path Classes="icon" Data="{StaticResource IconNew}" />
+                    </Button>
+                    <Button Classes="icon ghost" Command="{Binding OpenProjectCommand}" ToolTip.Tip="Open project (Ctrl+O)" AutomationProperties.Name="Open">
+                        <Path Classes="icon" Data="{StaticResource IconOpen}" />
+                    </Button>
+                    <Button Classes="icon ghost" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save (Ctrl+S)" AutomationProperties.Name="Save">
+                        <Path Classes="icon" Data="{StaticResource IconSave}" />
+                    </Button>
+                    <Button Classes="icon ghost" Command="{Binding ShowOptionsCommand}" ToolTip.Tip="Options (Ctrl+,)" AutomationProperties.Name="Options">
+                        <Path Classes="icon" Data="{StaticResource IconSettings}" />
+                    </Button>
+                    <Button Classes="primary" Command="{Binding Generate.GenerateCommand}" Margin="8,0,0,0"
+                            AutomationProperties.AutomationId="AppBarGenerateButton">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Path Data="{StaticResource IconGenerate}" Fill="White" Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Text="Generate" Foreground="White" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Status bar: where you are, the last message and the idle notice. -->
+        <Border DockPanel.Dock="Bottom" MinHeight="26" Padding="12,3" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,1,0,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" FontSize="12" Classes="muted" VerticalAlignment="Center" Margin="0,0,24,0"
+                           Text="{Binding Breadcrumb}" AutomationProperties.AutomationId="BreadcrumbText" />
+                <!-- Non-blocking: shown after the idle timeout, hidden by the next input. -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="12,0,0,0"
+                            IsVisible="{Binding IsSessionIdle}">
+                    <TextBlock Text="Session idle. Save now?" FontSize="12" VerticalAlignment="Center" />
+                    <Button Content="Save" Classes="primary" MinHeight="22" Padding="10,0" Command="{Binding SaveProjectCommand}" />
+                </StackPanel>
+                <TextBlock Text="{Binding Status}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                           HorizontalAlignment="Right" ToolTip.Tip="{Binding Status}" />
             </DockPanel>
         </Border>
 
-        <TabControl Classes="pills" Margin="8,0,8,0" SelectedIndex="{Binding ActiveTabIndex, Mode=TwoWay}">
+        <TabControl Classes="nav" SelectedIndex="{Binding ActiveTabIndex, Mode=TwoWay}" AutomationProperties.AutomationId="SectionNav">
+            <TabItem Header="Project" Tag="1 · SETUP">
+                <views:ProjectSettingsView />
+            </TabItem>
             <TabItem Header="Database">
                 <views:DatabaseView />
             </TabItem>
-            <TabItem Header="Tables">
+            <TabItem Header="Tables" Tag="2 · DATA">
                 <views:TablesView />
             </TabItem>
             <TabItem Header="Fields">
                 <views:FieldsView />
             </TabItem>
-            <TabItem Header="ASP.NET">
+            <TabItem Header="Relations">
+                <views:RelationsView />
+            </TabItem>
+            <TabItem Header="Home page" Tag="3 · SITE">
                 <views:AspNetView />
-            </TabItem>
-            <TabItem Header="Security">
-                <views:SecurityView />
-            </TabItem>
-            <TabItem Header="Generate">
-                <views:GenerateView />
-            </TabItem>
-            <TabItem Header="Project">
-                <views:ProjectSettingsView />
             </TabItem>
             <TabItem Header="Pages">
                 <views:PageDesignerView />
             </TabItem>
+            <TabItem Header="Reports">
+                <views:ReportsView />
+            </TabItem>
+            <TabItem Header="Security">
+                <views:SecurityView />
+            </TabItem>
             <TabItem Header="Languages">
                 <views:LanguagesView />
             </TabItem>
-            <TabItem Header="Relations">
-                <views:RelationsView />
+            <TabItem Header="Generate" Tag="4 · BUILD">
+                <views:GenerateView />
             </TabItem>
         </TabControl>
     </DockPanel>

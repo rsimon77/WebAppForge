@@ -339,6 +339,15 @@ public sealed class PageDesign
 
     public bool ShowActionsFirst { get; set; }
 
+    /// <summary>A filter and sort panel above the list: conditions per column joined by all/any, and up to three sort levels.</summary>
+    public bool FilterBuilder { get; set; }
+
+    /// <summary>A quick filter box: every word must match some column; "phrases", column:value and -word are understood.</summary>
+    public bool QuickFilter { get; set; }
+
+    /// <summary>A reset button that clears the search, the filters and the sorting of the list.</summary>
+    public bool ResetButton { get; set; }
+
     public string AddButtonText { get; set; } = string.Empty;
 
     public string EmptyText { get; set; } = string.Empty;

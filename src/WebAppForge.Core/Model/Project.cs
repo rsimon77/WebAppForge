@@ -26,6 +26,9 @@ public sealed class Project
     public string OutputFolder { get; set; } = "generated";
 
     public List<TableInfo> Tables { get; } = [];
+
+    /// <summary>Summary, crosstab, chart, calendar and dashboard pages of the generated site.</summary>
+    public List<ReportInfo> Reports { get; } = [];
 }
 
 public sealed class DatabaseSettings
@@ -219,6 +222,28 @@ public sealed class FieldInfo
 
     /// <summary>How the field is edited, validated and displayed.</summary>
     public FieldUi Ui { get; set; } = new();
+
+    /// <summary>
+    /// How a number column holds a date, for reports: grouping by year, quarter, month or day, calendars and date filters.
+    /// <see cref="DateStorage.Text"/> (the default) means the column holds ISO text, as DATE and DATETIME columns do.
+    /// </summary>
+    public DateStorage DateStorage { get; set; } = DateStorage.Text;
+}
+
+/// <summary>How a column stores a date.</summary>
+public enum DateStorage
+{
+    /// <summary>ISO 8601 text, such as 2024-05-01 or 2024-05-01 13:45:00.</summary>
+    Text,
+
+    /// <summary>Seconds since 1970-01-01 UTC.</summary>
+    UnixSeconds,
+
+    /// <summary>Milliseconds since 1970-01-01 UTC.</summary>
+    UnixMilliseconds,
+
+    /// <summary>Julian day number (SQLite julianday()).</summary>
+    JulianDay,
 }
 
 public enum FieldType

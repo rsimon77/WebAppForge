@@ -37,6 +37,7 @@ internal static class MasterDetailXml
                 WriteBool(e, "allowAdd", detail.AllowAdd, d.AllowAdd);
                 WriteBool(e, "allowEdit", detail.AllowEdit, d.AllowEdit);
                 WriteBool(e, "allowDelete", detail.AllowDelete, d.AllowDelete);
+                WriteBool(e, "filterAndSort", detail.FilterAndSort, d.FilterAndSort);
                 WriteStr(e, "formPage", detail.FormPage, d.FormPage);
                 foreach (var link in detail.Links)
                 {
@@ -113,6 +114,7 @@ internal static class MasterDetailXml
                     AllowAdd = ReadBool(e, "allowAdd", d.AllowAdd),
                     AllowEdit = ReadBool(e, "allowEdit", d.AllowEdit),
                     AllowDelete = ReadBool(e, "allowDelete", d.AllowDelete),
+                    FilterAndSort = ReadBool(e, "filterAndSort", d.FilterAndSort),
                     FormPage = ReadStr(e, "formPage", d.FormPage),
                 };
                 foreach (var link in e.Elements("link"))

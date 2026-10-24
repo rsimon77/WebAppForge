@@ -97,6 +97,8 @@ public static class CustomizationChoices
 
     public static IReadOnlyList<ViewFormat> ViewFormats { get; } = Enum.GetValues<ViewFormat>();
 
+    public static IReadOnlyList<DateStorage> DateStorages { get; } = Enum.GetValues<DateStorage>();
+
     public static IReadOnlyList<TextAlign> TextAligns { get; } = Enum.GetValues<TextAlign>();
 
     public static IReadOnlyList<ConditionOperator> Operators { get; } = Enum.GetValues<ConditionOperator>();

@@ -15,6 +15,11 @@ public static class LocalizationKeys
 
     public static string Field(string table, string field) => "field." + table + "." + field;
 
+    public static string Report(string report) => "report." + report;
+
+    /// <summary>Key of the custom heading of the aggregate at <paramref name="index"/> of a summary report.</summary>
+    public static string ReportMeasure(string report, int index) => "report." + report + ".m" + index;
+
     /// <summary>
     /// The fixed UI strings (English), then the caption of each generated table and each of its fields (default language).
     /// An empty caption stands for the name, as in the generated pages.
@@ -35,6 +40,35 @@ public static class LocalizationKeys
             foreach (var field in table.Fields)
             {
                 result.Add(new SourceText(Field(table.Name, field.Name), string.IsNullOrEmpty(field.Caption) ? field.Name : field.Caption, defaultLanguage));
+            }
+        }
+
+        if (Generation.Templates.UsesGridKit(project.Tables.Where(t => t.Generate)))
+        {
+            foreach (var ui in UiStrings.Grid)
+            {
+                result.Add(new SourceText(ui.Key, ui.English, "en"));
+            }
+        }
+
+        var reports = project.Reports.Where(r => r.Generate).ToList();
+        if (reports.Count > 0)
+        {
+            foreach (var ui in UiStrings.Reports)
+            {
+                result.Add(new SourceText(ui.Key, ui.English, "en"));
+            }
+
+            foreach (var report in reports)
+            {
+                result.Add(new SourceText(Report(report.Name), string.IsNullOrEmpty(report.Caption) ? report.Name : report.Caption, defaultLanguage));
+                for (var i = 0; i < report.Aggregates.Count; i++)
+                {
+                    if (report.Kind == ReportKind.Summary && report.Aggregates[i].Caption.Length > 0)
+                    {
+                        result.Add(new SourceText(ReportMeasure(report.Name, i), report.Aggregates[i].Caption, defaultLanguage));
+                    }
+                }
             }
         }
 

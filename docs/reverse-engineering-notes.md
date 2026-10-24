@@ -95,7 +95,7 @@ Not done:
 | Two-factor, external providers, SAML, LDAP, CAPTCHA, concurrent-session limits | Not started |
 | Lockout counter across restarts or processes | Not started (in memory only) |
 | Master/detail, multi-page, return pages, audit trail, email | Not started |
-| Summary, crosstab, calendar, chart, dashboard reports | Not started |
+| Summary, crosstab, calendar, chart, dashboard reports | Done (see the report section at the end) |
 | Lookup tables, custom views, linked tables, custom fields | Not started |
 | Multi-language, REST/export API options, tools menu | Not started |
 | Other database providers (MySQL, PostgreSQL, SQL Server, Oracle) | Deferred by request |
@@ -190,3 +190,93 @@ subject of the analysis.
 
 Still to do by hand: the repository folder on disk still carries the old name; rename it when no tool or session
 has it open.
+
+## Report pages (2026-10-24)
+
+Build: 0 errors, 0 warnings. Tests: 398 Core and 347 Desktop with `WEBAPPFORGE_NORTHWIND_DB` set (Northwind from
+jpwhite3/northwind-SQLite3: 16,282 orders, 609,283 order lines); without it 6 Core and 12 Desktop tests skip.
+
+Added
+- Report model (`Model/Reports.cs`, `Project.Reports`) stored in the project file under `<reports>`; the element is left
+  out when a project has no reports, and the generated output of such a project is unchanged (golden hashes untouched).
+- Generated `/reports/{name}` pages, one `Reports/{Name}Report.cs` each, and the runtime `Web/ReportKit.cs`:
+  - Summary: group levels (dates by year, quarter, month or day), Count, Sum, Average, Min and Max, subtotals per group,
+    grand total, optional row listing (first 5,000 rows listed; totals cover every row).
+  - Crosstab: row field by column field with row, column and grand totals; columns capped (default 50).
+  - Chart: bar, horizontal bar, line, area, pie and doughnut as server-side SVG with tooltips, an optional series field,
+    order by value with top N, and the data table below.
+  - Calendar: month grid with previous and next month, multi-day rows through an end date field, entries linked to the
+    view page.
+  - Dashboard: other reports in Bootstrap cards with a width per item.
+- Aggregation runs in SQL (COUNT, SUM, MIN, MAX per group) and ReportKit combines the groups, so averages of subtotals are
+  exact. Date grouping uses the leading characters of ISO date text, which covers both `YYYY-MM-DD` and
+  `YYYY-MM-DD HH:MM:SS` values (Northwind has both).
+- Security: reports are behind login when it is on; the report's own level and the table's view level both apply (the
+  stricter wins); rows are limited to the owner when the table has an owner field; dashboards leave out items the user
+  may not open; fields the site hides (password hash, user level) cannot be used.
+- Grouped values show the lookup display text or static option text of the field.
+- Localization: report captions, custom total headings and the report UI texts go through the translation store, only
+  for projects with reports.
+- Editor: Reports tab with the report list, kind-specific settings and the validation list (`ReportValidator`, shared
+  with the generator). Pill tab headers are 16px so the eleven tabs fit on one row of the default window.
+
+Known gaps
+- Charts are static SVG (tooltips, no zoom or click-through). No date-range or other runtime filter on report pages yet.
+- Dates stored as numbers (Unix or Julian) are not grouped by interval.
+- Detail columns of a summary are typed as a comma-separated list in the editor.
+- No Playwright scenario for reports yet; the pages are covered by HTTP tests against generated sites.
+
+## Report filters, drill-down and number dates (2026-10-24)
+
+The gaps listed above are closed:
+- Runtime filters: a report can offer a From/To date range on a date field and pick lists of the values of chosen fields
+  (with lookup or option text). The choices honor the table filter and the owner. Filters are bound parameters and are
+  kept in drill-down links, the month links of a calendar and the "Back to the report" link.
+- Drill-down: summary totals, crosstab cells and totals, and chart bars, points, slices and data table values link to
+  `/reports/{name}/rows`, which lists the rows of that group 50 at a time with links to their view page. Group values
+  travel typed (i:, r:, s:) so they compare with the database value exactly; an unreadable value matches no row. The
+  page applies the same level, owner and filters as the report.
+- Dates stored as numbers: `FieldInfo.DateStorage` (Text, UnixSeconds, UnixMilliseconds, JulianDay, set on the Fields tab
+  for number columns) lets reports group, filter and place those columns on a calendar through SQLite `datetime()`.
+- Editor: the row columns and the pick-list filters are lists with field pickers; the date range field and drill-down
+  are on the Reports tab.
+- Browser tests: `tests/ui` has a `reports` scenario and `reports.spec.mjs` (8 tests: filters, drill-down to the view
+  page and back, Unix-time chart, crosstab, calendar with filter across months, dashboard). `generate-site.ps1` now
+  starts the app host without `.exe` on macOS and Linux.
+- Fixed while writing the browser tests: applying a filter on a calendar kept the month it showed.
+
+Tests: 403 Core and 348 Desktop with Northwind (Northwind adds a filtered summary checked against SQL and drill-down with
+paging), 8 Playwright for reports. Still not done: zoom on charts.
+
+## Editor redesign (2026-10-24)
+
+The editor moved from Fluent's default 32px controls and an 11-pill tab strip to a compact "Graphite" look, designed as a
+mockup first and approved before the build:
+- Shell: an app bar (menu, project name and folder, save state, search with Ctrl+K, New/Open/Save/Options, a primary
+  Generate button), a sidebar and a status bar (breadcrumb and last message). The sidebar is still the TabControl of
+  string headers, so navigation code and AutomationIds are unchanged.
+- Sections in workflow order under numbered stages: 1 Setup (Project, Database), 2 Data (Tables, Fields, Relations),
+  3 Site (Home page, Pages, Reports, Security, Languages), 4 Build (Generate). The ASP.NET tab is now Home page: it holds
+  the site title and the home page switch. The editor still opens on Database.
+- Theme: `Styles/Tokens.axaml` (surfaces, text, borders and status colours for light and dark, mapped onto Fluent's own
+  resource keys) and `Styles/Controls.axaml` (button variants primary, ghost, danger and icon; text roles; panels; banners;
+  lists; data grids; the sidebar template). Fluent runs with compact density; controls are 28px, the base font 13px (the
+  default of the font size option is now 13), radius 6 on controls and 10 on panels. The accent still follows the
+  palette chosen in Options.
+- Screens: form sections sit in a panel; two-pane sections have a panel per pane; list toolbars use icon buttons with
+  tooltips; error boxes are banners.
+- Tests: `ShellLayoutTests` renders every section in light and dark with Inter, checks the sidebar order, stages and fit,
+  and the search; set `WEBAPPFORGE_SCREENSHOTS` to a folder to keep the PNGs. Tests that picked tabs by number now pick them
+  by name.
+
+Not done yet from the mockup: inner tabs on the Fields inspector, the live field and report previews, and the side
+inspector on the Tables screen (it is still a wide grid). (Done since, see below.)
+
+Follow-up, the rest of the mockup:
+- Tables: a summary grid (Table, Generate, Caption, Key, Pages, Fields) and an inspector with General (caption, filter,
+  generate), Pages (the seven page switches, rows per page) and Access (owner field, view and edit level).
+- Fields: a live preview of the field as the site shows it (label, control, placeholder, help text, list format) and inner
+  tabs General, Editing, Validation, Display and Style, one section at a time.
+- Reports: a Preview button runs the selected report on the project's SQLite file (`ReportPreview` in Core, the same
+  group, date and lookup SQL as the generated page) and shows its first rows, with bars for charts. Owner fields and user
+  levels are not applied in the preview.

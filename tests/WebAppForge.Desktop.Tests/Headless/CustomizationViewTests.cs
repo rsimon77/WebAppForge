@@ -85,6 +85,8 @@ public class CustomizationViewTests
         var caption = Find<TextBox>(window, "FieldCaptionBox")!;
         Assert.Equal("Customer name", caption.Text);
         caption.Text = "Full name";
+        Assert.Equal("General", main.FieldDesigner.Section);
+        ShowSection(window, main, "Editing");
         Find<TextBox>(window, "FieldHelpTextBox")!.Text = "As on the card";
         Find<ComboBox>(window, "FieldControlCombo")!.SelectedItem = EditControl.TextArea;
         Settle(window);
@@ -95,7 +97,25 @@ public class CustomizationViewTests
         Assert.Equal(EditControl.TextArea, name.Ui.Control);
         Assert.True(Find<TextBox>(window, "FieldRowsBox")!.IsEffectivelyVisible);
 
+        // The live preview follows the edits: caption, text area and help text.
+        Assert.Equal("Full name", Find<TextBlock>(window, "FieldPreviewLabel")!.Text);
+        Assert.True(main.FieldDesigner.PreviewIsArea);
+        Assert.False(Find<TextBox>(window, "FieldPreviewInput")!.IsEffectivelyVisible);
+        Assert.True(Find<Border>(window, "FieldPreview")!.IsEffectivelyVisible);
+
+        ShowSection(window, main, "Display");
         Assert.Equal("Sample text", Find<TextBlock>(window, "FormatPreviewText")!.Text);
+        // Only number columns can store dates as numbers.
+        Assert.False(Find<ComboBox>(window, "FieldDateStorageCombo")!.IsEffectivelyEnabled);
+        main.Tables.SelectedField = customers.Fields.Single(f => f.Name == "Age");
+        Settle(window);
+        ExpandAll(window);
+        Find<ComboBox>(window, "FieldDateStorageCombo")!.SelectedItem = DateStorage.UnixMilliseconds;
+        Settle(window);
+        Assert.Equal(DateStorage.UnixMilliseconds, customers.Fields.Single(f => f.Name == "Age").DateStorage);
+        main.Tables.SelectedField = name;
+        Settle(window);
+        ShowSection(window, main, "Validation");
         Assert.NotNull(Find<TextBox>(window, "PatternTestBox"));
         Find<TextBox>(window, "FieldPatternBox")!.Text = "[a-z]+";
         Find<TextBox>(window, "PatternTestBox")!.Text = "abc";
@@ -109,9 +129,11 @@ public class CustomizationViewTests
         // Select and Radio show the options grid and the lookup section.
         Find<TextBox>(window, "FieldSearchBox")!.Text = string.Empty;
         main.Tables.SelectedField = customers.Fields.Single(f => f.Name == "Email");
+        ShowSection(window, main, "Editing");
         Find<ComboBox>(window, "FieldControlCombo")!.SelectedItem = EditControl.Select;
         Settle(window);
         ExpandAll(window);
+        Assert.True(main.FieldDesigner.PreviewIsChoice);
         Assert.True(Find<DataGrid>(window, "FieldOptionsGrid")!.IsEffectivelyVisible);
         Assert.True(Find<ComboBox>(window, "LookupTableCombo")!.IsEffectivelyVisible);
         Assert.NotNull(Find<DataGrid>(window, "BadgeRulesGrid"));
@@ -165,6 +187,47 @@ public class CustomizationViewTests
     }
 
     [AvaloniaFact]
+    public void TheListGridToolCheckboxesSetTheDesignAndShowInThePreview()
+    {
+        var (main, _) = CustomizationTests.Project();
+        var window = ShowWindow(main);
+        SelectTab(window, "Pages");
+        var table = main.Current.Tables[0];
+        main.Tables.SelectedTable = table;
+        Settle(window);
+        ExpandAll(window);
+
+        foreach (var id in new[] { "FilterBuilderCheck", "QuickFilterCheck", "ResetButtonCheck" })
+        {
+            var check = Find<CheckBox>(window, id)!;
+            Assert.True(check.IsEffectivelyEnabled, id);
+            Assert.False(check.IsChecked, id);
+            check.IsChecked = true;
+            Settle(window);
+        }
+
+        Assert.True(table.Designs.List.FilterBuilder);
+        Assert.True(table.Designs.List.QuickFilter);
+        Assert.True(table.Designs.List.ResetButton);
+        Assert.True(main.IsDirty);
+        Assert.True(HasText(window, "Filter and sort"), "The preview does not show the filter button.");
+        Assert.True(HasText(window, "Quick filter..."), "The preview does not show the quick filter box.");
+
+        // The button gives every other generated list the same three settings.
+        var others = main.Current.Tables.Where(t => t.Generate && t != table).ToList();
+        Assert.NotEmpty(others);
+        Find<Button>(window, "ApplyGridToolsButton")!.Command!.Execute(null);
+        Settle(window);
+        Assert.All(others, t => Assert.True(t.Designs.List is { FilterBuilder: true, QuickFilter: true, ResetButton: true }, t.Name));
+        Assert.StartsWith("Copied the searching, filtering and sorting options to", main.Status);
+
+        Find<ListBox>(window, "PageTypeSelector")!.SelectedItem = PageKind.Edit;
+        Settle(window);
+        Assert.False(Find<CheckBox>(window, "FilterBuilderCheck")!.IsEffectivelyEnabled);
+        Assert.False(table.Designs.Edit.FilterBuilder);
+    }
+
+    [AvaloniaFact]
     public void EditingOnTheNewTabsMarksTheProjectDirtyThroughTheWindow()
     {
         var (main, dialogs) = CustomizationTests.Project();
@@ -212,6 +275,14 @@ public class CustomizationViewTests
     }
 
     /// <summary>Content of a collapsed expander is not part of the visual tree, so tests open every section first.</summary>
+    /// <summary>Picks one of the inner tabs of the field inspector, which shows its sections only.</summary>
+    private static void ShowSection(Window window, MainViewModel main, string section)
+    {
+        main.FieldDesigner.Section = section;
+        Settle(window);
+        ExpandAll(window);
+    }
+
     private static void ExpandAll(Window window)
     {
         foreach (var expander in window.GetVisualDescendants().OfType<Expander>().Where(e => e.IsEffectivelyVisible))

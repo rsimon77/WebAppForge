@@ -555,6 +555,12 @@ public partial class RelationsViewModel : EditorViewModelBase
         set => Set(value, l => l.AllowDelete, (l, v) => l.AllowDelete = v);
     }
 
+    public bool FilterAndSort
+    {
+        get => Link?.FilterAndSort ?? false;
+        set => Set(value, l => l.FilterAndSort, (l, v) => l.FilterAndSort = v);
+    }
+
     public DetailPreview Preview
     {
         get => Link?.Preview ?? DetailPreview.None;
