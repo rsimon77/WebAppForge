@@ -280,3 +280,14 @@ Follow-up, the rest of the mockup:
 - Reports: a Preview button runs the selected report on the project's SQLite file (`ReportPreview` in Core, the same
   group, date and lookup SQL as the generated page) and shows its first rows, with bars for charts. Owner fields and user
   levels are not applied in the preview.
+
+## Audit trail (2026-10-24)
+
+Generated sites can log add, copy, edit and delete (page and REST API) for selected tables, including rows changed by
+referential-integrity cascades. Settings: Project.Audit (global) and TableInfo.Audit (per table), edited on the desktop
+"Audit trail" tab in the Site stage. Entries are written in the same transaction as the change and store the changed
+values as JSON; the generated audit-trail page filters by table, action, user, record and date. Off by default, so
+existing projects generate identical output.
+
+Not verified: audited sites on SQL Server and MySQL (only SQLite is exercised by tests); the audit-trail page itself has
+no browser test.

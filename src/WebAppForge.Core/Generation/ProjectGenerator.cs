@@ -265,6 +265,7 @@ public sealed class ProjectGenerator
             Pages = table.Pages,
             Ui = table.Ui,
             Designs = table.Designs,
+            Audit = table.Audit,
             OwnerField = ownerField?.Name ?? string.Empty,
             ViewMinLevel = levelSecured ? table.ViewMinLevel : 0,
             EditMinLevel = levelSecured ? table.EditMinLevel : 0,

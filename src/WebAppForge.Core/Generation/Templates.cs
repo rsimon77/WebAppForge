@@ -560,7 +560,7 @@ internal static partial class Templates
             sb.AppendLine($"using {ns}.Security;");
         }
 
-        if (keys.Count > 0 && (MdDeletePlanned(table) || MdUpdatePlanned(table)))
+        if (keys.Count > 0 && (MdDeletePlanned(table) || MdUpdatePlanned(table) || IsAudited(table)))
         {
             sb.AppendLine($"using {ns}.Web;");
         }
@@ -609,7 +609,9 @@ internal static partial class Templates
 
             var insertFields = InsertFields(table);
             sb.AppendLine();
-            sb.AppendLine($"        group.MapPost(\"/\", async ({className} item{userSuffix}) =>");
+            var auditInsert = AuditsInserts(table);
+            var auditUpdate = AuditsUpdates(table);
+            sb.AppendLine($"        group.MapPost(\"/\", async ({className} item{(auditInsert ? ", HttpContext http" : string.Empty)}{userSuffix}) =>");
             sb.AppendLine("        {");
             if (owned)
             {
@@ -619,7 +621,18 @@ internal static partial class Templates
 
             sb.AppendLine("            await using var connection = new SqliteConnection(connectionString);");
             sb.AppendLine("            await connection.OpenAsync();");
-            AppendInsertCall(sb, className, table, insertFields, "            ");
+            if (auditInsert)
+            {
+                AppendAuditTransaction(sb, "            ", pad =>
+                {
+                    AppendInsertCall(sb, className, table, insertFields, pad);
+                    sb.AppendLine($"{pad}{AuditWrite(table, "insert", "http", "item.AuditKey()", "null", "item.AuditValues()")}");
+                });
+            }
+            else
+            {
+                AppendInsertCall(sb, className, table, insertFields, "            ");
+            }
 
             sb.AppendLine($"            return Results.Created($\"/api/{route}/{keyPath}\", item);");
             sb.AppendLine("        })" + editGuard + ";");
@@ -628,7 +641,7 @@ internal static partial class Templates
             if (updateFields.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine($"        group.MapPut(\"/{keyRoute}\", async ({keyParams}, {className} item{userSuffix}) =>");
+                sb.AppendLine($"        group.MapPut(\"/{keyRoute}\", async ({keyParams}, {className} item{(auditUpdate || MdUpdateAudited(table) ? ", HttpContext http" : string.Empty)}{userSuffix}) =>");
                 sb.AppendLine("        {");
                 sb.AppendLine("            await using var connection = new SqliteConnection(connectionString);");
                 sb.AppendLine("            await connection.OpenAsync();");
@@ -649,6 +662,35 @@ internal static partial class Templates
                 {
                     AppendMdApiUpdate(sb, className, table, updateFields, owned);
                 }
+                else if (auditUpdate)
+                {
+                    var readSql = Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + where);
+                    sb.AppendLine("            var read = new DynamicParameters();");
+                    AppendKeyParameters(sb, table, "            ", "read");
+                    AppendOwnerParameter(sb, owned, "read", "            ");
+                    sb.AppendLine($"            var before = await connection.QueryFirstOrDefaultAsync<{className}>({readSql}, read);");
+                    sb.AppendLine("            if (before is null)");
+                    sb.AppendLine("            {");
+                    sb.AppendLine("                return Results.NotFound();");
+                    sb.AppendLine("            }");
+                    sb.AppendLine();
+                    AppendAuditTransaction(sb, "            ", pad =>
+                    {
+                        sb.AppendLine($"{pad}var args = new DynamicParameters();");
+                        AppendParameters(sb, updateFields, "item", className, pad);
+                        AppendKeyParameters(sb, table, pad);
+                        sb.AppendLine($"{pad}if (await connection.ExecuteAsync({Lit(UpdateSql(table, updateFields))}, args) == 0)");
+                        sb.AppendLine($"{pad}{{");
+                        sb.AppendLine($"{pad}    await Audit.RollbackAsync(connection);");
+                        sb.AppendLine($"{pad}    return Results.NotFound();");
+                        sb.AppendLine($"{pad}}}");
+                        sb.AppendLine();
+                        sb.AppendLine($"{pad}var after = await connection.QueryFirstOrDefaultAsync<{className}>({readSql}, read);");
+                        sb.AppendLine($"{pad}{AuditWrite(table, "update", "http", "before.AuditKey()", "before.AuditValues()", "(after ?? item).AuditValues()")}");
+                    });
+                    sb.AppendLine();
+                    sb.AppendLine("            return Results.NoContent();");
+                }
                 else
                 {
                     sb.AppendLine("            var args = new DynamicParameters();");
@@ -661,19 +703,54 @@ internal static partial class Templates
             }
 
             sb.AppendLine();
-            sb.AppendLine($"        group.MapDelete(\"/{keyRoute}\", async ({keyParams}{userSuffix}) =>");
+            var auditDelete = AuditsDeletes(table);
+            var deleteHttp = auditDelete || (MdDeletePlanned(table) && MdAuditCaptures(table).Count > 0);
+            var readBeforeSql = Lit("SELECT " + SelectColumns(table) + " FROM " + QuoteIdent(table.Name) + where);
+            sb.AppendLine($"        group.MapDelete(\"/{keyRoute}\", async ({keyParams}{(deleteHttp ? ", HttpContext http" : string.Empty)}{userSuffix}) =>");
             sb.AppendLine("        {");
             sb.AppendLine("            await using var connection = new SqliteConnection(connectionString);");
             sb.AppendLine("            await connection.OpenAsync();");
             if (MdDeletePlanned(table))
             {
-                sb.AppendLine($"            var outcome = await ReferentialIntegrity.DeleteAsync(connection, ReferentialIntegrity.Plan_{className}, {MdArgs(table, "user.Identity?.Name ?? string.Empty")});");
+                if (auditDelete)
+                {
+                    sb.AppendLine("            var read = new DynamicParameters();");
+                    AppendKeyParameters(sb, table, "            ", "read");
+                    AppendOwnerParameter(sb, owned, "read", "            ");
+                    sb.AppendLine($"            var before = await connection.QueryFirstOrDefaultAsync<{className}>({readBeforeSql}, read);");
+                }
+
+                sb.AppendLine($"            var outcome = await ReferentialIntegrity.DeleteAsync(connection, ReferentialIntegrity.Plan_{className}, {MdArgs(table, "user.Identity?.Name ?? string.Empty")}{MdAuditDeleteArgs(table, "http", "before")});");
                 sb.AppendLine("            return outcome.Status switch");
                 sb.AppendLine("            {");
                 sb.AppendLine("                ReferentialIntegrity.Blocked => Results.Json(new { error = outcome.Message }, statusCode: StatusCodes.Status409Conflict),");
                 sb.AppendLine("                ReferentialIntegrity.NotFound => Results.NotFound(),");
                 sb.AppendLine("                _ => Results.NoContent(),");
                 sb.AppendLine("            };");
+            }
+            else if (auditDelete)
+            {
+                sb.AppendLine("            var args = new DynamicParameters();");
+                AppendKeyParameters(sb, table, "            ");
+                AppendOwnerParameter(sb, owned, "args", "            ");
+                sb.AppendLine($"            var before = await connection.QueryFirstOrDefaultAsync<{className}>({readBeforeSql}, args);");
+                sb.AppendLine("            if (before is null)");
+                sb.AppendLine("            {");
+                sb.AppendLine("                return Results.NotFound();");
+                sb.AppendLine("            }");
+                sb.AppendLine();
+                AppendAuditTransaction(sb, "            ", pad =>
+                {
+                    sb.AppendLine($"{pad}if (await connection.ExecuteAsync({Lit("DELETE FROM " + QuoteIdent(table.Name) + where)}, args) == 0)");
+                    sb.AppendLine($"{pad}{{");
+                    sb.AppendLine($"{pad}    await Audit.RollbackAsync(connection);");
+                    sb.AppendLine($"{pad}    return Results.NotFound();");
+                    sb.AppendLine($"{pad}}}");
+                    sb.AppendLine();
+                    sb.AppendLine($"{pad}{AuditWrite(table, "delete", "http", "before.AuditKey()", "before.AuditValues()", "null")}");
+                });
+                sb.AppendLine();
+                sb.AppendLine("            return Results.NoContent();");
             }
             else
             {
@@ -1470,7 +1547,7 @@ internal static partial class Templates
             sb.AppendLine("        await connection.OpenAsync();");
         }
 
-        sb.AppendLine("        await InsertItem(connection, item);");
+        AppendPageInsert(sb, table);
         if (MdShowOnAdd(table))
         {
             // A new master record opens its edit page, so detail rows can be added right away. InsertItem stored the new key.
@@ -1486,6 +1563,22 @@ internal static partial class Templates
 
         sb.AppendLine("    }");
         sb.AppendLine();
+    }
+
+    /// <summary>The insert of the add and copy pages; the audit entry of an audited table is written in the same transaction.</summary>
+    private static void AppendPageInsert(StringBuilder sb, TableInfo table)
+    {
+        if (!AuditsInserts(table))
+        {
+            sb.AppendLine("        await InsertItem(connection, item);");
+            return;
+        }
+
+        AppendAuditTransaction(sb, "        ", pad =>
+        {
+            sb.AppendLine($"{pad}await InsertItem(connection, item);");
+            sb.AppendLine($"{pad}{AuditWrite(table, "insert", "context", "item.AuditKey()", "null", "item.AuditValues()")}");
+        });
     }
 
     private static void AppendCopyPages(StringBuilder sb, TableInfo table)
@@ -1563,7 +1656,7 @@ internal static partial class Templates
             sb.AppendLine($"        item.{OwnerProp(table)} = OwnerOf(context);");
         }
 
-        sb.AppendLine("        await InsertItem(connection, item);");
+        AppendPageInsert(sb, table);
         sb.AppendLine(Designed(table) ? $"        return {DoneCall(table, "copy")};" : $"        return Results.Redirect({BackTarget(table)});");
         sb.AppendLine("    }");
         sb.AppendLine();
@@ -1618,6 +1711,12 @@ internal static partial class Templates
             sb.AppendLine($"        var mdOld = {MdOldNew(table, className, "item")};");
         }
 
+        var auditUpdate = AuditsUpdates(table) && updateFields.Count > 0;
+        if (auditUpdate)
+        {
+            sb.AppendLine("        var auditBefore = item.AuditValues();");
+        }
+
         sb.AppendLine("        var errors = new List<string>();");
         sb.AppendLine("        BindForm(item, form, true, errors);");
         sb.AppendLine("        if (errors.Count > 0)");
@@ -1633,11 +1732,17 @@ internal static partial class Templates
         sb.AppendLine();
         if (updateFields.Count > 0)
         {
-            var pad = cascadeUpdate ? "    " : string.Empty;
+            var transactional = cascadeUpdate || auditUpdate;
+            var pad = transactional ? "    " : string.Empty;
+            var transaction = cascadeUpdate ? "ReferentialIntegrity" : "Audit";
             if (cascadeUpdate)
             {
                 sb.AppendLine($"        var mdNew = {MdOldNew(table, className, "item")};");
-                sb.AppendLine("        await ReferentialIntegrity.BeginAsync(connection);");
+            }
+
+            if (transactional)
+            {
+                sb.AppendLine($"        await {transaction}.BeginAsync(connection);");
                 sb.AppendLine("        try");
                 sb.AppendLine("        {");
             }
@@ -1646,14 +1751,24 @@ internal static partial class Templates
             AppendParameters(sb, updateFields, "item", className, pad + "        ");
             AppendKeyParameters(sb, table, pad + "        ");
             sb.AppendLine($"{pad}        await connection.ExecuteAsync({Lit(UpdateSql(table, updateFields))}, args);");
+            if (auditUpdate)
+            {
+                sb.AppendLine($"            var auditAfter = await Find(connection, {keyArgs}{OwnerArg(table)});");
+                sb.AppendLine($"            {AuditWrite(table, "update", "context", "item.AuditKey()", "auditBefore", "(auditAfter ?? item).AuditValues()")}");
+            }
+
             if (cascadeUpdate)
             {
-                sb.AppendLine($"            await ReferentialIntegrity.Update_{className}(connection, mdOld, mdNew);");
-                sb.AppendLine("            await ReferentialIntegrity.CommitAsync(connection);");
+                sb.AppendLine($"            await ReferentialIntegrity.Update_{className}(connection, mdOld, mdNew{(MdUpdateAudited(table) ? ", context" : string.Empty)});");
+            }
+
+            if (transactional)
+            {
+                sb.AppendLine($"            await {transaction}.CommitAsync(connection);");
                 sb.AppendLine("        }");
                 sb.AppendLine("        catch");
                 sb.AppendLine("        {");
-                sb.AppendLine("            await ReferentialIntegrity.RollbackAsync(connection);");
+                sb.AppendLine($"            await {transaction}.RollbackAsync(connection);");
                 sb.AppendLine("            throw;");
                 sb.AppendLine("        }");
             }
@@ -1732,6 +1847,7 @@ internal static partial class Templates
         var keyParams = KeyParams(table);
         var keyArgs = KeyArgs(table);
         var planned = MdDeletePlanned(table);
+        var auditDelete = AuditsDeletes(table);
         sb.AppendLine($"    private static async Task<IResult> DeletePost({keyParams}, HttpContext context, IAntiforgery antiforgery, string connectionString)");
         sb.AppendLine("    {");
         sb.AppendLine("        if (!await Html.IsAntiforgeryValidAsync(context, antiforgery))");
@@ -1743,17 +1859,28 @@ internal static partial class Templates
         sb.AppendLine("        await connection.OpenAsync();");
         if (IsOwned(table))
         {
-            sb.AppendLine($"        if (await Find(connection, {keyArgs}{OwnerArg(table)}) is null)");
+            sb.AppendLine(auditDelete
+                ? $"        var auditItem = await Find(connection, {keyArgs}{OwnerArg(table)});"
+                : $"        if (await Find(connection, {keyArgs}{OwnerArg(table)}) is null)");
+            if (auditDelete)
+            {
+                sb.AppendLine("        if (auditItem is null)");
+            }
+
             sb.AppendLine("        {");
             sb.AppendLine("            return Results.NotFound();");
             sb.AppendLine("        }");
             sb.AppendLine();
         }
+        else if (auditDelete)
+        {
+            sb.AppendLine($"        var auditItem = await Find(connection, {keyArgs});");
+        }
 
         if (planned)
         {
             // The plan re-checks the restrict rules, cascades and sets null in one transaction.
-            sb.AppendLine($"        var outcome = await ReferentialIntegrity.DeleteAsync(connection, ReferentialIntegrity.Plan_{Identifier.Pascal(table.Name)}, {MdArgs(table, "OwnerOf(context)")});");
+            sb.AppendLine($"        var outcome = await ReferentialIntegrity.DeleteAsync(connection, ReferentialIntegrity.Plan_{Identifier.Pascal(table.Name)}, {MdArgs(table, "OwnerOf(context)")}{MdAuditDeleteArgs(table, "context", "auditItem")});");
             sb.AppendLine("        if (outcome.Status == ReferentialIntegrity.NotFound)");
             sb.AppendLine("        {");
             sb.AppendLine("            return Results.NotFound();");
@@ -1768,7 +1895,21 @@ internal static partial class Templates
         {
             sb.AppendLine("        var args = new DynamicParameters();");
             AppendKeyParameters(sb, table, "        ");
-            sb.AppendLine($"        await connection.ExecuteAsync(\"DELETE FROM \" + Table + \" WHERE \" + {KeyCondition(table)}, args);");
+            if (auditDelete)
+            {
+                AppendAuditTransaction(sb, "        ", pad =>
+                {
+                    sb.AppendLine($"{pad}await connection.ExecuteAsync(\"DELETE FROM \" + Table + \" WHERE \" + {KeyCondition(table)}, args);");
+                    sb.AppendLine($"{pad}if (auditItem is not null)");
+                    sb.AppendLine($"{pad}{{");
+                    sb.AppendLine($"{pad}    {AuditWrite(table, "delete", "context", "auditItem.AuditKey()", "auditItem.AuditValues()", "null")}");
+                    sb.AppendLine($"{pad}}}");
+                });
+            }
+            else
+            {
+                sb.AppendLine($"        await connection.ExecuteAsync(\"DELETE FROM \" + Table + \" WHERE \" + {KeyCondition(table)}, args);");
+            }
         }
 
         sb.AppendLine(Designed(table) ? $"        return {DoneCall(table, "delete")};" : $"        return Results.Redirect({BackTarget(table)});");

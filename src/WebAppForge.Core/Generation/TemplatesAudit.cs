@@ -126,6 +126,67 @@ internal static partial class Templates
         sb.AppendLine($"{indent}}}");
     }
 
+    /// <summary>The Audit.Capture entries of the delete plan of <paramref name="root"/>: the detail rows a cascade deletes or a set-null changes.</summary>
+    private static List<(string Table, string Action, string Sql, List<string> NullFields)> MdAuditCaptures(TableInfo root) =>
+        root.PrimaryKeys.Count == 0 || Auditing is null ? [] : MdBuildPlan(root).Captures;
+
+    /// <summary>
+    /// The detail fields a cascading update of <paramref name="md"/> sets and the trail keeps: empty when the detail table is not
+    /// audited for updates.
+    /// </summary>
+    private static List<FieldInfo> MdAuditedUpdateFields(MdLink md) =>
+        !AuditsUpdates(md.Detail)
+            ? []
+            : md.Pairs.Where(p => !p.Master.IsPrimaryKey).Select(p => p.Detail)
+                .Where(f => AuditFields(md.Detail).Any(a => MdSame(a.Name, f.Name))).ToList();
+
+    /// <summary>True when the cascading update of <paramref name="table"/> changes rows of an audited detail table.</summary>
+    private static bool MdUpdateAudited(TableInfo table) =>
+        Auditing is not null && MdUpdatePlanned(table)
+        && MdLinks(table).Any(l => l.Link.OnUpdate == UpdateRule.Cascade && l.Pairs.Any(p => !p.Master.IsPrimaryKey) && MdAuditedUpdateFields(l).Count > 0);
+
+    /// <summary>
+    /// The extra arguments of ReferentialIntegrity.DeleteAsync for an audited delete: the HTTP context, and a callback that writes the
+    /// entry of the deleted row inside the delete transaction. Empty when neither the row nor its cascades are audited.
+    /// </summary>
+    private static string MdAuditDeleteArgs(TableInfo table, string http, string beforeVar)
+    {
+        var captures = MdAuditCaptures(table).Count > 0;
+        var root = AuditsDeletes(table);
+        if (!captures && !root)
+        {
+            return string.Empty;
+        }
+
+        return root
+            ? $", {http}, async () => {{ if ({beforeVar} is not null) {{ {AuditWrite(table, "delete", http, beforeVar + ".AuditKey()", beforeVar + ".AuditValues()", "null")} }} }}"
+            : $", {http}";
+    }
+
+    /// <summary>
+    /// The ReferentialIntegrity runtime of a site with an audit trail: the delete plan reads the rows it cascades to before the
+    /// statements run, and writes their entries, and the entry of the deleted row, before the transaction commits.
+    /// </summary>
+    private static string AuditedIntegrityHead()
+    {
+        static string Swap(string text, string from, string to) =>
+            text.Contains(from, StringComparison.Ordinal) ? text.Replace(from, to, StringComparison.Ordinal) : throw new InvalidOperationException("The integrity runtime changed: " + from);
+
+        var head = IntegrityRuntimeHead;
+        head = Swap(head, "Step[] Counts, string[] Statements);", "Step[] Counts, string[] Statements, Audit.Capture[]? Captures = null);");
+        head = Swap(head, "Task<Outcome> DeleteAsync(SqliteConnection connection, Plan plan, (string Name, object? Value)[] args)",
+            "Task<Outcome> DeleteAsync(SqliteConnection connection, Plan plan, (string Name, object? Value)[] args,\n"
+            + "        HttpContext? http = null, Func<Task>? onDeleted = null)");
+        head = Swap(head, "foreach (var statement in plan.Statements)",
+            "var captured = plan.Captures is { Length: > 0 } captures ? await Audit.CaptureAsync(connection, captures, sql => Bind(sql, args)) : null;\n"
+            + "            foreach (var statement in plan.Statements)");
+        head = Swap(head, "await ExecAsync(connection, \"DELETE FROM \" + plan.Table + \" WHERE \" + plan.Where, args);",
+            "await ExecAsync(connection, \"DELETE FROM \" + plan.Table + \" WHERE \" + plan.Where, args);\n"
+            + "            if (onDeleted is not null)\n            {\n                await onDeleted();\n            }\n\n"
+            + "            if (captured is not null)\n            {\n                await Audit.WriteCapturedAsync(connection, http, captured);\n            }\n");
+        return head;
+    }
+
     /// <summary>
     /// SELECT of the rows an integrity statement on <paramref name="table"/> changes, for the audit trail: the key columns as __k0,
     /// __k1, ... and the audited fields by name (or only <paramref name="fields"/>).
@@ -280,7 +341,7 @@ internal static partial class Templates
                     foreach (var capture in captures)
                     {
                         var rows = (await connection.QueryAsync(capture.Sql, bind(capture.Sql)))
-                            .Select(row => new Dictionary<string, object?>((IDictionary<string, object>)row))
+                            .Select(row => ((IDictionary<string, object>)row).ToDictionary(p => p.Key, p => (object?)p.Value))
                             .ToList();
                         result.Add((capture, rows));
                     }
