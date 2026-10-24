@@ -41,6 +41,16 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
             {
                 OnPropertyChanged(nameof(DatabasePath));
             }
+            else if (e.PropertyName == nameof(DatabaseViewModel.SelectedProvider))
+            {
+                OnPropertyChanged(nameof(Provider));
+                OnPropertyChanged(nameof(IsSqlite));
+                OnPropertyChanged(nameof(ServerConnection));
+            }
+            else if (e.PropertyName is nameof(DatabaseViewModel.ConnectionString) or nameof(DatabaseViewModel.ConnectionStringVariable))
+            {
+                OnPropertyChanged(nameof(ServerConnection));
+            }
         };
     }
 
@@ -379,7 +389,16 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
 
     // ---- Database ----
 
-    public string Provider => "SQLite";
+    /// <summary>The engine chosen on the Database tab.</summary>
+    public string Provider => _main.Database.SelectedProvider.Name;
+
+    public bool IsSqlite => _main.Database.IsSqlite;
+
+    /// <summary>Where a server project's connection string comes from; the string itself is not shown, it may hold a password.</summary>
+    public string ServerConnection =>
+        !string.IsNullOrWhiteSpace(_main.Database.ConnectionStringVariable)
+            ? $"Environment variable {_main.Database.ConnectionStringVariable.Trim()}"
+            : string.IsNullOrWhiteSpace(_main.Database.ConnectionString) ? "Not set" : "Connection string in the project";
 
     public string DatabasePath
     {
