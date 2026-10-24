@@ -7,6 +7,8 @@ namespace WebAppForge.Core.Tests;
 /// The three Program.cs hashes were updated deliberately when the default site title changed from the old product name to "Web Application" (the only change in the output).
 /// Every hash was updated deliberately when the generated sites moved to Dapper (ADR 001): models lost FromReader, queries go through
 /// Dapper, select lists name each column after its property, and Web/Db.cs was added.
+/// The localized Permissions.cs and strings.en.json hashes were updated deliberately when the "no permission" answers of the routes
+/// became translatable: Permissions.cs answers in the language of the request, and the English store gained the three texts.
 /// </summary>
 internal static class CustomizationGolden
 {
@@ -20,7 +22,7 @@ internal static class CustomizationGolden
         localized/LocShop.csproj 2dc238918d7c97f0
         localized/Localization/Strings.cs 3df468507f47da20
         localized/Localization/strings.de.json ca3d163bab055381
-        localized/Localization/strings.en.json 01e0fcb7a87740e2
+        localized/Localization/strings.en.json 02b9873af5378424
         localized/Models/AuditLog.cs a70a54b8072eba00
         localized/Models/Codes.cs 5622dce221ed3c93
         localized/Models/Notes.cs 8c5a4b4ed0c92dff
@@ -38,7 +40,7 @@ internal static class CustomizationGolden
         localized/Program.cs bc5ba39fff17367f
         localized/Security/LoginAttempts.cs 131d5392d619d1a0
         localized/Security/Passwords.cs 41009637792cf9b8
-        localized/Security/Permissions.cs 654c0e972b82fbfb
+        localized/Security/Permissions.cs 20eee32b5f140015
         localized/Web/Db.cs b5489f929792b77d
         localized/Web/Html.cs 5d4916cd46de86d2
         plain/Endpoints/AuditLogEndpoints.cs 215162fd8fe2cdaf

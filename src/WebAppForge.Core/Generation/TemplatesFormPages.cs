@@ -151,7 +151,24 @@ internal static partial class Templates
 
     // ---- the runtime ----------------------------------------------------------------------------
 
-    internal static string FormPagesRuntime(string ns) => """"
+    internal static string FormPagesRuntime(string ns)
+    {
+        var text = PlainFormPagesRuntime(ns);
+        if (!Localized)
+        {
+            return text;
+        }
+
+        // Localized, the wizard texts are read per request in the visitor's language.
+        text = ReplaceOnce(text, "namespace " + ns + ".Web;", "using " + ns + ".Localization;\n\nnamespace " + ns + ".Web;");
+        text = ReplaceOnce(text, """public const string PreviousText = "Previous";""", """public static string PreviousText => Strings.T("ui.formPrevious", "Previous");""");
+        text = ReplaceOnce(text, """public const string NextText = "Next";""", """public static string NextText => Strings.T("ui.formNext", "Next");""");
+        text = ReplaceOnce(text, """public const string StepText = "Step {0} of {1}";""", """public static string StepText => Strings.T("ui.formStep", "Step {0} of {1}");""");
+        return ReplaceOnce(text, """aria-label=\"Progress\" aria-valuemin""",
+            """aria-label=\"" + Html.Attr(Strings.T("ui.formProgress", "Progress")) + "\" aria-valuemin""");
+    }
+
+    private static string PlainFormPagesRuntime(string ns) => """"
         using System.Runtime.CompilerServices;
         using System.Text;
 

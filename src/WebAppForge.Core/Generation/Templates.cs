@@ -401,7 +401,7 @@ internal static partial class Templates
         return text;
     }
 
-    private static string ReplaceOnce(string text, string anchor, string replacement)
+    internal static string ReplaceOnce(string text, string anchor, string replacement)
     {
         var index = text.IndexOf(anchor, StringComparison.Ordinal);
         if (index < 0)

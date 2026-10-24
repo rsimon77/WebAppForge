@@ -11,7 +11,26 @@ internal static class AuthTemplates
     /// User Level helpers (only written when a user level field is set). The level is read at login and stored in the
     /// cookie as the "user_level" claim. A missing or non-numeric claim counts as level 0.
     /// </summary>
-    public static string Permissions(string ns) => ("""
+    public static string Permissions(string ns)
+    {
+        var text = PlainPermissions(ns);
+        if (!Templates.Localized)
+        {
+            return text;
+        }
+
+        // Localized, the denied message is answered in the language of the request. The routes pass the English text.
+        text = Templates.ReplaceOnce(text, "namespace " + ns + ".Security;", "using " + ns + ".Localization;\n\nnamespace " + ns + ".Security;");
+        text = Templates.ReplaceOnce(text, "return Results.Text(deniedMessage, ", "return Results.Text(Translate(deniedMessage), ");
+        var cases = string.Concat(UiStrings.Denied.Select(s => $"        {Templates.Lit(s.English)} => Strings.T({Templates.Lit(s.Key)}, message),\n"));
+        const string anchor = "    /// <summary>True when the user is signed in and has at least";
+        return Templates.ReplaceOnce(text, anchor,
+            "    /// <summary>A denied message of the generated routes in the language of the request; any other text as it is.</summary>\n"
+            + "    private static string Translate(string message) => message switch\n    {\n" + cases + "        _ => message,\n    };\n\n"
+            + anchor);
+    }
+
+    private static string PlainPermissions(string ns) => ("""
         using System.Security.Claims;
 
         namespace @@NS@@.Security;
