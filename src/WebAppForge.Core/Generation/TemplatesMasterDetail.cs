@@ -92,7 +92,7 @@ internal static partial class Templates
         (t.PrimaryKeys.Count > 0 && MdLinks(t).Any(l => l.Detail.ViewMinLevel > 0 || l.Detail.EditMinLevel > 0))
         || MdMasters(t).Any(l => l.Master.ViewMinLevel > 0);
 
-    private static bool UsesSecurityNamespace(TableInfo t) => IsLevelGuarded(t) || MdNeedsSecurity(t);
+    private static bool UsesSecurityNamespace(TableInfo t) => IsLevelGuarded(t) || MdNeedsSecurity(t) || ExchangeNeedsSecurity(t);
 
     /// <summary>The preview a link really gets: the expandable row needs table rows, so the cards layout uses an offcanvas.</summary>
     private static DetailPreview MdPreviewOf(TableInfo t, MdLink l) =>

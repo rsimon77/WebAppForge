@@ -145,7 +145,59 @@ public static class UiStrings
         new("auditEmpty", "No entries match."),
     ];
 
-    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).Concat(Audit).ToDictionary(s => s.Id);
+    /// <summary>
+    /// Fixed texts of the import and export pages. Kept apart from <see cref="All"/> like <see cref="Reports"/>; enumerated only
+    /// when a generated table exports or imports.
+    /// </summary>
+    public static IReadOnlyList<UiString> ImportExport { get; } =
+    [
+        new("impExport", "Export"),
+        new("impImport", "Import"),
+        new("impTitle", "Import {0}"),
+        new("impFile", "File"),
+        new("impHeaderRow", "The first row contains column names"),
+        new("impSkipInvalid", "Skip invalid rows and import the rest"),
+        new("impUpload", "Upload and preview"),
+        new("impTemplate", "Download a CSV template"),
+        new("impFormats", "Accepted files: {0}."),
+        new("impNoFile", "Choose a file to import."),
+        new("impTooLarge", "The file is larger than {0} MB."),
+        new("impBadType", "This type of file cannot be imported."),
+        new("impUnreadable", "The file could not be read as {0}."),
+        new("impNoRows", "The file has no rows to import."),
+        new("impTooMany", "The file has more than {0} rows."),
+        new("impPreview", "Preview"),
+        new("impMapping", "Which column goes into which field"),
+        new("impMapNone", "(do not import)"),
+        new("impField", "Field"),
+        new("impColumn", "Column in the file"),
+        new("impRowsFound", "{0} rows found in {1}."),
+        new("impCheck", "Check"),
+        new("impExpired", "The uploaded file is no longer available. Upload it again."),
+        new("impNotMapped", "{0} is required, but no column is mapped to it."),
+        new("impKeyNotMapped", "{0} is part of the key of the table: map a column to it to update existing rows."),
+        new("impNothingMapped", "Map at least one column."),
+        new("impSummary", "{0} rows are valid and {1} rows have errors."),
+        new("impRowError", "Row {0}: {1}"),
+        new("impMoreErrors", "{0} more errors are not shown."),
+        new("impDone", "Import finished"),
+        new("impResult", "{0} rows added, {1} rows updated, {2} rows skipped."),
+        new("impNothing", "Nothing was imported because some rows have errors. Correct the file, or choose to skip invalid rows."),
+        new("impFailed", "The import failed at row {0} and was rolled back. Nothing was changed."),
+        new("impBool", "{0} must be yes or no."),
+        new("impLookup", "{0}: '{1}' is not an allowed value."),
+        new("impDuplicate", "The key appears more than once in the file."),
+        new("impKeyExists", "A row with this key already exists."),
+        new("impKeyMissing", "The key {0} is empty."),
+        new("impAnother", "Import another file"),
+        new("impTooLong", "{0} is longer than {1} characters."),
+        new("impTooShort", "{0} needs at least {1} characters."),
+        new("impPattern", "{0} does not have the expected format."),
+        new("impMin", "{0} must be at least {1}."),
+        new("impMax", "{0} must be at most {1}."),
+    ];
+
+    private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).Concat(Grid).Concat(Audit).Concat(ImportExport).ToDictionary(s => s.Id);
 
     /// <summary>The English text of a UI string. Throws for an unknown id, which is a bug in the generator.</summary>
     public static string English(string id) =>

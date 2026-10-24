@@ -59,6 +59,14 @@ public static class LocalizationKeys
             }
         }
 
+        if (Generation.Templates.UsesImportExport(project))
+        {
+            foreach (var ui in UiStrings.ImportExport)
+            {
+                result.Add(new SourceText(ui.Key, ui.English, "en"));
+            }
+        }
+
         var reports = project.Reports.Where(r => r.Generate).ToList();
         if (reports.Count > 0)
         {

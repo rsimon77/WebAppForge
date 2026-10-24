@@ -32,6 +32,9 @@ public sealed class Project
 
     /// <summary>Summary, crosstab, chart, calendar and dashboard pages of the generated site.</summary>
     public List<ReportInfo> Reports { get; } = [];
+
+    /// <summary>Export menu and import pages of the generated site (off by default).</summary>
+    public ImportExportSettings ImportExport { get; set; } = new();
 }
 
 /// <summary>The database products the generator supports. The keys are stored in the project file.</summary>
@@ -216,6 +219,9 @@ public sealed class TableInfo
 
     /// <summary>Pages of the multi-page forms of this table, in order. Used when a design sets a MultiPage mode.</summary>
     public List<FormPageDef> FormPages { get; } = [];
+
+    /// <summary>Export and import of this table; used when <see cref="ImportExportSettings.Enabled"/> is set.</summary>
+    public TableImportExport ImportExport { get; set; } = new();
 
     public List<FieldInfo> Fields { get; } = [];
 

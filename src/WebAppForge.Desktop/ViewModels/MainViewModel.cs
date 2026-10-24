@@ -18,7 +18,7 @@ public partial class MainViewModel : ViewModelBase
     /// Section names in sidebar order, which follows the work: set up the project, shape the data, design the site, build it.
     /// <see cref="ActiveTabIndex"/> indexes this list.
     /// </summary>
-    public static IReadOnlyList<string> TabNames { get; } = ["Project", "Database", "Tables", "Fields", "Relations", "Home page", "Pages", "Reports", "Security", "Audit trail", "Languages", "Generate"];
+    public static IReadOnlyList<string> TabNames { get; } = ["Project", "Database", "Tables", "Fields", "Relations", "Home page", "Pages", "Reports", "Security", "Audit trail", "Import/Export", "Languages", "Generate"];
 
     /// <summary>The stages of the sidebar and the section each one starts with.</summary>
     public static IReadOnlyList<(string Stage, string FirstSection)> Stages { get; } =
@@ -70,6 +70,7 @@ public partial class MainViewModel : ViewModelBase
         Generate = new GenerateViewModel(this);
         Security = new SecurityViewModel(this);
         Audit = new AuditViewModel(this);
+        ImportExport = new ImportExportViewModel(this);
         ProjectSettings = new ProjectSettingsViewModel(this);
         FieldDesigner = new FieldDesignerViewModel(this);
         PageDesigner = new PageDesignerViewModel(this);
@@ -101,6 +102,9 @@ public partial class MainViewModel : ViewModelBase
 
     /// <summary>The Audit trail tab (log table, options and audited tables).</summary>
     public AuditViewModel Audit { get; }
+
+    /// <summary>The Import/Export tab (file formats, options and the tables that export and import).</summary>
+    public ImportExportViewModel ImportExport { get; }
 
     /// <summary>The Project tab.</summary>
     public ProjectSettingsViewModel ProjectSettings { get; }
@@ -453,6 +457,7 @@ public partial class MainViewModel : ViewModelBase
             Generate.LoadFrom(Current);
             Security.LoadFrom(Current);
             Audit.LoadFrom(Current);
+            ImportExport.LoadFrom(Current);
             ProjectSettings.Reload();
         }
 
@@ -534,6 +539,7 @@ public partial class MainViewModel : ViewModelBase
         Generate.LoadFrom(project);
         Security.LoadFrom(project);
         Audit.LoadFrom(project);
+        ImportExport.LoadFrom(project);
         ProjectSettings.Reload();
         FieldDesigner.Reload();
         PageDesigner.Reload();

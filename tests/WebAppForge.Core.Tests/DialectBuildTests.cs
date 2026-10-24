@@ -14,6 +14,7 @@ public class DialectBuildTests
         "customized" => Customized(),
         "masterdetail" => MasterDetail(root),
         "audited" => Audited(root),
+        "exchange" => Exchange(),
         _ => ReportGenerationTests.WithReports("secure"),
     };
 
@@ -28,6 +29,19 @@ public class DialectBuildTests
             table.Designs.List.ResetButton = true;
         }
 
+        project.ImportExport = new ImportExportSettings { Enabled = true, ExportFormats = DataFormats.All, ImportFormats = DataFormats.All };
+        return project;
+    }
+
+    /// <summary>Export and import of every table in every format, with an update-by-key import and a lookup to check.</summary>
+    private static Project Exchange()
+    {
+        var project = CustomizationSamples.Create("secure");
+        project.ImportExport = new ImportExportSettings { Enabled = true, ExportFormats = DataFormats.All, ImportFormats = DataFormats.All, ImportMinLevel = 2 };
+        project.Tables.Single(t => t.Name == "codes").ImportExport.ImportMode = ImportMode.Upsert;
+        project.Tables.Single(t => t.Name == "order_items").ImportExport.ExportMaxRows = 100;
+        project.Tables.Single(t => t.Name == "notes").Fields.Single(f => f.Name == "body").Ui.Lookup =
+            new FieldLookup { Table = "codes", KeyField = "code", DisplayField = "label" };
         return project;
     }
 
@@ -62,10 +76,12 @@ public class DialectBuildTests
     [InlineData(DatabaseProviders.SqlServer, "reports")]
     [InlineData(DatabaseProviders.SqlServer, "audited")]
     [InlineData(DatabaseProviders.MySql, "audited")]
+    [InlineData(DatabaseProviders.SqlServer, "exchange")]
     [InlineData(DatabaseProviders.AzureSql, "reports")]
     [InlineData(DatabaseProviders.MySql, "customized")]
     [InlineData(DatabaseProviders.MySql, "masterdetail")]
     [InlineData(DatabaseProviders.MySql, "reports")]
+    [InlineData(DatabaseProviders.MySql, "exchange")]
     public async Task SamplesBuildForEveryServerWithoutSqliteLeftovers(string provider, string sample)
     {
         var root = MdSupport.TempFolder();

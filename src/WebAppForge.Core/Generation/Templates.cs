@@ -100,7 +100,7 @@ internal static partial class Templates
 
         </Project>
 
-        """.Replace("    @@PACKAGES@@", DapperPackage + "\n" + Db.PackageReferences + (EntraAuth ? "\n" + EntraPackage : string.Empty)).Replace("@@SQLITE@@", sqliteVersion);
+        """.Replace("    @@PACKAGES@@", DapperPackage + "\n" + Db.PackageReferences + (EntraAuth ? "\n" + EntraPackage : string.Empty) + (ExchangeOpenXml ? "\n" + OpenXmlPackage : string.Empty)).Replace("@@SQLITE@@", sqliteVersion);
 
     /// <summary>Dapper maps rows to the models and binds parameters in every generated site.</summary>
     private const string DapperPackage = """    <PackageReference Include="Dapper" Version="2.1.89" />""";
@@ -863,6 +863,8 @@ internal static partial class Templates
                 : $"        app.MapGet(Route + \"/search\", () => SearchPage()){viewGuard};");
         }
 
+        AppendExchangeRoutes(sb, table);
+
         if (hasPk)
         {
             var keyRoute = KeyRoute(table);
@@ -922,6 +924,7 @@ internal static partial class Templates
         }
 
         AppendBuildWhere(sb, table);
+        AppendExchange(sb, table);
         AppendMdGridMethods(sb, className, table);
         if (MdNeedsPresets(table))
         {
@@ -1102,6 +1105,8 @@ internal static partial class Templates
 
             sb.AppendLine("            .Append(\"</div>\");");
         }
+
+        AppendExchangeToolbar(sb, table);
 
         if (UsesGridTools(table))
         {
