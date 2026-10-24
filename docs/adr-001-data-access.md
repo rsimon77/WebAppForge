@@ -1,4 +1,4 @@
-# ADR 001: Data access in generated sites (ADO.NET with a SQL dialect layer, not Entity Framework Core)
+# ADR 001: Data access in generated sites (ADO.NET with a SQL dialect layer, not Entity Framework Core or Dapper)
 
 - Status: accepted
 - Date: 2026-10-24
@@ -8,7 +8,7 @@
 
 Generated sites keep talking to the database through ADO.NET with SQL that the generator writes for the chosen
 database. The generator gets one small dialect class per database (`SqlDialect`: SQLite, SQL Server, MySQL; Azure SQL
-uses the SQL Server dialect). Entity Framework Core is not used as the data layer of generated sites.
+uses the SQL Server dialect). Neither Entity Framework Core nor Dapper is used as the data layer of generated sites.
 
 We may add an optional EF Core `DbContext` and entity classes to the output later, for developers who extend a
 generated site by hand. The generated pages would not depend on it.
@@ -75,11 +75,50 @@ groups through a derived table, because it cannot group by a column position or 
 - Every query stays visible in the generated code, which keeps it easy to review.
 - New databases are added by writing one more dialect class and a schema reader.
 
-### Option C: Dapper or another micro-ORM
+### Option C: Dapper
 
-It would map rows to objects and leave the SQL to us, so it solves only the smallest part of the problem: the
-generated `FromReader` methods already do that mapping. It would add a dependency to every generated site and change
-nothing about the dialect work.
+Dapper maps rows to objects and parameters from objects, and leaves the SQL to us. It was checked on 24 October 2026.
+
+Package: Dapper 2.1.89, published September 2026, actively maintained, targets net10.0 and has no dependencies. It
+generates its mapping code at run time with Reflection.Emit, so it does not suit Native AOT (Dapper.AOT 1.1.0 covers
+that with a source generator). WebAppForge publishes neither trimmed nor AOT builds, so this does not matter today.
+
+A prototype ran the generated model types (long keys, bool, decimal?, DateTime?, byte[]?, string?) against SQLite,
+SQL Server 2022 and MySQL 8.4:
+
+| Check | SQLite | SQL Server | MySQL |
+|---|---|---|---|
+| Insert from an object, null `byte[]` into a binary column | ok | ok | ok |
+| `Query<T>`: integer keys into long, bit/TINYINT(1)/INTEGER into bool, decimals, dates (SQLite text dates too) | ok | ok | ok |
+| `DynamicParameters` for a WHERE built at run time | ok | ok | ok |
+| `DateOnly` parameter | ok | ok | ok |
+
+It mapped 20,000 SQLite rows in about 81 ms, the same as the generated hand-written `FromReader` once warm. The first
+query of each shape costs about 18 ms more while Dapper builds its mapper.
+
+What it would change in a generated site:
+
+- `FromReader` and the `reader.Get...` expressions per dialect would go. The SELECT lists would alias each column to
+  its property name (`"order date" AS OrderDate`), because property names are Pascal case and some get a suffix.
+- `Parameters.AddWithValue` lines would become parameter objects, and the typed-null special case for SQL Server
+  binary columns would go, because Dapper takes the type from the property.
+- In the three samples measured (master/detail, reports, secure), commands, parameters and reader loops are 4 to 10% of
+  the generated lines (about 380 of 4,500 lines in the master/detail sample). Dapper would remove roughly half of those.
+
+What it would not change:
+
+- The dialect layer, the user's SQL filters, the grid tools, report grouping, lookups and the integrity transactions
+  all remain our SQL. That is where the database work is.
+- Reports read untyped values into their own accumulators, which suits a plain reader better than Dapper's dynamic
+  rows.
+
+Costs: a package in every generated site, a rewrite of the model, insert, update, key and list templates, new golden
+hashes for SQLite output, and a full retest on all four databases. Users would see no change.
+
+Verdict: Dapper works well with all three drivers and would be the better choice over EF Core if we want a mapping
+library. It would make generated code shorter and easier to extend by hand, but it removes plumbing that already works
+and is tested, and it leaves the hard part (the SQL) as it is. We do not switch now. It becomes worth doing when hand
+extension of generated sites becomes a goal, or when the page templates are rewritten for another reason.
 
 ## Consequences
 

@@ -12,7 +12,7 @@ produce a Dockerfile and compose file.
   generates a server-rendered ASP.NET Core 10 site: list, view, add, copy, edit, delete and search pages, plus a JSON
   API. Every feature below works on all four. A server connection string can live in an environment variable, so it is
   kept out of the project file, appsettings.json and the Docker image. Generated sites use ADO.NET with SQL written
-  for the chosen database; see [ADR 001](docs/adr-001-data-access.md) for why they do not use Entity Framework Core.
+  for the chosen database; see [ADR 001](docs/adr-001-data-access.md) for why they do not use Entity Framework Core or Dapper.
 - Customization per field (edit control, validation, lookups, formats, badges, styling), per table (menu, row
   styles) and per page (layouts, columns, modal and side-panel pages, custom CSS and script).
 - Optional grid tools on list pages, each a checkbox in the Pages tab: a filter and sort panel (conditions per column
