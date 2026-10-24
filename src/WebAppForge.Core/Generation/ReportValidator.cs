@@ -16,6 +16,9 @@ public static class ReportValidator
     /// <summary>True when the field type can be grouped by year, quarter, month or day.</summary>
     public static bool IsDate(FieldType type) => type is FieldType.Date or FieldType.DateTime;
 
+    /// <summary>True when a report can treat the field as a date: a date column, or a number column that stores dates (<see cref="FieldInfo.DateStorage"/>).</summary>
+    public static bool IsDateField(FieldInfo field) => IsDate(field.Type) || (IsNumeric(field.Type) && field.DateStorage != DateStorage.Text);
+
     /// <summary>Throws for the first problem of the generated reports of <paramref name="project"/>.</summary>
     public static void Validate(Project project, IReadOnlyList<TableInfo> tables)
     {
@@ -81,6 +84,27 @@ public static class ReportValidator
                 Add("the number of categories shown cannot be negative.");
             }
 
+            if (report.DateFilterField.Trim().Length > 0)
+            {
+                if (report.Kind == ReportKind.Calendar)
+                {
+                    Add("a calendar moves by month; clear the date range field.");
+                }
+                else if (CheckField(table, report.DateFilterField, "date range field", Add) is { } range && !IsDateField(range))
+                {
+                    Add($"the date range field '{range.Name}' is not a date.");
+                }
+            }
+
+            var filters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var filter in report.FilterFields)
+            {
+                if (CheckField(table, filter, "filter field", Add) is { } field && !filters.Add(field.Name))
+                {
+                    Add($"the filter field '{field.Name}' is listed twice.");
+                }
+            }
+
             switch (report.Kind)
             {
                 case ReportKind.Summary:
@@ -133,13 +157,13 @@ public static class ReportValidator
                     break;
 
                 case ReportKind.Calendar:
-                    if (CheckField(table, report.DateField, "date field", Add) is { } date && !IsDate(date.Type))
+                    if (CheckField(table, report.DateField, "date field", Add) is { } date && !IsDateField(date))
                     {
                         Add($"the date field '{date.Name}' is not a date.");
                     }
 
                     if (report.EndDateField.Trim().Length > 0
-                        && CheckField(table, report.EndDateField, "end date field", Add) is { } end && !IsDate(end.Type))
+                        && CheckField(table, report.EndDateField, "end date field", Add) is { } end && !IsDateField(end))
                     {
                         Add($"the end date field '{end.Name}' is not a date.");
                     }
@@ -209,7 +233,7 @@ public static class ReportValidator
 
     private static void CheckGrouping(TableInfo table, string name, DateInterval interval, string what, Action<string> add)
     {
-        if (CheckField(table, name, what, add) is { } field && interval != DateInterval.None && !IsDate(field.Type))
+        if (CheckField(table, name, what, add) is { } field && interval != DateInterval.None && !IsDateField(field))
         {
             add($"the {what} '{field.Name}' is not a date, so it cannot be grouped by {interval.ToString().ToLowerInvariant()}.");
         }

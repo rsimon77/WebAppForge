@@ -127,6 +127,23 @@ public sealed class ReportInfo
     /// <summary>Heading of the home page group the report is listed under. Empty = with the tables.</summary>
     public string MenuGroup { get; set; } = string.Empty;
 
+    // ---- filters and drill-down -----------------------------------------------------------------
+
+    /// <summary>
+    /// Date field that the page offers as a From/To range. Empty = no date range. Applies to summary, crosstab and chart reports;
+    /// a calendar already moves by month.
+    /// </summary>
+    public string DateFilterField { get; set; } = string.Empty;
+
+    /// <summary>Fields the page offers as pick lists of their values (summary, crosstab and chart reports).</summary>
+    public List<string> FilterFields { get; } = [];
+
+    /// <summary>
+    /// Link the numbers of the report to the rows behind them (summary, crosstab and chart reports): a page that lists those rows,
+    /// with links to the view page.
+    /// </summary>
+    public bool DrillDown { get; set; } = true;
+
     // ---- summary --------------------------------------------------------------------------------
 
     /// <summary>Group levels, outermost first (summary).</summary>

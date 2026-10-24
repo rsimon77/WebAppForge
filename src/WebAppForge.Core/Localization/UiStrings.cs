@@ -78,6 +78,13 @@ public static class UiStrings
         new("reportMax", "Max"),
         new("reportOf", "{0} of {1}"),
         new("reports", "Reports"),
+        new("reportFrom", "From"),
+        new("reportTo", "To"),
+        new("reportApply", "Apply"),
+        new("reportClear", "Clear"),
+        new("reportAll", "(all)"),
+        new("reportRowCount", "{0} rows"),
+        new("reportBack", "Back to the report"),
     ];
 
     private static readonly Dictionary<string, UiString> ById = All.Concat(Reports).ToDictionary(s => s.Id);

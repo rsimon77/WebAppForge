@@ -31,6 +31,8 @@ public class ReportsViewTests
                      "ReportNameBox", "ReportKindCombo", "ReportRouteText", "ReportCaptionBox", "ReportDescriptionBox", "ReportTableCombo", "ReportFilterBox",
                      "ReportGenerateCheck", "ReportShowInMenuCheck", "ReportMenuGroupBox", "ReportMinLevelBox", "ReportGroupsGrid", "AddReportGroupButton",
                      "ReportAggregatesGrid", "AddReportAggregateButton", "ReportShowDetailsCheck", "ReportGrandTotalCheck",
+                     "ReportDetailColumnsGrid", "AddReportColumnButton", "MoveReportColumnUpButton", "ReportDrillDownCheck", "ReportDateFilterCombo",
+                     "ReportFilterFieldsGrid", "AddReportFilterButton", "RemoveReportFilterButton",
                  })
         {
             Assert.True(Find<Control>(window, id) is { IsEffectivelyVisible: true }, id);
@@ -62,6 +64,20 @@ public class ReportsViewTests
         Assert.Equal("/reports/monthly-sales", Find<TextBlock>(window, "ReportRouteText")!.Text);
         Assert.Equal("No problems found.", Find<TextBlock>(window, "ReportProblemSummaryText")!.Text);
         Assert.EndsWith("> Reports > Monthly sales", main.Breadcrumb);
+
+        Find<Button>(window, "AddReportFilterButton")!.Command!.Execute(null);
+        Settle(window);
+        Assert.Single(Find<DataGrid>(window, "ReportFilterFieldsGrid")!.ItemsSource!.Cast<object>());
+        Assert.Equal(["Id"], report.FilterFields);
+        Find<CheckBox>(window, "ReportDrillDownCheck")!.IsChecked = false;
+        Settle(window);
+        Assert.False(report.DrillDown);
+
+        Find<ComboBox>(window, "ReportKindCombo")!.SelectedItem = main.Reports.KindChoices.Single(c => c.Value == ReportKind.Calendar);
+        Settle(window);
+        Assert.False(Visible(window, "ReportDateFilterCombo"));
+        Assert.True(Visible(window, "ReportFilterFieldsGrid"));
+        Assert.False(Visible(window, "ReportDrillDownCheck"));
 
         Find<ComboBox>(window, "ReportKindCombo")!.SelectedItem = main.Reports.KindChoices.Single(c => c.Value == ReportKind.Dashboard);
         Settle(window);

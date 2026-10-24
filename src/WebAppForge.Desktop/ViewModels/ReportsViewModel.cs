@@ -135,6 +135,28 @@ public sealed class ReportAggregateRow : ReportPartRow
     }
 }
 
+/// <summary>One field of a list of the selected report (row columns, filters). The owner writes the list back on every change.</summary>
+public sealed class ReportFieldRow : ReportPartRow
+{
+    private string _field;
+
+    public ReportFieldRow(string field, Action changed) : base(changed) => _field = field;
+
+    public string? Field
+    {
+        get => _field;
+        set
+        {
+            if (value is not null)
+            {
+                Set(_field, value, v => _field = v);
+            }
+        }
+    }
+
+    internal void OnFieldsChanged() => OnPropertyChanged(nameof(Field));
+}
+
 /// <summary>One report on a dashboard.</summary>
 public sealed class DashboardItemRow : ReportPartRow
 {
@@ -192,6 +214,8 @@ public partial class ReportsViewModel : EditorViewModelBase
     private ReportGroupRow? _selectedGroup;
     private ReportAggregateRow? _selectedAggregate;
     private DashboardItemRow? _selectedItem;
+    private ReportFieldRow? _selectedDetailColumn;
+    private ReportFieldRow? _selectedFilterField;
 
     public ReportsViewModel(MainViewModel main)
     {
@@ -274,6 +298,9 @@ public partial class ReportsViewModel : EditorViewModelBase
 
     /// <summary><see cref="NoneLabel"/> followed by <see cref="FieldNames"/>, for optional fields.</summary>
     public ObservableCollection<string> OptionalFieldNames { get; } = [];
+
+    /// <summary><see cref="NoneLabel"/> followed by the date fields of the source table (number columns that store dates included).</summary>
+    public ObservableCollection<string> DateFieldNames { get; } = [];
 
     /// <summary><see cref="RowsLabel"/> followed by <see cref="FieldNames"/>, for counted values.</summary>
     public ObservableCollection<string> ValueFieldNames { get; } = [];
@@ -478,29 +505,43 @@ public partial class ReportsViewModel : EditorViewModelBase
         set => Edit(Report?.ShowGrandTotal, value, (r, v) => r.ShowGrandTotal = v);
     }
 
-    /// <summary>Detail columns separated by commas. Empty lists the fields shown in the table's list.</summary>
-    public string DetailColumns
+    /// <summary>The columns listed for each row (and on the drill-down page), in order. None: the fields shown in the table's list.</summary>
+    public ObservableCollection<ReportFieldRow> DetailColumns { get; } = [];
+
+    public ReportFieldRow? SelectedDetailColumn
     {
-        get => Report is null ? string.Empty : string.Join(", ", Report.DetailColumns);
-        set
-        {
-            if (Report is null || value is null)
-            {
-                return;
-            }
-
-            var columns = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-            if (columns.SequenceEqual(Report.DetailColumns))
-            {
-                return;
-            }
-
-            Report.DetailColumns.Clear();
-            Report.DetailColumns.AddRange(columns);
-            OnPropertyChanged();
-            Changed();
-        }
+        get => _selectedDetailColumn;
+        set => SetProperty(ref _selectedDetailColumn, value);
     }
+
+    // ---- filters and drill-down -----------------------------------------------------------------
+
+    /// <summary>The From/To date range field, or <see cref="NoneLabel"/>.</summary>
+    public string? DateFilterField
+    {
+        get => Report is null ? null : Report.DateFilterField.Length == 0 ? NoneLabel : Report.DateFilterField;
+        set => Edit(Report?.DateFilterField, value is null ? null : value == NoneLabel ? string.Empty : value, (r, v) => r.DateFilterField = v);
+    }
+
+    /// <summary>The fields offered as pick lists above the report, in order.</summary>
+    public ObservableCollection<ReportFieldRow> FilterFields { get; } = [];
+
+    public ReportFieldRow? SelectedFilterField
+    {
+        get => _selectedFilterField;
+        set => SetProperty(ref _selectedFilterField, value);
+    }
+
+    public bool DrillDown
+    {
+        get => Report?.DrillDown ?? false;
+        set => Edit(Report?.DrillDown, value, (r, v) => r.DrillDown = v);
+    }
+
+    /// <summary>Filters apply to every kind that reads a table; the date range to summary, crosstab and chart.</summary>
+    public bool HasDateRange => HasSource && !IsCalendar;
+
+    public bool HasDrillDown => IsSummary || UsesGrid;
 
     // ---- crosstab and chart ---------------------------------------------------------------------
 
@@ -751,6 +792,80 @@ public partial class ReportsViewModel : EditorViewModelBase
     }
 
     [RelayCommand]
+    private void AddDetailColumn() => AddFieldRow(DetailColumns, row => SelectedDetailColumn = row);
+
+    [RelayCommand]
+    private void RemoveDetailColumn() => RemoveFieldRow(DetailColumns, SelectedDetailColumn);
+
+    [RelayCommand]
+    private void MoveDetailColumnUp() => MoveFieldRow(DetailColumns, SelectedDetailColumn, -1);
+
+    [RelayCommand]
+    private void MoveDetailColumnDown() => MoveFieldRow(DetailColumns, SelectedDetailColumn, 1);
+
+    [RelayCommand]
+    private void AddFilterField() => AddFieldRow(FilterFields, row => SelectedFilterField = row);
+
+    [RelayCommand]
+    private void RemoveFilterField() => RemoveFieldRow(FilterFields, SelectedFilterField);
+
+    /// <summary>Adds a row with the first field not listed yet.</summary>
+    private void AddFieldRow(ObservableCollection<ReportFieldRow> rows, Action<ReportFieldRow> select)
+    {
+        if (Report is null)
+        {
+            return;
+        }
+
+        var field = FieldNames.FirstOrDefault(f => rows.All(r => !string.Equals(r.Field, f, StringComparison.OrdinalIgnoreCase))) ?? FieldNames.FirstOrDefault() ?? string.Empty;
+        var row = new ReportFieldRow(field, SyncFieldLists);
+        rows.Add(row);
+        select(row);
+        SyncFieldLists();
+    }
+
+    private void RemoveFieldRow(ObservableCollection<ReportFieldRow> rows, ReportFieldRow? row)
+    {
+        if (row is not null && rows.Remove(row))
+        {
+            SyncFieldLists();
+        }
+    }
+
+    private void MoveFieldRow(ObservableCollection<ReportFieldRow> rows, ReportFieldRow? row, int delta)
+    {
+        if (row is null)
+        {
+            return;
+        }
+
+        var index = rows.IndexOf(row);
+        var target = index + delta;
+        if (index < 0 || target < 0 || target >= rows.Count)
+        {
+            return;
+        }
+
+        rows.Move(index, target);
+        SyncFieldLists();
+    }
+
+    /// <summary>Writes the row column and filter lists back to the report.</summary>
+    private void SyncFieldLists()
+    {
+        if (Report is null)
+        {
+            return;
+        }
+
+        Report.DetailColumns.Clear();
+        Report.DetailColumns.AddRange(DetailColumns.Select(r => r.Field ?? string.Empty));
+        Report.FilterFields.Clear();
+        Report.FilterFields.AddRange(FilterFields.Select(r => r.Field ?? string.Empty));
+        Changed();
+    }
+
+    [RelayCommand]
     private void AddItem()
     {
         if (Report is null)
@@ -806,6 +921,8 @@ public partial class ReportsViewModel : EditorViewModelBase
         Groups.Clear();
         Aggregates.Clear();
         Items.Clear();
+        DetailColumns.Clear();
+        FilterFields.Clear();
         if (Report is { } report)
         {
             foreach (var group in report.Groups)
@@ -816,6 +933,16 @@ public partial class ReportsViewModel : EditorViewModelBase
             foreach (var aggregate in report.Aggregates)
             {
                 Aggregates.Add(new ReportAggregateRow(aggregate, Changed));
+            }
+
+            foreach (var column in report.DetailColumns)
+            {
+                DetailColumns.Add(new ReportFieldRow(column, SyncFieldLists));
+            }
+
+            foreach (var filter in report.FilterFields)
+            {
+                FilterFields.Add(new ReportFieldRow(filter, SyncFieldLists));
             }
 
             foreach (var item in report.Items)
@@ -840,7 +967,8 @@ public partial class ReportsViewModel : EditorViewModelBase
         OnPropertyChanged(nameof(MenuGroup));
         OnPropertyChanged(nameof(ShowDetails));
         OnPropertyChanged(nameof(ShowGrandTotal));
-        OnPropertyChanged(nameof(DetailColumns));
+        OnPropertyChanged(nameof(DateFilterField));
+        OnPropertyChanged(nameof(DrillDown));
         OnPropertyChanged(nameof(MaxColumns));
         OnPropertyChanged(nameof(ChartType));
         OnPropertyChanged(nameof(ChartOrder));
@@ -868,6 +996,8 @@ public partial class ReportsViewModel : EditorViewModelBase
         Sync(FieldNames, names);
         Sync(OptionalFieldNames, names.Prepend(NoneLabel));
         Sync(ValueFieldNames, names.Prepend(RowsLabel));
+        var dates = table?.Fields.Where(ReportValidator.IsDateField).Select(f => f.Name) ?? [];
+        Sync(DateFieldNames, dates.Prepend(NoneLabel));
     }
 
     /// <summary>Replaces the items only when they differ, so the pickers keep their selection.</summary>
@@ -909,6 +1039,8 @@ public partial class ReportsViewModel : EditorViewModelBase
         OnPropertyChanged(nameof(HasSource));
         OnPropertyChanged(nameof(RowFieldLabel));
         OnPropertyChanged(nameof(ColumnFieldLabel));
+        OnPropertyChanged(nameof(HasDateRange));
+        OnPropertyChanged(nameof(HasDrillDown));
     }
 
     private void RaiseFields()
@@ -922,6 +1054,12 @@ public partial class ReportsViewModel : EditorViewModelBase
         OnPropertyChanged(nameof(DateField));
         OnPropertyChanged(nameof(EndDateField));
         OnPropertyChanged(nameof(TitleField));
+        OnPropertyChanged(nameof(DateFilterField));
+        foreach (var row in DetailColumns.Concat(FilterFields))
+        {
+            row.OnFieldsChanged();
+        }
+
         foreach (var group in Groups)
         {
             group.OnFieldsChanged();

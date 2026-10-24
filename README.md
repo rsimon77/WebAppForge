@@ -15,7 +15,9 @@ produce a Dockerfile and compose file.
 - Master/detail relationships with referential integrity, and multi-page forms (tabs, pills, accordion, wizard).
 - Report pages: summary (groups with subtotals and a grand total, optionally listing the rows), crosstab, chart (bar,
   horizontal bar, line, area, pie, doughnut, drawn on the server as SVG), month calendar and dashboard. Reports honor the
-  table's filter, record ownership and user levels, and show lookup text for grouped fields.
+  table's filter, record ownership and user levels, and show lookup text for grouped fields. Report pages offer a date
+  range and pick-list filters, and their numbers, bars and cells open the rows behind them. Number columns that hold
+  Unix time or Julian day numbers can be grouped and filtered as dates.
 - Login, registration, password change, lockout, record-level ownership and user-level permissions.
 - Multi-language sites with opt-in translation through Google Cloud Translation or the Claude API
   (keys are read from the `GOOGLE_TRANSLATE_API_KEY` and `ANTHROPIC_API_KEY` environment variables only).

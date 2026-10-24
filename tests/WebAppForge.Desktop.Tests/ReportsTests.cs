@@ -41,7 +41,11 @@ public class ReportsTests
         reports.Aggregates[0].Field = "Total";
         reports.Aggregates[0].Caption = "Revenue";
         reports.ShowDetails = true;
-        reports.DetailColumns = "Id, Status ,Total";
+        reports.AddDetailColumnCommand.Execute(null);
+        reports.AddDetailColumnCommand.Execute(null);
+        reports.AddDetailColumnCommand.Execute(null);
+        reports.DetailColumns[1].Field = "Status";
+        reports.DetailColumns[2].Field = "Total";
 
         Assert.Equal(("Sales", "By status", "Total > 0", "Reports", 3, true), (report.Caption, report.Description, report.Filter, report.MenuGroup, report.MinLevel, report.ShowDetails));
         Assert.Equal("Status", report.Groups.Single().Field);
@@ -118,6 +122,63 @@ public class ReportsTests
         Assert.Equal(("Joined", string.Empty, "Email", false, false), (report.DateField, report.EndDateField, report.TitleField, report.LinkToView, report.WeekStartsMonday));
         Assert.Equal(ReportsViewModel.NoneLabel, reports.EndDateField);
         Assert.Empty(reports.Problems);
+    }
+
+    [Fact]
+    public void FiltersColumnsAndDrillDownWriteThroughAndNumberDatesCountAsDates()
+    {
+        var (main, _) = CustomizationTests.Project();
+        var customers = main.Current.Tables[0];
+        customers.Fields.Add(new FieldInfo { Name = "Joined", Type = FieldType.Integer });
+        main.Tables.SelectedTable = customers;
+        var reports = main.Reports;
+        reports.AddReportCommand.Execute(null);
+        var report = main.Current.Reports.Single();
+        Assert.Equal([ReportsViewModel.NoneLabel], reports.DateFieldNames);
+        Assert.True(reports.HasDateRange && reports.HasDrillDown && reports.DrillDown);
+
+        // The field designer marks the number column as Unix time; the report then offers it as a date.
+        main.Tables.SelectedField = customers.Fields.Single(f => f.Name == "Joined");
+        Assert.True(main.FieldDesigner.CanStoreDates);
+        main.FieldDesigner.DateStorage = DateStorage.UnixSeconds;
+        Assert.Equal(DateStorage.UnixSeconds, customers.Fields.Single(f => f.Name == "Joined").DateStorage);
+        main.Tables.SelectedField = customers.Fields.Single(f => f.Name == "Name");
+        Assert.False(main.FieldDesigner.CanStoreDates);
+        main.FieldDesigner.DateStorage = DateStorage.JulianDay;
+        Assert.Equal(DateStorage.Text, customers.Fields.Single(f => f.Name == "Name").DateStorage);
+
+        reports.Reload();
+        Assert.Equal([ReportsViewModel.NoneLabel, "Joined"], reports.DateFieldNames);
+        reports.DateFilterField = "Joined";
+        reports.AddGroupCommand.Execute(null);
+        reports.Groups[0].Field = "Joined";
+        reports.Groups[0].Interval = Choice(reports.IntervalChoices, DateInterval.Month);
+        reports.AddFilterFieldCommand.Execute(null);
+        reports.AddFilterFieldCommand.Execute(null);
+        reports.FilterFields[1].Field = "Active";
+        reports.AddDetailColumnCommand.Execute(null);
+        reports.AddDetailColumnCommand.Execute(null);
+        reports.SelectedDetailColumn = reports.DetailColumns[1];
+        reports.MoveDetailColumnUpCommand.Execute(null);
+        reports.DrillDown = false;
+
+        Assert.Equal(("Joined", false), (report.DateFilterField, report.DrillDown));
+        Assert.Equal(["Id", "Active"], report.FilterFields);
+        Assert.Equal(["Name", "Id"], report.DetailColumns);
+        Assert.Empty(reports.Problems);
+
+        reports.SelectedFilterField = reports.FilterFields[0];
+        reports.RemoveFilterFieldCommand.Execute(null);
+        reports.FilterFields[0].Field = "Active";
+        reports.AddFilterFieldCommand.Execute(null);
+        reports.FilterFields[1].Field = "Active";
+        Assert.Contains("Report report1: the filter field 'Active' is listed twice.", reports.Problems);
+
+        reports.DateFilterField = ReportsViewModel.NoneLabel;
+        Assert.Equal(string.Empty, report.DateFilterField);
+        reports.Kind = Choice(reports.KindChoices, ReportKind.Calendar);
+        Assert.False(reports.HasDateRange);
+        Assert.False(reports.HasDrillDown);
     }
 
     [Fact]

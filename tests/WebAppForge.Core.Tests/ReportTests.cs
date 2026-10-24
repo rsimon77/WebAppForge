@@ -29,6 +29,10 @@ public class ReportModelTests
         summary.Groups.Add(ReportSupport.Group("placed", DateInterval.Quarter, descending: true));
         summary.Aggregates.Add(ReportSupport.Aggregate(AggregateFunction.Average, "freight", "Avg"));
         summary.DetailColumns.Add("country");
+        summary.DateFilterField = "placed";
+        summary.FilterFields.AddRange(["country", "freight"]);
+        summary.DrillDown = false;
+        project.Tables[0].Fields.Single(f => f.Name == "freight").DateStorage = DateStorage.JulianDay;
         project.Reports.Add(summary);
         project.Reports.Add(new ReportInfo
         {
@@ -46,6 +50,10 @@ public class ReportModelTests
         var s = loaded.Reports[0];
         Assert.Equal(("sales", "Sales", "orders", "freight > 0", "d", 3, false, "G", true, false), (s.Name, s.Caption, s.SourceTable, s.Filter, s.Description, s.MinLevel, s.ShowInMenu, s.MenuGroup, s.ShowDetails, s.ShowGrandTotal));
         Assert.Equal(("placed", DateInterval.Quarter, true), (s.Groups[0].Field, s.Groups[0].Interval, s.Groups[0].Descending));
+        Assert.Equal(("placed", false), (s.DateFilterField, s.DrillDown));
+        Assert.Equal(["country", "freight"], s.FilterFields);
+        Assert.Equal(DateStorage.JulianDay, loaded.Tables[0].Fields.Single(f => f.Name == "freight").DateStorage);
+        Assert.Equal(DateStorage.Text, loaded.Tables[0].Fields.Single(f => f.Name == "country").DateStorage);
         Assert.Equal(("freight", AggregateFunction.Average, "Avg"), (s.Aggregates[0].Field, s.Aggregates[0].Function, s.Aggregates[0].Caption));
         var c = loaded.Reports[1];
         Assert.Equal((ReportKind.Chart, false, DateInterval.Month, "country", AggregateFunction.Max, 7, ChartType.Area, ChartOrder.ValueDescending, 4, false),
@@ -79,7 +87,13 @@ public class ReportModelTests
         Add(new ReportInfo { Name = "grid", Kind = ReportKind.Crosstab, SourceTable = "orders", RowField = "country" });
         Add(new ReportInfo { Name = "pie", Kind = ReportKind.Chart, ChartType = ChartType.Pie, SourceTable = "orders", RowField = "country", ColumnField = "placed" });
         Add(new ReportInfo { Name = "maxdate", Kind = ReportKind.Chart, SourceTable = "orders", RowField = "country", ValueField = "placed", Function = AggregateFunction.Max });
-        Add(new ReportInfo { Name = "cal", Kind = ReportKind.Calendar, SourceTable = "orders", DateField = "country" });
+        Add(new ReportInfo { Name = "cal", Kind = ReportKind.Calendar, SourceTable = "orders", DateField = "country", DateFilterField = "placed" });
+        var filtered = new ReportInfo { Name = "filtered", SourceTable = "orders", DateFilterField = "country" };
+        filtered.FilterFields.AddRange(["country", "Country", "nope"]);
+        Add(filtered);
+        var numberDates = new ReportInfo { Name = "numberdates", SourceTable = "orders" };
+        numberDates.Groups.Add(ReportSupport.Group("id", DateInterval.Year));
+        Add(numberDates);
         var board = new ReportInfo { Name = "board", Kind = ReportKind.Dashboard };
         board.Items.Add(new DashboardItem { Report = "board", Width = 13 });
         board.Items.Add(new DashboardItem { Report = "ghost" });
@@ -99,6 +113,13 @@ public class ReportModelTests
         Has("Report pie: a pie or doughnut chart has one series");
         Has("Report maxdate: a chart plots numbers");
         Has("Report cal: the date field 'country' is not a date.");
+        Has("Report cal: a calendar moves by month; clear the date range field.");
+        Has("Report filtered: the date range field 'country' is not a date.");
+        Has("Report filtered: the filter field 'country' is listed twice.");
+        Has("Report filtered: the filter field 'nope' is not a field of 'orders'.");
+        Has("Report numberdates: the group field 'id' is not a date, so it cannot be grouped by year.");
+        orders.Fields.Single(f => f.Name == "id").DateStorage = DateStorage.UnixSeconds;
+        Assert.DoesNotContain(ReportValidator.Problems(project.Reports, project.Tables), p => p.StartsWith("Report numberdates", StringComparison.Ordinal));
         Has("Report board: a dashboard cannot show another dashboard ('board').");
         Has("Report board: the width of 'board' must be between 1 and 12 columns.");
         Has("Report board: the dashboard shows 'ghost', which is not a generated report.");
@@ -360,6 +381,73 @@ public class SecureReportTests : IClassFixture<SecureReportSite>
     }
 
     [Fact]
+    public async Task TheDateRangeAndThePickListsFilterTheSummary()
+    {
+        using var ann = await _site.SignInAsync("ann", 1);
+        var form = await ann.GetStringAsync("/reports/by-region");
+        Assert.Contains("<form method=\"get\" action=\"/reports/by-region\"", form);
+        Assert.Contains("name=\"from\"", form);
+        // The choices are the values of the user's own rows, with their lookup or Yes/No text.
+        Assert.Contains("<option value=\"N\">North</option><option value=\"S\">South</option>", form);
+        Assert.Contains("<option value=\"0\">No</option><option value=\"1\">Yes</option>", form);
+
+        var range = Squash(Text(await ann.GetStringAsync("/reports/by-region?from=2024-05-10&to=2024-05-31")));
+        Assert.Contains("Grand total 1 100.00 100.00", range);
+        var unpaid = await ann.GetStringAsync("/reports/by-region?f_paid=0");
+        Assert.Contains("Grand total 1 4.25 4.25", Squash(Text(unpaid)));
+        Assert.Contains("<option value=\"0\" selected>No</option>", unpaid);
+        var both = Squash(Text(await ann.GetStringAsync("/reports/by-region?f_region=N&from=2024-01-01&to=not-a-date")));
+        Assert.Contains("Grand total 2 14.75 7.38", both);
+    }
+
+    [Fact]
+    public async Task NumbersLinkToTheRowsBehindThemAndTheRowsPageKeepsOwnerAndFilters()
+    {
+        using var ann = await _site.SignInAsync("ann", 1);
+        var summary = await ann.GetStringAsync("/reports/by-region?f_paid=1");
+        Assert.Contains("href=\"/reports/by-region/rows?f_paid=1&amp;k0=s%3ANorth&amp;k1=i%3A1\"", summary);
+        Assert.Contains("href=\"/reports/by-region/rows?f_paid=1&amp;n0=1&amp;k1=i%3A1\"", summary);
+        Assert.Contains("href=\"/reports/by-region/rows?f_paid=1\"", summary);
+
+        var north = await ann.GetStringAsync("/reports/by-region/rows?k0=s%3ANorth");
+        var text = Squash(Text(north));
+        Assert.Contains("region: North", text);
+        Assert.Contains("2 rows", text);
+        Assert.Contains("<a class=\"link-underline-opacity-0\" href=\"/sales/view/1\">", north);
+        Assert.DoesNotContain(">b1<", north);
+        Assert.Contains("href=\"/reports/by-region\"", north);
+
+        Assert.Contains("1 rows", Squash(Text(await ann.GetStringAsync("/reports/by-region/rows?k0=s%3ANorth&f_paid=1"))));
+        Assert.Contains("a4", Squash(Text(await ann.GetStringAsync("/reports/by-region/rows?n0=1"))));
+        Assert.Contains("0 rows", Squash(Text(await ann.GetStringAsync("/reports/by-region/rows?k0=North' OR 1=1"))));
+
+        using var bob = await _site.SignInAsync("bob", 9);
+        var bobs = Squash(Text(await bob.GetStringAsync("/reports/by-region/rows?k0=s%3ANorth")));
+        Assert.Contains("1 rows", bobs);
+        Assert.Contains("b1", bobs);
+
+        var grid = await bob.GetStringAsync("/reports/grid");
+        Assert.Contains("href=\"/reports/grid/rows?k0=s%3ASouth&amp;k1=i%3A0\"", grid);
+        Assert.Contains("href=\"/reports/grid/rows?k1=i%3A1\"", grid);
+        var chart = await ann.GetStringAsync("/reports/chart");
+        Assert.Contains("<a href=\"/reports/chart/rows?k0=s%3A2024-05&amp;k1=s%3ANorth\"><rect", chart);
+        Assert.Contains("2 rows", Squash(Text(await ann.GetStringAsync("/reports/chart/rows?k0=s%3A2024-05&k1=s%3ANorth"))));
+    }
+
+    [Fact]
+    public async Task UnixAndJulianDatesAreGroupedFilteredAndPlacedOnTheCalendar()
+    {
+        using var ann = await _site.SignInAsync("ann", 1);
+        var page = Squash(Text(await ann.GetStringAsync("/reports/by-stamp")));
+        Assert.Contains("2024-05 2024-05-02 2 2024-05-20 1 Total 2024-05 3", page);
+        Assert.Contains("2024-06 2024-06-01 1", page);
+        Assert.Contains("Grand total 3", Squash(Text(await ann.GetStringAsync("/reports/by-stamp?to=2024-05-31"))));
+
+        var calendar = await ann.GetStringAsync("/reports/stamps?month=2024-05");
+        Assert.Matches("data-day=\"2024-05-20\"><div class=\"small fw-semibold\">20</div><a [^>]+>a3</a></td>", calendar);
+    }
+
+    [Fact]
     public async Task UsersBelowTheLevelOfAReportAreRefusedAndTheDashboardLeavesItOut()
     {
         using var ann = await _site.SignInAsync("ann", 1);
@@ -401,6 +489,31 @@ public class NorthwindReportTests : IClassFixture<NorthwindReportSite>
         var all = await _site.Scalar("SELECT COUNT(*) FROM Orders");
         Assert.Contains($"Grand total {N0(all)} {N2(await _site.Scalar("SELECT SUM(Freight) FROM Orders"))}", page);
         Assert.Contains("Freight per ship country and year.", page);
+    }
+
+    [NorthwindFact]
+    public async Task TheFiltersOfTheSummaryMatchTheDatabase()
+    {
+        var html = await _site.Get("/reports/sales-by-country?from=2016-01-01&to=2016-12-31&f_ShipVia=1");
+        Assert.Contains("<option value=\"1\" selected>Speedy Express</option>", html);
+        var where = "substr(OrderDate, 1, 10) BETWEEN '2016-01-01' AND '2016-12-31' AND ShipVia = 1";
+        var count = await _site.Scalar($"SELECT COUNT(*) FROM Orders WHERE {where}");
+        var freight = await _site.Scalar($"SELECT SUM(Freight) FROM Orders WHERE {where}");
+        Assert.Contains($"Grand total {N0(count)} {N2(freight)}", Text(html));
+    }
+
+    [NorthwindFact]
+    public async Task ChartBarsDrillDownToTheOrdersOfTheirCountry()
+    {
+        var chart = await _site.Get("/reports/top-countries");
+        Assert.Contains("<a href=\"/reports/top-countries/rows?k0=s%3AUSA\"><rect", chart);
+        var rows = await _site.Get("/reports/top-countries/rows?k0=s%3AUSA");
+        var usa = await _site.Scalar("SELECT COUNT(*) FROM Orders WHERE ShipCountry = 'USA'");
+        Assert.Contains($"{usa} rows", Text(rows));
+        Assert.Equal(50, Regex.Matches(rows, "href=\"/orders/view/\\d+\"").Count);
+        Assert.Contains("href=\"/reports/top-countries/rows?page=2&k0=s%3AUSA\"", rows);
+        var second = await _site.Get("/reports/top-countries/rows?k0=s%3AUSA&page=2");
+        Assert.Contains("<li class=\"page-item active\"><a class=\"page-link\" href=\"/reports/top-countries/rows?page=2", second);
     }
 
     [NorthwindFact]

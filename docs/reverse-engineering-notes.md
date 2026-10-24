@@ -225,3 +225,25 @@ Known gaps
 - Dates stored as numbers (Unix or Julian) are not grouped by interval.
 - Detail columns of a summary are typed as a comma-separated list in the editor.
 - No Playwright scenario for reports yet; the pages are covered by HTTP tests against generated sites.
+
+## Report filters, drill-down and number dates (2026-10-24)
+
+The gaps listed above are closed:
+- Runtime filters: a report can offer a From/To date range on a date field and pick lists of the values of chosen fields
+  (with lookup or option text). The choices honor the table filter and the owner. Filters are bound parameters and are
+  kept in drill-down links, the month links of a calendar and the "Back to the report" link.
+- Drill-down: summary totals, crosstab cells and totals, and chart bars, points, slices and data table values link to
+  `/reports/{name}/rows`, which lists the rows of that group 50 at a time with links to their view page. Group values
+  travel typed (i:, r:, s:) so they compare with the database value exactly; an unreadable value matches no row. The
+  page applies the same level, owner and filters as the report.
+- Dates stored as numbers: `FieldInfo.DateStorage` (Text, UnixSeconds, UnixMilliseconds, JulianDay, set on the Fields tab
+  for number columns) lets reports group, filter and place those columns on a calendar through SQLite `datetime()`.
+- Editor: the row columns and the pick-list filters are lists with field pickers; the date range field and drill-down
+  are on the Reports tab.
+- Browser tests: `tests/ui` has a `reports` scenario and `reports.spec.mjs` (8 tests: filters, drill-down to the view
+  page and back, Unix-time chart, crosstab, calendar with filter across months, dashboard). `generate-site.ps1` now
+  starts the app host without `.exe` on macOS and Linux.
+- Fixed while writing the browser tests: applying a filter on a calendar kept the month it showed.
+
+Tests: 403 Core and 348 Desktop with Northwind (Northwind adds a filtered summary checked against SQL and drill-down with
+paging), 8 Playwright for reports. Still not done: zoom on charts.

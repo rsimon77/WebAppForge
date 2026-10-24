@@ -150,8 +150,32 @@
                         <CheckBox Content="List the rows of each group" Margin="0,0,16,0" IsChecked="{Binding ShowDetails}" AutomationProperties.AutomationId="ReportShowDetailsCheck" />
                         <CheckBox Content="Grand total" IsChecked="{Binding ShowGrandTotal}" AutomationProperties.AutomationId="ReportGrandTotalCheck" />
                     </WrapPanel>
-                    <TextBlock Classes="label" Text="Row columns, separated by commas (empty: the fields shown in the list)" IsVisible="{Binding ShowDetails}" />
-                    <TextBox Text="{Binding DetailColumns}" IsVisible="{Binding ShowDetails}" AutomationProperties.AutomationId="ReportDetailColumnsBox" />
+                </StackPanel>
+
+                <!-- Row columns: listed under each group, and on the drill-down page. -->
+                <StackPanel Spacing="4" IsVisible="{Binding HasDrillDown}" Margin="0,8,0,0">
+                    <TextBlock Classes="label" Text="Row columns, for listed rows and the drill-down page (none: the fields shown in the list)" TextWrapping="Wrap" />
+                    <DataGrid ItemsSource="{Binding DetailColumns}" SelectedItem="{Binding SelectedDetailColumn, Mode=TwoWay}" AutoGenerateColumns="False"
+                              GridLinesVisibility="All" SelectionMode="Single" MinHeight="70" MaxHeight="180" HorizontalScrollBarVisibility="Auto"
+                              AutomationProperties.AutomationId="ReportDetailColumnsGrid">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Field" Width="*" MinWidth="160">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.FieldNames}"
+                                                  SelectedItem="{Binding Field}" Margin="2,0" MinWidth="160" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <WrapPanel>
+                        <Button Content="Add column" Margin="0,0,6,6" Command="{Binding AddDetailColumnCommand}" AutomationProperties.AutomationId="AddReportColumnButton" />
+                        <Button Content="Remove" Margin="0,0,6,6" Command="{Binding RemoveDetailColumnCommand}" AutomationProperties.AutomationId="RemoveReportColumnButton" />
+                        <Button Content="Move up" Margin="0,0,6,6" Command="{Binding MoveDetailColumnUpCommand}" AutomationProperties.AutomationId="MoveReportColumnUpButton" />
+                        <Button Content="Move down" Margin="0,0,6,6" Command="{Binding MoveDetailColumnDownCommand}" AutomationProperties.AutomationId="MoveReportColumnDownButton" />
+                    </WrapPanel>
+                    <CheckBox Content="Link the numbers to the rows behind them" IsChecked="{Binding DrillDown}" AutomationProperties.AutomationId="ReportDrillDownCheck" />
                 </StackPanel>
 
                 <!-- Crosstab and chart -->
@@ -205,6 +229,34 @@
                     <WrapPanel>
                         <CheckBox Content="Link entries to the view page" Margin="0,0,16,0" IsChecked="{Binding LinkToView}" AutomationProperties.AutomationId="ReportLinkToViewCheck" />
                         <CheckBox Content="Weeks start on Monday" IsChecked="{Binding WeekStartsMonday}" AutomationProperties.AutomationId="ReportMondayCheck" />
+                    </WrapPanel>
+                </StackPanel>
+
+                <!-- Filters shown above the report -->
+                <StackPanel Spacing="4" IsVisible="{Binding HasSource}" Margin="0,8,0,0">
+                    <StackPanel Spacing="4" IsVisible="{Binding HasDateRange}">
+                        <TextBlock Classes="label" Text="Date range filter (From and To above the report)" />
+                        <ComboBox ItemsSource="{Binding DateFieldNames}" SelectedItem="{Binding DateFilterField}" MinWidth="240"
+                                  AutomationProperties.AutomationId="ReportDateFilterCombo" />
+                    </StackPanel>
+                    <TextBlock Classes="label" Text="Pick-list filters" />
+                    <DataGrid ItemsSource="{Binding FilterFields}" SelectedItem="{Binding SelectedFilterField, Mode=TwoWay}" AutoGenerateColumns="False"
+                              GridLinesVisibility="All" SelectionMode="Single" MinHeight="70" MaxHeight="180" HorizontalScrollBarVisibility="Auto"
+                              AutomationProperties.AutomationId="ReportFilterFieldsGrid">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Field" Width="*" MinWidth="160">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.FieldNames}"
+                                                  SelectedItem="{Binding Field}" Margin="2,0" MinWidth="160" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <WrapPanel>
+                        <Button Content="Add filter" Margin="0,0,6,6" Command="{Binding AddFilterFieldCommand}" AutomationProperties.AutomationId="AddReportFilterButton" />
+                        <Button Content="Remove" Margin="0,0,6,6" Command="{Binding RemoveFilterFieldCommand}" AutomationProperties.AutomationId="RemoveReportFilterButton" />
                     </WrapPanel>
                 </StackPanel>
 

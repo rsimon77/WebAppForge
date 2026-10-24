@@ -32,6 +32,8 @@ internal static class ReportXml
             WriteInt(e, "minLevel", report.MinLevel, d.MinLevel);
             WriteBool(e, "showInMenu", report.ShowInMenu, d.ShowInMenu);
             WriteStr(e, "menuGroup", report.MenuGroup, d.MenuGroup);
+            WriteStr(e, "dateFilterField", report.DateFilterField, d.DateFilterField);
+            WriteBool(e, "drillDown", report.DrillDown, d.DrillDown);
             WriteBool(e, "showDetails", report.ShowDetails, d.ShowDetails);
             WriteBool(e, "showGrandTotal", report.ShowGrandTotal, d.ShowGrandTotal);
             WriteStr(e, "rowField", report.RowField, d.RowField);
@@ -72,6 +74,11 @@ internal static class ReportXml
                 e.Add(new XElement("column", new XAttribute("field", column)));
             }
 
+            foreach (var filter in report.FilterFields)
+            {
+                e.Add(new XElement("filter", new XAttribute("field", filter)));
+            }
+
             foreach (var item in report.Items)
             {
                 e.Add(new XElement("item", new XAttribute("report", item.Report), new XAttribute("width", item.Width)));
@@ -105,6 +112,8 @@ internal static class ReportXml
                 MinLevel = ReadInt(e, "minLevel", d.MinLevel),
                 ShowInMenu = ReadBool(e, "showInMenu", d.ShowInMenu),
                 MenuGroup = ReadStr(e, "menuGroup", d.MenuGroup),
+                DateFilterField = ReadStr(e, "dateFilterField", d.DateFilterField),
+                DrillDown = ReadBool(e, "drillDown", d.DrillDown),
                 ShowDetails = ReadBool(e, "showDetails", d.ShowDetails),
                 ShowGrandTotal = ReadBool(e, "showGrandTotal", d.ShowGrandTotal),
                 RowField = ReadStr(e, "rowField", d.RowField),
@@ -148,6 +157,11 @@ internal static class ReportXml
             foreach (var c in e.Elements("column"))
             {
                 report.DetailColumns.Add(ReadStr(c, "field", string.Empty));
+            }
+
+            foreach (var f in e.Elements("filter"))
+            {
+                report.FilterFields.Add(ReadStr(f, "field", string.Empty));
             }
 
             foreach (var i in e.Elements("item"))

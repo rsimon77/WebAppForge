@@ -33,7 +33,14 @@ internal static partial class Templates
 
                 private static readonly string[] Palette = ["#0d6efd", "#fd7e14", "#198754", "#d63384", "#6f42c1", "#20c997", "#ffc107", "#dc3545", "#0dcaf0", "#6c757d"];
 
-                public sealed record Texts(string Total, string GrandTotal, string Empty, string NoData, string MoreColumns, string MoreRows, string Previous, string Next, string ThisMonth, string Value);
+                public sealed record Texts(string Total, string GrandTotal, string Empty, string NoData, string MoreColumns, string MoreRows, string Previous, string Next, string ThisMonth, string Value,
+                    string From, string To, string Apply, string Clear, string All, string RowCount, string Back);
+
+                /// <summary>A pick-list filter: its query parameter, caption, the SQL compared with the chosen value and the query of its choices.</summary>
+                public sealed record FilterField(string Name, string Caption, string Sql, string OptionsSql, bool Boolean);
+
+                /// <summary>A row of the drill-down page: encoded cells and the view page link (or null).</summary>
+                public sealed record ListedRow(string[] Cells, string? Href);
 
                 /// <summary>One aggregate column: its heading, the function and whether its numbers have decimals.</summary>
                 public sealed record Measure(string Caption, int Function, bool Decimals);
@@ -44,7 +51,11 @@ internal static partial class Templates
 
                 public sealed record CalendarEntry(string? Start, string? End, string Title, string? Href);
 
-                public static Texts Text() => new(@@TOTAL@@, @@GRAND@@, @@EMPTY@@, @@NODATA@@, @@MORECOLUMNS@@, @@MOREROWS@@, @@PREVIOUS@@, @@NEXT@@, @@THISMONTH@@, @@VALUE@@);
+                public static Texts Text() => new(@@TOTAL@@, @@GRAND@@, @@EMPTY@@, @@NODATA@@, @@MORECOLUMNS@@, @@MOREROWS@@, @@PREVIOUS@@, @@NEXT@@, @@THISMONTH@@, @@VALUE@@,
+                    @@FROM@@, @@TO@@, @@APPLY@@, @@CLEAR@@, @@ALL@@, @@ROWCOUNT@@, @@BACK@@);
+
+                /// <summary>Most choices of a pick-list filter.</summary>
+                public const int MaxFilterOptions = 500;
 
                 /// <summary>Culture of month and day names.</summary>
                 public static CultureInfo Culture() => @@CULTURE@@;
@@ -273,13 +284,284 @@ internal static partial class Templates
                 public static string Page(string description, string body) =>
                     (description.Length == 0 ? string.Empty : "<p class=\"text-muted\">" + Html.Encode(description) + "</p>") + body;
 
+                // ---- filters, drill-down and the rows page ------------------------------------------------
+
+                private static bool IsFilterParameter(string key) => key is "from" or "to" || key.StartsWith("f_", StringComparison.Ordinal);
+
+                private static DateOnly? DateParameter(HttpRequest request, string name) =>
+                    DateOnly.TryParseExact(request.Query[name].ToString().Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
+
+                /// <summary>The filter parameters of the request (from, to and f_*) as a query string ending in '&amp;', or empty.</summary>
+                public static string FilterQuery(HttpRequest request)
+                {
+                    var sb = new StringBuilder();
+                    foreach (var pair in request.Query.Where(p => IsFilterParameter(p.Key)).OrderBy(p => p.Key, StringComparer.Ordinal))
+                    {
+                        var value = pair.Value.ToString();
+                        if (value.Length > 0)
+                        {
+                            sb.Append(Uri.EscapeDataString(pair.Key)).Append('=').Append(Uri.EscapeDataString(value)).Append('&');
+                        }
+                    }
+
+                    return sb.ToString();
+                }
+
+                /// <summary>
+                /// The WHERE clause of a request: the static part, the From/To range on <paramref name="dateSql"/>, the chosen values of the
+                /// pick lists, the keys k0, k1, ... of a drill-down link (n0=1 stands for an empty group) and <paramref name="extra"/>.
+                /// Every value is a parameter; a key that cannot be read matches no row.
+                /// </summary>
+                public static (string Where, List<KeyValuePair<string, object>> Arguments) Where(HttpRequest request, string staticWhere, string dateSql,
+                    FilterField[] filters, string[]? drillKeys, params string[] extra)
+                {
+                    var clauses = new List<string>();
+                    var arguments = new List<KeyValuePair<string, object>>();
+                    if (staticWhere.Length > 0)
+                    {
+                        clauses.Add(staticWhere);
+                    }
+
+                    if (dateSql.Length > 0)
+                    {
+                        if (DateParameter(request, "from") is { } from)
+                        {
+                            clauses.Add(dateSql + " >= @from");
+                            arguments.Add(new("@from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                        }
+
+                        if (DateParameter(request, "to") is { } to)
+                        {
+                            clauses.Add(dateSql + " <= @to");
+                            arguments.Add(new("@to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                        }
+                    }
+
+                    for (var i = 0; i < filters.Length; i++)
+                    {
+                        var value = request.Query[filters[i].Name].ToString();
+                        if (value.Length > 0)
+                        {
+                            clauses.Add(filters[i].Sql + " = @f" + i);
+                            arguments.Add(new("@f" + i, value));
+                        }
+                    }
+
+                    for (var i = 0; drillKeys is not null && i < drillKeys.Length; i++)
+                    {
+                        if (request.Query["n" + i].ToString() == "1")
+                        {
+                            clauses.Add("(" + drillKeys[i] + ") IS NULL");
+                        }
+                        else if (request.Query.ContainsKey("k" + i))
+                        {
+                            if (KeyValue(request.Query["k" + i].ToString()) is { } key)
+                            {
+                                clauses.Add("(" + drillKeys[i] + ") = @k" + i);
+                                arguments.Add(new("@k" + i, key));
+                            }
+                            else
+                            {
+                                clauses.Add("0");
+                            }
+                        }
+                    }
+
+                    clauses.AddRange(extra);
+                    return (clauses.Count == 0 ? string.Empty : " WHERE " + string.Join(" AND ", clauses), arguments);
+                }
+
+                public static void Bind(SqliteCommand command, List<KeyValuePair<string, object>> arguments)
+                {
+                    foreach (var (name, value) in arguments)
+                    {
+                        command.Parameters.AddWithValue(name, value);
+                    }
+                }
+
+                /// <summary>A group value in a link, typed so that it compares with the database value as read: i:42, r:4.5 or s:text.</summary>
+                private static string? KeyText(object value) => value switch
+                {
+                    long or int or short or byte => "i:" + Convert.ToString(value, CultureInfo.InvariantCulture),
+                    double d => "r:" + d.ToString("R", CultureInfo.InvariantCulture),
+                    string text => "s:" + text,
+                    _ => null,
+                };
+
+                private static object? KeyValue(string text)
+                {
+                    if (text.StartsWith("i:", StringComparison.Ordinal) && long.TryParse(text[2..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var whole))
+                    {
+                        return whole;
+                    }
+
+                    if (text.StartsWith("r:", StringComparison.Ordinal) && double.TryParse(text[2..], NumberStyles.Float, CultureInfo.InvariantCulture, out var real))
+                    {
+                        return real;
+                    }
+
+                    return text.StartsWith("s:", StringComparison.Ordinal) ? text[2..] : null;
+                }
+
+                /// <summary>The start of the drill-down links of a report: its rows page with the filters of this request.</summary>
+                public static string DrillBase(HttpRequest request, string route) => route + "/rows?" + FilterQuery(request);
+
+                /// <summary>A drill-down link naming the given group values, or null when one cannot be put in a link.</summary>
+                public static string? Link(string drill, IEnumerable<(int Index, object? Value)> keys)
+                {
+                    var sb = new StringBuilder(drill);
+                    foreach (var (index, value) in keys)
+                    {
+                        if (value is null)
+                        {
+                            sb.Append('n').Append(index).Append("=1&");
+                            continue;
+                        }
+
+                        if (KeyText(value) is not { } text)
+                        {
+                            return null;
+                        }
+
+                        sb.Append('k').Append(index).Append('=').Append(Uri.EscapeDataString(text)).Append('&');
+                    }
+
+                    return sb.ToString().TrimEnd('&', '?');
+                }
+
+                /// <summary>The encoded <paramref name="html"/>, inside a link when there is one.</summary>
+                public static string Linked(string html, string? href) =>
+                    href is null || html.Length == 0 ? html : "<a class=\"link-underline-opacity-0\" href=\"" + Html.Attr(href) + "\">" + html + "</a>";
+
+                /// <summary>The view page of a row: <paramref name="prefix"/>/key/key..., or null when a key is missing.</summary>
+                public static string? ViewLink(string prefix, params object?[] keys) =>
+                    keys.Any(k => k is null) ? null
+                        : prefix + "/" + string.Join("/", keys.Select(k => Uri.EscapeDataString(Convert.ToString(k, CultureInfo.InvariantCulture) ?? string.Empty)));
+
+                /// <summary>The choices of a pick-list filter: value and label, read from its options query.</summary>
+                public static async Task<List<(string Value, string Label)>> ChoicesAsync(SqliteCommand command, FilterField filter)
+                {
+                    var texts = Text();
+                    var choices = new List<(string, string)>();
+                    await using var reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var value = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
+                        choices.Add((value, PlainLabel(Read(reader, 1), filter.Boolean, texts)));
+                    }
+
+                    return choices;
+                }
+
+                /// <summary>The filter form above a report: the From/To range when <paramref name="dateCaption"/> is set, then one pick list per filter.</summary>
+                public static string FilterForm(HttpRequest request, string route, string? dateCaption, FilterField[] filters, List<List<(string Value, string Label)>> choices)
+                {
+                    var texts = Text();
+                    var sb = new StringBuilder("<form method=\"get\" action=\"").Append(Html.Attr(route)).Append("\" class=\"row g-2 align-items-end mb-3 report-filters\">");
+                    if (dateCaption is not null)
+                    {
+                        foreach (var (name, label) in new[] { ("from", texts.From), ("to", texts.To) })
+                        {
+                            var value = DateParameter(request, name)?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty;
+                            sb.Append("<div class=\"col-auto\"><label class=\"form-label small mb-0\" for=\"rf-").Append(name).Append("\">")
+                                .Append(Html.Encode(label + " (" + dateCaption + ")")).Append("</label><input class=\"form-control form-control-sm\" type=\"date\" id=\"rf-")
+                                .Append(name).Append("\" name=\"").Append(name).Append("\" value=\"").Append(value).Append("\"></div>");
+                        }
+                    }
+
+                    for (var i = 0; i < filters.Length; i++)
+                    {
+                        var chosen = request.Query[filters[i].Name].ToString();
+                        sb.Append("<div class=\"col-auto\"><label class=\"form-label small mb-0\" for=\"rf-").Append(i).Append("\">").Append(Html.Encode(filters[i].Caption))
+                            .Append("</label><select class=\"form-select form-select-sm\" id=\"rf-").Append(i).Append("\" name=\"").Append(Html.Attr(filters[i].Name)).Append("\">")
+                            .Append("<option value=\"\">").Append(Html.Encode(texts.All)).Append("</option>");
+                        foreach (var (value, label) in choices[i])
+                        {
+                            sb.Append("<option value=\"").Append(Html.Attr(value)).Append('"').Append(value == chosen ? " selected" : string.Empty).Append('>')
+                                .Append(Html.Encode(label)).Append("</option>");
+                        }
+
+                        sb.Append("</select></div>");
+                    }
+
+                    // A calendar keeps the month it shows when the filters change.
+                    if (request.Query["month"].ToString() is { Length: > 0 } month)
+                    {
+                        sb.Append(Html.Hidden("month", month));
+                    }
+
+                    sb.Append("<div class=\"col-auto\"><button type=\"submit\" class=\"btn btn-sm btn-primary\">").Append(Html.Encode(texts.Apply)).Append("</button> ")
+                        .Append("<a class=\"btn btn-sm btn-outline-secondary\" href=\"").Append(Html.Attr(route)).Append("\">").Append(Html.Encode(texts.Clear)).Append("</a></div>");
+                    return sb.Append("</form>").ToString();
+                }
+
+                /// <summary>The page number asked for with ?page=, 1 when missing or invalid.</summary>
+                public static int PageOf(HttpRequest request) =>
+                    int.TryParse(request.Query["page"].ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var page) && page > 0 ? page : 1;
+
+                /// <summary>
+                /// The drill-down page: a link back to the report with its filters, the groups the rows belong to, the number of rows, a page of
+                /// rows linked to their view page, and the page links.
+                /// </summary>
+                public static string RowsPage(HttpRequest request, string route, string[] keyCaptions, string[] captions, List<ListedRow> rows, long total, int page, int pageSize)
+                {
+                    var texts = Text();
+                    var sb = new StringBuilder("<p><a class=\"btn btn-sm btn-outline-secondary\" href=\"")
+                        .Append(Html.Attr((route + "?" + FilterQuery(request)).TrimEnd('&', '?'))).Append("\">&lsaquo; ").Append(Html.Encode(texts.Back)).Append("</a></p>");
+                    var groups = new List<string>();
+                    for (var i = 0; i < keyCaptions.Length; i++)
+                    {
+                        if (request.Query["n" + i].ToString() == "1")
+                        {
+                            groups.Add("<strong>" + Html.Encode(keyCaptions[i]) + ":</strong> <span class=\"text-muted\">" + Html.Encode(texts.Empty) + "</span>");
+                        }
+                        else if (request.Query.ContainsKey("k" + i) && KeyValue(request.Query["k" + i].ToString()) is { } key)
+                        {
+                            groups.Add("<strong>" + Html.Encode(keyCaptions[i]) + ":</strong> " + Html.Encode(Normalize(key) is decimal number ? number.ToString(CultureInfo.InvariantCulture) : key));
+                        }
+                    }
+
+                    if (groups.Count > 0)
+                    {
+                        sb.Append("<p class=\"report-keys\">").Append(string.Join(" &middot; ", groups)).Append("</p>");
+                    }
+
+                    sb.Append("<p class=\"text-muted report-count\">").Append(Html.Encode(string.Format(CultureInfo.InvariantCulture, texts.RowCount, total))).Append("</p>")
+                        .Append("<div class=\"table-responsive\"><table class=\"table table-sm table-striped report-rows\"><thead><tr>");
+                    foreach (var caption in captions)
+                    {
+                        sb.Append("<th>").Append(Html.Encode(caption)).Append("</th>");
+                    }
+
+                    sb.Append("</tr></thead><tbody>");
+                    foreach (var row in rows)
+                    {
+                        sb.Append("<tr>");
+                        for (var i = 0; i < row.Cells.Length; i++)
+                        {
+                            sb.Append("<td>").Append(i == 0 ? Linked(row.Cells[i], row.Href) : row.Cells[i]).Append("</td>");
+                        }
+
+                        sb.Append("</tr>");
+                    }
+
+                    if (rows.Count == 0)
+                    {
+                        sb.Append("<tr><td colspan=\"").Append(Math.Max(1, captions.Length)).Append("\" class=\"text-muted\">").Append(Html.Encode(texts.NoData)).Append("</td></tr>");
+                    }
+
+                    sb.Append("</tbody></table></div>");
+                    var pages = (int)Math.Min(int.MaxValue, (total + pageSize - 1) / pageSize);
+                    return sb.Append(Html.PageLinks(request, page, pages, route + "/rows")).ToString();
+                }
+
                 // ---- summary ----------------------------------------------------------------------------
 
                 /// <summary>
                 /// Grouped rows with a subtotal per group and a grand total. Without <paramref name="detailCaptions"/> each row is one
                 /// innermost group; with them each row is a record listed under its group headings. Rows must be ordered by their keys.
                 /// </summary>
-                public static string Summary(string[] groupCaptions, bool[] booleanGroups, Measure[] measures, string[]? detailCaptions, bool grandTotal, IEnumerable<SummaryRow> rows)
+                public static string Summary(string[] groupCaptions, bool[] booleanGroups, Measure[] measures, string[]? detailCaptions, bool grandTotal, IEnumerable<SummaryRow> rows, string? drill = null)
                 {
                     var texts = Text();
                     var n = groupCaptions.Length;
@@ -314,12 +596,14 @@ internal static partial class Templates
                     var listed = 0;
                     var truncated = false;
 
-                    string Totals(Acc[] accs)
+                    // The cells of the totals, each linked to the rows behind it when the report drills down. The keys name the groups.
+                    string Totals(Acc[] accs, IEnumerable<object?> groupKeys)
                     {
+                        var href = drill is null ? null : Link(drill, groupKeys.Select((value, index) => (index, value)));
                         var cells = new StringBuilder();
                         for (var i = 0; i < measures.Length; i++)
                         {
-                            cells.Append("<td class=\"text-end\">").Append(Format(accs[i].Value(measures[i].Function), measures[i])).Append("</td>");
+                            cells.Append("<td class=\"text-end\">").Append(Linked(Format(accs[i].Value(measures[i].Function), measures[i]), href)).Append("</td>");
                         }
 
                         return cells.ToString();
@@ -346,7 +630,7 @@ internal static partial class Templates
                         var label = Html.Encode(texts.Total) + " " + Label(keys[level], booleanGroups[level], texts);
                         sb.Append(details
                             ? "<tr class=\"table-light fw-semibold report-subtotal\"><td colspan=\"" + width + "\">" + label + " &middot; " + InlineTotals(levels[level]) + "</td></tr>"
-                            : "<tr class=\"table-light fw-semibold report-subtotal\"><td colspan=\"" + n + "\">" + label + "</td>" + Totals(levels[level]) + "</tr>");
+                            : "<tr class=\"table-light fw-semibold report-subtotal\"><td colspan=\"" + n + "\">" + label + "</td>" + Totals(levels[level], keys.Take(level + 1)) + "</tr>");
                     }
 
                     foreach (var row in rows)
@@ -415,7 +699,7 @@ internal static partial class Templates
                                 sb.Append("<td>").Append(k >= changed ? Label(row.Keys[k], booleanGroups[k], texts) : string.Empty).Append("</td>");
                             }
 
-                            sb.Append(Totals(row.Values)).Append("</tr>");
+                            sb.Append(Totals(row.Values, row.Keys)).Append("</tr>");
                         }
                     }
 
@@ -438,7 +722,7 @@ internal static partial class Templates
                         var label = Html.Encode(texts.GrandTotal);
                         sb.Append(details
                             ? "<tfoot><tr class=\"fw-bold report-total\"><td colspan=\"" + width + "\">" + label + " &middot; " + InlineTotals(grand) + "</td></tr></tfoot>"
-                            : "<tfoot><tr class=\"fw-bold report-total\">" + (n > 0 ? "<td colspan=\"" + n + "\">" + label + "</td>" : string.Empty) + Totals(grand) + "</tr></tfoot>");
+                            : "<tfoot><tr class=\"fw-bold report-total\">" + (n > 0 ? "<td colspan=\"" + n + "\">" + label + "</td>" : string.Empty) + Totals(grand, []) + "</tr></tfoot>");
                     }
 
                     sb.Append("</table></div>");
@@ -519,7 +803,7 @@ internal static partial class Templates
                 /// A grid of one aggregate: the row values down the side, the column values across the top, a total per row, per column and
                 /// overall. The totals include the columns left out when there are more than <paramref name="maxColumns"/>.
                 /// </summary>
-                public static string Crosstab(string rowCaption, bool rowBoolean, bool columnBoolean, Measure measure, IEnumerable<Cell> cells, int maxColumns)
+                public static string Crosstab(string rowCaption, bool rowBoolean, bool columnBoolean, Measure measure, IEnumerable<Cell> cells, int maxColumns, string? drill = null)
                 {
                     var texts = Text();
                     var grid = Collect(cells, maxColumns);
@@ -542,10 +826,11 @@ internal static partial class Templates
                         foreach (var column in grid.Columns)
                         {
                             var acc = grid.At(row, column);
-                            sb.Append("<td class=\"text-end\">").Append(acc.Count == 0 && measure.Function != Count ? string.Empty : Format(acc.Value(measure.Function), measure)).Append("</td>");
+                            sb.Append("<td class=\"text-end\">").Append(acc.Count == 0 ? (measure.Function == Count ? "0" : string.Empty)
+                                : Linked(Format(acc.Value(measure.Function), measure), drill is null ? null : Link(drill, [(0, row), (1, column)]))).Append("</td>");
                         }
 
-                        sb.Append("<td class=\"text-end fw-semibold\">").Append(Format(grid.RowTotals[KeyOf(row)].Value(measure.Function), measure)).Append("</td></tr>");
+                        sb.Append("<td class=\"text-end fw-semibold\">").Append(Linked(Format(grid.RowTotals[KeyOf(row)].Value(measure.Function), measure), drill is null ? null : Link(drill, [(0, row)]))).Append("</td></tr>");
                     }
 
                     sb.Append("</tbody>");
@@ -554,10 +839,10 @@ internal static partial class Templates
                         sb.Append("<tfoot><tr class=\"fw-bold report-total\"><th scope=\"row\">").Append(Html.Encode(texts.Total)).Append("</th>");
                         foreach (var column in grid.Columns)
                         {
-                            sb.Append("<td class=\"text-end\">").Append(Format(grid.ColumnTotals[KeyOf(column)].Value(measure.Function), measure)).Append("</td>");
+                            sb.Append("<td class=\"text-end\">").Append(Linked(Format(grid.ColumnTotals[KeyOf(column)].Value(measure.Function), measure), drill is null ? null : Link(drill, [(1, column)]))).Append("</td>");
                         }
 
-                        sb.Append("<td class=\"text-end\">").Append(Format(grid.Total.Value(measure.Function), measure)).Append("</td></tr></tfoot>");
+                        sb.Append("<td class=\"text-end\">").Append(Linked(Format(grid.Total.Value(measure.Function), measure), drill is null ? null : Link(drill, []))).Append("</td></tr></tfoot>");
                     }
 
                     sb.Append("</table></div>");
@@ -576,7 +861,7 @@ internal static partial class Templates
                 /// optionally its data table. <paramref name="kind"/> is bar, hbar, line, area, pie or doughnut.
                 /// </summary>
                 public static string Chart(string id, string kind, string caption, string categoryCaption, bool categoryBoolean, bool seriesBoolean, bool series,
-                    Measure measure, IEnumerable<Cell> cells, int maxSeries, bool byValue, int top, bool dataTable)
+                    Measure measure, IEnumerable<Cell> cells, int maxSeries, bool byValue, int top, bool dataTable, string? drill = null)
                 {
                     var texts = Text();
                     var grid = Collect(cells, series ? maxSeries : 1);
@@ -601,6 +886,8 @@ internal static partial class Templates
                             : Number(grid.RowTotals[KeyOf(c)].Value(measure.Function))).ToArray();
                     }
 
+                    string? Href(int c, int s) => drill is null ? null
+                        : series ? Link(drill, [(0, categories[c]), (1, grid.Columns[s])]) : Link(drill, [(0, categories[c])]);
                     var sb = new StringBuilder("<figure class=\"report-chart mb-4\" id=\"").Append(Html.Attr(id)).Append("\">");
                     if (categories.Count == 0)
                     {
@@ -609,8 +896,8 @@ internal static partial class Templates
                     }
 
                     sb.Append(kind is "pie" or "doughnut"
-                        ? PieSvg(caption, labels, values[0], kind == "doughnut", measure)
-                        : AxisSvg(caption, kind, labels, names, values, measure));
+                        ? PieSvg(caption, labels, values[0], kind == "doughnut", measure, c => Href(c, 0))
+                        : AxisSvg(caption, kind, labels, names, values, measure, Href));
                     if (names.Length > 1)
                     {
                         sb.Append(Legend(names));
@@ -632,7 +919,8 @@ internal static partial class Templates
                             for (var s = 0; s < names.Length; s++)
                             {
                                 var acc = series ? grid.At(categories[c], grid.Columns[s]) : grid.RowTotals[KeyOf(categories[c])];
-                                sb.Append("<td class=\"text-end\">").Append(acc.Count == 0 && measure.Function != Count ? string.Empty : Format(acc.Value(measure.Function), measure)).Append("</td>");
+                                sb.Append("<td class=\"text-end\">").Append(acc.Count == 0 ? (measure.Function == Count ? "0" : string.Empty)
+                                    : Linked(Format(acc.Value(measure.Function), measure), Href(c, s))).Append("</td>");
                             }
 
                             sb.Append("</tr>");
@@ -650,6 +938,10 @@ internal static partial class Templates
                 }
 
                 private static string Num(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+                private static string OpenLink(string? href) => href is null ? string.Empty : "<a href=\"" + Html.Attr(href) + "\">";
+
+                private static string CloseLink(string? href) => href is null ? string.Empty : "</a>";
 
                 private static string Short(string text) => text.Length > 18 ? text[..17] + "…" : text;
 
@@ -670,7 +962,7 @@ internal static partial class Templates
                     return (Math.Floor(min / step) * step, Math.Ceiling(max / step) * step, step);
                 }
 
-                private static string AxisSvg(string caption, string kind, string[] labels, string[] names, double?[][] values, Measure measure)
+                private static string AxisSvg(string caption, string kind, string[] labels, string[] names, double?[][] values, Measure measure, Func<int, int, string?> href)
                 {
                     const double W = 800, H = 400;
                     var horizontal = kind == "hbar";
@@ -726,10 +1018,11 @@ internal static partial class Templates
                                 var p = Value(v);
                                 var low = Math.Min(p, zero);
                                 var size = Math.Abs(p - zero);
-                                sb.Append(horizontal
+                                var link = href(c, s);
+                                sb.Append(OpenLink(link)).Append(horizontal
                                     ? $"<rect x=\"{Num(low)}\" y=\"{Num(start)}\" width=\"{Num(size)}\" height=\"{Num(inner)}\" fill=\"{color}\">"
                                     : $"<rect x=\"{Num(start)}\" y=\"{Num(low)}\" width=\"{Num(inner)}\" height=\"{Num(size)}\" fill=\"{color}\">");
-                                sb.Append(Tip(names.Length > 1 ? labels[c] + " / " + names[s] : labels[c], v, measure)).Append("</rect>");
+                                sb.Append(Tip(names.Length > 1 ? labels[c] + " / " + names[s] : labels[c], v, measure)).Append("</rect>").Append(CloseLink(link));
                             }
                         }
                     }
@@ -761,8 +1054,9 @@ internal static partial class Templates
                             sb.Append($"<polyline points=\"{line}\" fill=\"none\" stroke=\"{color}\" stroke-width=\"2\"/>");
                             foreach (var p in points)
                             {
-                                sb.Append($"<circle cx=\"{Num(p.X)}\" cy=\"{Num(p.Y)}\" r=\"3.5\" fill=\"{color}\">")
-                                    .Append(Tip(names.Length > 1 ? labels[p.C] + " / " + names[s] : labels[p.C], values[s][p.C], measure)).Append("</circle>");
+                                var link = href(p.C, s);
+                                sb.Append(OpenLink(link)).Append($"<circle cx=\"{Num(p.X)}\" cy=\"{Num(p.Y)}\" r=\"3.5\" fill=\"{color}\">")
+                                    .Append(Tip(names.Length > 1 ? labels[p.C] + " / " + names[s] : labels[p.C], values[s][p.C], measure)).Append("</circle>").Append(CloseLink(link));
                             }
                         }
                     }
@@ -773,7 +1067,7 @@ internal static partial class Templates
                     return sb.Append("</svg>").ToString();
                 }
 
-                private static string PieSvg(string caption, string[] labels, double?[] values, bool doughnut, Measure measure)
+                private static string PieSvg(string caption, string[] labels, double?[] values, bool doughnut, Measure measure, Func<int, string?> href)
                 {
                     var slices = labels.Select((label, i) => (Label: label, Value: values[i] ?? 0, Index: i)).Where(s => s.Value > 0).ToList();
                     var total = slices.Sum(s => s.Value);
@@ -787,6 +1081,8 @@ internal static partial class Templates
                         var slice = slices[i];
                         var color = Palette[i % Palette.Length];
                         var sweep = slice.Value / total * 2 * Math.PI;
+                        var link = href(slice.Index);
+                        sb.Append(OpenLink(link));
                         if (slices.Count == 1)
                         {
                             sb.Append($"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"{Num(r)}\" fill=\"{color}\">").Append(Tip(slice.Label, slice.Value, measure)).Append("</circle>");
@@ -802,6 +1098,8 @@ internal static partial class Templates
                             sb.Append($"<path d=\"{path}\" fill=\"{color}\" stroke=\"#fff\" stroke-width=\"1\">").Append(Tip(slice.Label, slice.Value, measure)).Append("</path>");
                             angle = end;
                         }
+
+                        sb.Append(CloseLink(link));
                     }
 
                     if (doughnut)
@@ -868,7 +1166,7 @@ internal static partial class Templates
                     value is { Length: >= 10 } && DateOnly.TryParseExact(value[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
 
                 /// <summary>A month grid with the entries on the days they cover, and links to the previous and next month.</summary>
-                public static string Calendar(string route, DateOnly month, bool mondayFirst, IEnumerable<CalendarEntry> entries)
+                public static string Calendar(string route, string filterQuery, DateOnly month, bool mondayFirst, IEnumerable<CalendarEntry> entries)
                 {
                     var texts = Text();
                     var culture = Culture();
@@ -894,7 +1192,7 @@ internal static partial class Templates
                         }
                     }
 
-                    string MonthLink(DateOnly m) => Html.Attr(route + "?month=" + m.ToString("yyyy-MM", CultureInfo.InvariantCulture));
+                    string MonthLink(DateOnly m) => Html.Attr(route + "?" + filterQuery + "month=" + m.ToString("yyyy-MM", CultureInfo.InvariantCulture));
                     var today = DateOnly.FromDateTime(DateTime.UtcNow);
                     var sb = new StringBuilder("<div class=\"report-calendar\"><div class=\"d-flex align-items-center gap-2 mb-3\">")
                         .Append("<a class=\"btn btn-sm btn-outline-secondary\" rel=\"prev\" href=\"").Append(MonthLink(month.AddMonths(-1))).Append("\">&lsaquo; ").Append(Html.Encode(texts.Previous)).Append("</a>")
@@ -955,6 +1253,13 @@ internal static partial class Templates
             .Replace("@@NEXT@@", Ui("reportNext"))
             .Replace("@@THISMONTH@@", Ui("reportThisMonth"))
             .Replace("@@VALUE@@", Ui("reportValue"))
+            .Replace("@@FROM@@", Ui("reportFrom"))
+            .Replace("@@TO@@", Ui("reportTo"))
+            .Replace("@@APPLY@@", Ui("reportApply"))
+            .Replace("@@CLEAR@@", Ui("reportClear"))
+            .Replace("@@ALL@@", Ui("reportAll"))
+            .Replace("@@ROWCOUNT@@", Ui("reportRowCount"))
+            .Replace("@@BACK@@", Ui("reportBack"))
             .Replace("@@CULTURE@@", Localized ? "CultureOf(Strings.CurrentLanguage)" : "CultureInfo.InvariantCulture");
         if (Localized)
         {

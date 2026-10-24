@@ -43,6 +43,8 @@ internal static class ReportSupport
         sales.Aggregates.Add(Aggregate(AggregateFunction.Count));
         sales.Aggregates.Add(Aggregate(AggregateFunction.Sum, "Freight"));
         sales.Aggregates.Add(Aggregate(AggregateFunction.Average, "Freight", "Average freight"));
+        sales.DateFilterField = "OrderDate";
+        sales.FilterFields.Add("ShipVia");
         project.Reports.Add(sales);
 
         var stock = new ReportInfo { Name = "stock", Caption = "Stock by category", SourceTable = "Products", ShowDetails = true, MenuGroup = "Stock" };
@@ -252,7 +254,8 @@ public sealed class SecureReportSite : ReportSiteBase
     public const string Schema = """
         CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, pass TEXT NOT NULL, level INTEGER);
         CREATE TABLE regions (code TEXT PRIMARY KEY, title TEXT NOT NULL);
-        CREATE TABLE sales (id INTEGER PRIMARY KEY AUTOINCREMENT, owner TEXT NOT NULL, region TEXT, day DATE, amount DECIMAL(10,2), paid BOOLEAN, note TEXT);
+        CREATE TABLE sales (id INTEGER PRIMARY KEY AUTOINCREMENT, owner TEXT NOT NULL, region TEXT, day DATE, amount DECIMAL(10,2), paid BOOLEAN, note TEXT,
+            stamp INTEGER, jd REAL);
         INSERT INTO regions (code, title) VALUES ('N', 'North'), ('S', 'South');
         INSERT INTO sales (owner, region, day, amount, paid, note) VALUES
             ('ann', 'N', '2024-05-02', 10.50, 1, 'a1'),
@@ -261,6 +264,7 @@ public sealed class SecureReportSite : ReportSiteBase
             ('ann', NULL, '2024-06-01', 7, 1, 'a4 <b>'),
             ('bob', 'N', '2024-05-03', 1000, 1, 'b1'),
             ('bob', 'S', '2024-05-31', 2000, 0, 'b2');
+        UPDATE sales SET stamp = CAST(strftime('%s', day) AS INTEGER) + 3600, jd = julianday(day) + 0.25;
         """;
 
     protected override Project? Create()
@@ -279,6 +283,8 @@ public sealed class SecureReportSite : ReportSiteBase
         var sales = project.Tables.Single(t => t.Name == "sales");
         sales.OwnerField = "owner";
         sales.Fields.Single(f => f.Name == "region").Ui.Lookup = new FieldLookup { Table = "regions", KeyField = "code", DisplayField = "title" };
+        sales.Fields.Single(f => f.Name == "stamp").DateStorage = DateStorage.UnixSeconds;
+        sales.Fields.Single(f => f.Name == "jd").DateStorage = DateStorage.JulianDay;
 
         var byRegion = new ReportInfo { Name = "by-region", Caption = "Sales by region", SourceTable = "sales" };
         byRegion.Groups.Add(ReportSupport.Group("region"));
@@ -286,7 +292,16 @@ public sealed class SecureReportSite : ReportSiteBase
         byRegion.Aggregates.Add(ReportSupport.Aggregate(AggregateFunction.Count));
         byRegion.Aggregates.Add(ReportSupport.Aggregate(AggregateFunction.Sum, "amount"));
         byRegion.Aggregates.Add(ReportSupport.Aggregate(AggregateFunction.Average, "amount"));
+        byRegion.DateFilterField = "day";
+        byRegion.FilterFields.AddRange(["paid", "region"]);
         project.Reports.Add(byRegion);
+
+        // Dates stored as Unix seconds and as Julian day numbers.
+        var byStamp = new ReportInfo { Name = "by-stamp", SourceTable = "sales", DateFilterField = "stamp" };
+        byStamp.Groups.Add(ReportSupport.Group("stamp", DateInterval.Month));
+        byStamp.Groups.Add(ReportSupport.Group("jd", DateInterval.Day));
+        project.Reports.Add(byStamp);
+        project.Reports.Add(new ReportInfo { Name = "stamps", Kind = ReportKind.Calendar, SourceTable = "sales", DateField = "jd", TitleField = "note" });
 
         var detail = new ReportInfo { Name = "detail", SourceTable = "sales", ShowDetails = true };
         detail.Groups.Add(ReportSupport.Group("day", DateInterval.Month));
