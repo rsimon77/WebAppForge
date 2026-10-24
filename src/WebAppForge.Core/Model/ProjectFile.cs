@@ -44,6 +44,7 @@ public static class ProjectFile
                 new XAttribute("allowRegistration", project.Security.AllowRegistration),
                 new XAttribute("allowChangePassword", project.Security.AllowChangePassword),
                 new XAttribute("userLevelField", project.Security.UserLevelField)));
+        IdentityXml.Append(root.Element("security")!, project.Security);
 
         foreach (var table in project.Tables)
         {
@@ -178,6 +179,7 @@ public static class ProjectFile
                 AllowChangePassword = ReadBool(security, "allowChangePassword", true),
                 UserLevelField = Optional(security, "userLevelField", string.Empty),
             };
+            IdentityXml.Read(security, project.Security);
         }
 
         // Older project files have no <build> element; the defaults keep building and Docker off.

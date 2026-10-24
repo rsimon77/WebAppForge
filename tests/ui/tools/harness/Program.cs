@@ -1,5 +1,5 @@
 // UI test site harness. Builds a fresh SQLite database for a named scenario, then generates the ASP.NET Core
-// site for it with ProjectGenerator. Usage: harness <shop|secure|designed|relations|reports|audit> <siteFolder> <passwordHashFile>
+// site for it with ProjectGenerator. Usage: harness <shop|secure|designed|relations|reports|audit|identity> <siteFolder> <passwordHashFile>
 // The database is always recreated, so every run starts from the same seed data.
 using WebAppForge.Core.Generation;
 using WebAppForge.Core.Model;
@@ -8,7 +8,7 @@ using Microsoft.Data.Sqlite;
 
 if (args.Length != 3)
 {
-    Console.Error.WriteLine("usage: harness <shop|secure|designed|relations|reports|audit> <siteFolder> <passwordHashFile>");
+    Console.Error.WriteLine("usage: harness <shop|secure|designed|relations|reports|audit|identity> <siteFolder> <passwordHashFile>");
     return 2;
 }
 
@@ -33,6 +33,7 @@ Project project = scenario switch
     "relations" => BuildRelations(db),
     "reports" => BuildReports(db),
     "audit" => BuildAudit(db),
+    "identity" => BuildIdentity(db),
     _ => throw new ArgumentException($"unknown scenario '{scenario}'"),
 };
 
@@ -96,6 +97,38 @@ static Project BuildAudit(string db)
         table.Audit.Enabled = true;
     }
 
+    return project;
+}
+
+// ASP.NET Core Identity: the site creates its AspNet* tables and the administrator "admin" (password from the
+// WEBAPPFORGE_ADMIN_PASSWORD environment variable, set by generate-site.ps1). notes are owned by their user, secrets need
+// level 5, and a project table named users must not clash with the /admin/users pages.
+static Project BuildIdentity(string db)
+{
+    using (var c = Open(db))
+    {
+        Exec(c,
+            "CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT, owner TEXT NOT NULL, title TEXT NOT NULL);" +
+            "CREATE TABLE secrets (id INTEGER PRIMARY KEY AUTOINCREMENT, body TEXT NOT NULL);" +
+            "CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);" +
+            "INSERT INTO secrets (body) VALUES ('The launch plan');" +
+            "INSERT INTO users (name) VALUES ('a plain row');");
+    }
+
+    var project = new Project { Name = "identity" };
+    project.Database.Path = db;
+    project.Tables.AddRange(new SqliteSchemaReader().ReadTables($"Data Source={db}"));
+    project.Security = new SecuritySettings
+    {
+        Enabled = true,
+        UserStore = UserStore.AspNetIdentity,
+        TrackFailedAttempts = true,
+        MaxFailedAttempts = 3,
+        AllowRegistration = true,
+        AllowChangePassword = true,
+    };
+    project.Tables.Single(t => t.Name == "notes").OwnerField = "owner";
+    project.Tables.Single(t => t.Name == "secrets").ViewMinLevel = 5;
     return project;
 }
 

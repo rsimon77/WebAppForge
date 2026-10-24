@@ -22,6 +22,8 @@
            the filter builder, quick filter and reset button on the sales list,
            a chart, a crosstab, a calendar and a dashboard. No security.
   shop   : customers and orders tables, no security.
+  identity : ASP.NET Core Identity user store; the site creates its tables and the administrator admin, whose password
+           (Admin-pass-42, test value) is passed in WEBAPPFORGE_ADMIN_PASSWORD. notes (owned), secrets (level 5), users.
   secure : users (username, password, level), notes (owner = user name), reports (EditMinLevel 2),
            login, registration and change password enabled, failed-attempt lockout after 5 failures.
 
@@ -38,7 +40,7 @@ param(
     [string]$Target,
 
     [Parameter(Mandatory)]
-    [ValidateSet('shop', 'secure', 'designed', 'relations', 'reports', 'audit')]
+    [ValidateSet('shop', 'secure', 'designed', 'relations', 'reports', 'audit', 'identity')]
     [string]$Scenario,
 
     [string]$PasswordHashFile
@@ -97,12 +99,18 @@ $listener.Stop()
 $baseUrl = "http://127.0.0.1:$port"
 
 $previousUrls = $env:ASPNETCORE_URLS
+$previousAdmin = $env:WEBAPPFORGE_ADMIN_PASSWORD
 $env:ASPNETCORE_URLS = $baseUrl
+if ($Scenario -eq 'identity') {
+    # Test value only: the identity site creates its administrator with this password on first start.
+    $env:WEBAPPFORGE_ADMIN_PASSWORD = 'Admin-pass-42'
+}
 try {
     $proc = Start-Process -FilePath $exe -WorkingDirectory (Split-Path -Parent $exe) -PassThru -WindowStyle Hidden `
         -RedirectStandardOutput (Join-Path $Target 'site.out.log') -RedirectStandardError (Join-Path $Target 'site.err.log')
 } finally {
     $env:ASPNETCORE_URLS = $previousUrls
+    $env:WEBAPPFORGE_ADMIN_PASSWORD = $previousAdmin
 }
 
 # 5. Wait until the port accepts connections.

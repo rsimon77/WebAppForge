@@ -155,13 +155,19 @@ public abstract class ReportSiteBase : IAsyncLifetime
         Assert.True(build.ExitCode == 0, build.Output);
 
         var port = MdSupport.FreePort();
-        _site = Process.Start(new ProcessStartInfo("dotnet", "run --no-build")
+        var start = new ProcessStartInfo("dotnet", "run --no-build")
         {
             WorkingDirectory = siteFolder,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             Environment = { ["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}" },
-        })!;
+        };
+        foreach (var (name, value) in SiteEnvironment)
+        {
+            start.Environment[name] = value;
+        }
+
+        _site = Process.Start(start)!;
         _site.OutputDataReceived += (_, e) => Log(e.Data);
         _site.ErrorDataReceived += (_, e) => Log(e.Data);
         _site.BeginOutputReadLine();
@@ -227,6 +233,9 @@ public abstract class ReportSiteBase : IAsyncLifetime
             _output.AppendLine(line);
         }
     }
+
+    /// <summary>Extra environment variables of the site process.</summary>
+    protected virtual IReadOnlyDictionary<string, string> SiteEnvironment => new Dictionary<string, string>();
 
     /// <summary>Runs after the site has stopped, for example to drop a server database.</summary>
     protected virtual void CleanUp()

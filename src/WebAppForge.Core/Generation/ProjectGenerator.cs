@@ -1,5 +1,6 @@
 using System.Text;
 using WebAppForge.Core.Model;
+using WebAppForge.Core.Schema;
 
 namespace WebAppForge.Core.Generation;
 
@@ -69,6 +70,7 @@ public sealed class ProjectGenerator
         }
 
         MasterDetailValidator.Validate(project.Tables);
+        IdentityRules.Validate(project);
         if (Templates.AuditProblems(project) is [var auditProblem, ..])
         {
             throw new InvalidOperationException(auditProblem);
@@ -77,8 +79,10 @@ public sealed class ProjectGenerator
         Templates.Localized = localized;
         var ns = Identifier.Pascal(project.Name);
         Templates.AuditNamespace = ns;
-        var tables = project.Tables.Where(t => t.Generate && !Templates.IsAuditLogOf(project, t)).ToList();
-        var copies = tables.Select(t => GeneratedCopy(t, project.Security)).ToList();
+        // The identity tables of ASP.NET Core Identity are kept by the site's own stores and pages, not by generated CRUD pages.
+        var tables = project.Tables.Where(t => t.Generate && !Templates.IsAuditLogOf(project, t) && !IdentitySchema.IsIdentityTable(project.Security, t.Name)).ToList();
+        var security = EffectiveSecurity(project.Security);
+        var copies = tables.Select(t => GeneratedCopy(t, security)).ToList();
         Templates.MdTables = copies;
         ReportValidator.Validate(project, copies);
         ImportExportRules.Validate(project);
@@ -86,7 +90,7 @@ public sealed class ProjectGenerator
         {
             // The user levels of the settings only count with User Level security, like those of a table.
             var exchange = project.ImportExport.Clone();
-            if (!HasUserLevelSecurity(project.Security))
+            if (!HasUserLevelSecurity(security))
             {
                 exchange.ExportMinLevel = 0;
                 exchange.ImportMinLevel = 0;
@@ -101,7 +105,7 @@ public sealed class ProjectGenerator
         var files = new Dictionary<string, string>
         {
             [$"{ns}.csproj"] = Templates.Csproj(SqliteVersion, project.Meta),
-            ["Program.cs"] = Templates.Program(ns, project.AspNet, tables, project.Security, project.Meta),
+            ["Program.cs"] = Templates.Program(ns, project.AspNet, tables, security, project.Meta),
             ["appsettings.json"] = Templates.AppSettings(project.Database.GeneratedConnectionString(projectFolder), project.Meta),
             ["Web/Html.cs"] = Templates.HtmlHelper(ns, project.Meta, tables),
             ["Web/Db.cs"] = Templates.DbRuntime(ns),
@@ -147,7 +151,7 @@ public sealed class ProjectGenerator
             files["Web/Audit.cs"] = Templates.AuditRuntime(ns);
             if (project.Audit.ShowLogPage)
             {
-                files["Pages/AuditTrailPages.cs"] = Templates.AuditPage(ns, copies, project.Security.Enabled && !string.IsNullOrEmpty(project.Security.UserLevelField));
+                files["Pages/AuditTrailPages.cs"] = Templates.AuditPage(ns, copies, HasUserLevelSecurity(security));
             }
         }
 
@@ -184,14 +188,18 @@ public sealed class ProjectGenerator
             files[$"Pages/{className}Pages.cs"] = Templates.Pages(ns, className, generatedTable);
         }
 
-        if (project.Security.Enabled)
+        if (security.UsesIdentity)
         {
-            AddLoginFiles(files, ns, project.Security, tables);
+            AddIdentityFiles(files, ns, security);
+        }
+        else if (security.Enabled)
+        {
+            AddLoginFiles(files, ns, security, tables);
         }
 
         if (reports.Count > 0)
         {
-            AddReportFiles(files, ns, project.Security, reports, copies);
+            AddReportFiles(files, ns, security, reports, copies);
         }
 
         Templates.Localized = false;
@@ -375,9 +383,47 @@ public sealed class ProjectGenerator
         }
     }
 
-    /// <summary>True when User Level security is on: login is enabled and a user level field is named.</summary>
-    private static bool HasUserLevelSecurity(SecuritySettings security) =>
-        security.Enabled && !string.IsNullOrEmpty(security.UserLevelField);
+    /// <summary>True when User Level security is on: login with a user level field, or with ASP.NET Core Identity.</summary>
+    private static bool HasUserLevelSecurity(SecuritySettings security) => security.HasUserLevels;
+
+    /// <summary>
+    /// The security settings the generator works with. With ASP.NET Core Identity the user table settings do not apply, so they are
+    /// cleared: no project table is treated as the users table.
+    /// </summary>
+    private static SecuritySettings EffectiveSecurity(SecuritySettings security)
+    {
+        if (!security.UsesIdentity)
+        {
+            return security;
+        }
+
+        return new SecuritySettings
+        {
+            Enabled = security.Enabled,
+            TrackFailedAttempts = security.TrackFailedAttempts,
+            MaxFailedAttempts = security.MaxFailedAttempts,
+            FailedAttemptsWindowMinutes = security.FailedAttemptsWindowMinutes,
+            AllowRegistration = security.AllowRegistration,
+            AllowChangePassword = security.AllowChangePassword,
+            UserStore = security.UserStore,
+            Identity = security.Identity,
+        };
+    }
+
+    /// <summary>The files of ASP.NET Core Identity: setup, Dapper stores, permissions, login, account and management pages.</summary>
+    private static void AddIdentityFiles(Dictionary<string, string> files, string ns, SecuritySettings security)
+    {
+        files["Security/Permissions.cs"] = Templates.IdentityPermissions(ns);
+        files["Security/SiteIdentity.cs"] = Templates.IdentitySetup(ns, security);
+        files["Security/IdentityStores.cs"] = Templates.IdentityStores(ns, security);
+        files["Pages/AuthPages.cs"] = Templates.IdentityAuthPages(ns, security);
+        if (security.AllowRegistration || security.AllowChangePassword)
+        {
+            files["Pages/UserAccountPages.cs"] = Templates.IdentityAccountPages(ns, security);
+        }
+
+        files["Pages/UserAdminPages.cs"] = Templates.IdentityAdminPages(ns, security);
+    }
 
     /// <summary>
     /// Adds the login files. The user table must be one of the generated tables, otherwise the site would be

@@ -165,6 +165,21 @@ public sealed class SecuritySettings
 
     /// <summary>When set (and login is enabled), signed-in users can change their own password at /changepassword.</summary>
     public bool AllowChangePassword { get; set; } = true;
+
+    /// <summary>
+    /// Where the users are kept. With <see cref="UserStore.AspNetIdentity"/> the user table settings above are not used, and
+    /// User Level security is always on (levels come from the identity claims, see <see cref="IdentitySettings"/>).
+    /// </summary>
+    public UserStore UserStore { get; set; } = UserStore.ProjectTable;
+
+    /// <summary>Options of the ASP.NET Core Identity user store.</summary>
+    public IdentitySettings Identity { get; set; } = new();
+
+    /// <summary>True when login is enabled and the users are kept by ASP.NET Core Identity.</summary>
+    public bool UsesIdentity => Enabled && UserStore == UserStore.AspNetIdentity;
+
+    /// <summary>True when User Level security applies: login with a user level field, or with ASP.NET Core Identity.</summary>
+    public bool HasUserLevels => Enabled && (UserStore == UserStore.AspNetIdentity || !string.IsNullOrEmpty(UserLevelField));
 }
 
 public sealed class TableInfo

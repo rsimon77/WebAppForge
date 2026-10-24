@@ -94,6 +94,15 @@ public abstract class ServerSite : ReportSiteBase
     /// <summary>The site keeps an audit trail of orders, order lines and sales.</summary>
     protected virtual bool Audited => false;
 
+    /// <summary>The site keeps its users with ASP.NET Core Identity; orders need level 5.</summary>
+    protected virtual bool Identity => false;
+
+    public const string AdminPassword = "Admin-pass-42";
+
+    protected override IReadOnlyDictionary<string, string> SiteEnvironment => Identity
+        ? new Dictionary<string, string> { [IdentitySettings.DefaultAdminPasswordVariable] = AdminPassword }
+        : new Dictionary<string, string>();
+
     private const string Data = """
         INSERT INTO regions (code, title) VALUES ('N', 'North'), ('S', 'South');
         INSERT INTO sales (owner, region, day, amount, paid, note, stamp) VALUES ('ann', 'N', '2024-05-02', 10.50, 1, 'a1', 1714651200);
@@ -183,6 +192,19 @@ public abstract class ServerSite : ReportSiteBase
             {
                 T(name).Audit.Enabled = true;
             }
+        }
+
+        if (Identity)
+        {
+            project.Security = new SecuritySettings
+            {
+                Enabled = true,
+                UserStore = UserStore.AspNetIdentity,
+                AllowRegistration = true,
+                TrackFailedAttempts = true,
+                MaxFailedAttempts = 3,
+            };
+            T("orders").ViewMinLevel = 5;
         }
 
         Project = project;
@@ -279,6 +301,16 @@ public sealed class SqlServerAuditSite : SqlServerSite
 public sealed class MySqlAuditSite : MySqlSite
 {
     protected override bool Audited => true;
+}
+
+public sealed class SqlServerIdentitySite : SqlServerSite
+{
+    protected override bool Identity => true;
+}
+
+public sealed class MySqlIdentitySite : MySqlSite
+{
+    protected override bool Identity => true;
 }
 
 /// <summary>The same checks on every server: schema reading, login and lockout, lists, grid tools, the JSON API, reports and master/detail.</summary>
@@ -693,3 +725,230 @@ public abstract class ServerAuditTests<TSite> where TSite : ServerSite
 public sealed class SqlServerAuditTests(SqlServerAuditSite site) : ServerAuditTests<SqlServerAuditSite>(site), IClassFixture<SqlServerAuditSite>;
 
 public sealed class MySqlAuditTests(MySqlAuditSite site) : ServerAuditTests<MySqlAuditSite>(site), IClassFixture<MySqlAuditSite>;
+
+/// <summary>ASP.NET Core Identity on a server: tables and administrator at startup, users and roles with levels, lockout, passwords and owners.</summary>
+public abstract class ServerIdentityTests<TSite> where TSite : ServerSite
+{
+    private const string Password = "Some-pass-42";
+
+    private readonly TSite _site;
+
+    protected ServerIdentityTests(TSite site) => _site = site;
+
+    /// <summary>The page at <paramref name="url"/>; anything but 200 fails with the site's output.</summary>
+    private async Task<string> Page(HttpClient client, string url)
+    {
+        using var response = await client.GetAsync(url);
+        var text = await response.Content.ReadAsStringAsync();
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"{url}: {(int)response.StatusCode} {text}\n--- site output ---\n{_site.SiteOutput}");
+        return text;
+    }
+
+    private async Task<string> UserId(string user) =>
+        Convert.ToString(await _site.Scalar($"SELECT Id FROM AspNetUsers WHERE NormalizedUserName = '{user.ToUpperInvariant()}'")) ?? string.Empty;
+
+    private Task<HttpResponseMessage> LogInAsync(HttpClient client, string user, string password) =>
+        _site.PostFormAsync(client, "/login", "/login", new() { ["username"] = user, ["password"] = password });
+
+    private async Task<HttpClient> SignedInAsync(string user, string password)
+    {
+        var client = _site.NewClient();
+        using var response = await LogInAsync(client, user, password);
+        Assert.True(response.StatusCode == HttpStatusCode.Redirect, $"login of {user} failed: {await response.Content.ReadAsStringAsync()}\n{_site.SiteOutput}");
+        return client;
+    }
+
+    private async Task AddUserAsync(HttpClient admin, string user, int level, params string[] roles)
+    {
+        var page = await Page(admin, "/admin/users/add");
+        var token = Regex.Match(page, "name=\"__RequestVerificationToken\" value=\"([^\"]+)\"").Groups[1].Value;
+        var fields = new List<KeyValuePair<string, string>>
+        {
+            new("username", user), new("password", Password), new("confirm", Password), new("level", level.ToString()), new("__RequestVerificationToken", token),
+        };
+        fields.AddRange(roles.Select(r => new KeyValuePair<string, string>("roles", r)));
+        using var response = await admin.PostAsync("/admin/users/add", new FormUrlEncodedContent(fields));
+        Assert.True(response.StatusCode == HttpStatusCode.Redirect, await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task StartupCreatedTheTablesAndTheAdministrator()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        await using (var connection = DatabaseConnections.Create(_site.Provider, _site.ConnectionString))
+        {
+            await connection.OpenAsync();
+            Assert.Empty(await IdentitySchema.MissingTablesAsync(connection, _site.Provider, IdentitySettings.DefaultTablePrefix));
+        }
+
+        using var admin = await SignedInAsync("admin", ServerSite.AdminPassword);
+        Assert.Contains("href=\"/admin/users\"", await Page(admin, "/"));
+        Assert.Contains("admin", await Page(admin, "/admin/users"));
+        Assert.Equal("100", Convert.ToString(await _site.Scalar(
+            "SELECT ClaimValue FROM AspNetUserClaims WHERE ClaimType = 'user_level' AND UserId = (SELECT Id FROM AspNetUsers WHERE UserName = 'admin')")));
+    }
+
+    [Fact]
+    public async Task LevelsComeFromTheUserAndTheirRoles()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        using var admin = await SignedInAsync("admin", ServerSite.AdminPassword);
+        using (var role = await _site.PostFormAsync(admin, "/admin/roles", "/admin/roles/add", new() { ["name"] = "Managers", ["level"] = "5" }))
+        {
+            Assert.Equal(HttpStatusCode.Redirect, role.StatusCode);
+        }
+
+        await AddUserAsync(admin, "carol", 1, "Managers");
+        await AddUserAsync(admin, "dave", 1);
+        using var carol = await SignedInAsync("carol", Password);
+        Assert.Contains("Acme", await Page(carol, "/orders"));
+        using var dave = await SignedInAsync("dave", Password);
+        using (var denied = await dave.GetAsync("/orders"))
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+        }
+
+        using (var notAdmin = await dave.GetAsync("/admin/users"))
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, notAdmin.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task FailedLoginsLockTheUserOutUntilTheAdministratorUnlocksThem()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        using var admin = await SignedInAsync("admin", ServerSite.AdminPassword);
+        await AddUserAsync(admin, "gina", 0);
+        using var guesser = _site.NewClient();
+        for (var i = 0; i < 3; i++)
+        {
+            using var wrong = await LogInAsync(guesser, "gina", "wrong-password");
+            Assert.Equal(HttpStatusCode.OK, wrong.StatusCode);
+        }
+
+        using (var locked = await LogInAsync(guesser, "gina", Password))
+        {
+            Assert.Contains("Too many failed attempts.", await locked.Content.ReadAsStringAsync());
+        }
+
+        Assert.IsNotType<DBNull>(await _site.Scalar("SELECT LockoutEnd FROM AspNetUsers WHERE UserName = 'gina'"));
+        var id = await UserId("gina");
+        using (var unlocked = await _site.PostFormAsync(admin, "/admin/users/edit?id=" + id, "/admin/users/unlock", new() { ["id"] = id }))
+        {
+            Assert.Equal(HttpStatusCode.Redirect, unlocked.StatusCode);
+        }
+
+        (await SignedInAsync("gina", Password)).Dispose();
+    }
+
+    [Fact]
+    public async Task ARegisteredUserChangesThePassword()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        var client = _site.NewClient();
+        using (var registered = await _site.PostFormAsync(client, "/register", "/register", new()
+        {
+            ["username"] = "erin", ["email"] = "erin@example.test", ["password"] = Password, ["confirm"] = Password,
+        }))
+        {
+            Assert.True(registered.StatusCode == HttpStatusCode.Redirect, await registered.Content.ReadAsStringAsync());
+        }
+
+        using var erin = await SignedInAsync("erin", Password);
+        const string newPassword = "Other-pass-43";
+        using (var changed = await _site.PostFormAsync(erin, "/changepassword", "/changepassword", new() { ["current"] = Password, ["password"] = newPassword, ["confirm"] = newPassword }))
+        {
+            Assert.Contains("Your password has been changed.", await changed.Content.ReadAsStringAsync());
+        }
+
+        using (var old = await LogInAsync(_site.NewClient(), "erin", Password))
+        {
+            Assert.Equal(HttpStatusCode.OK, old.StatusCode);
+        }
+
+        (await SignedInAsync("erin", newPassword)).Dispose();
+    }
+
+    [Fact]
+    public async Task OwnedRowsBelongToTheIdentityUserName()
+    {
+        if (!_site.Ready)
+        {
+            return;
+        }
+
+        using var admin = await SignedInAsync("admin", ServerSite.AdminPassword);
+        await AddUserAsync(admin, "olga", 0);
+        using var olga = await SignedInAsync("olga", Password);
+        using (var created = await olga.PostAsJsonAsync("/api/sales", new { owner = "x", region = "S", day = "2024-07-04", amount = 12.5m, paid = true, note = "olga row", stamp = 1720094400, photo = (string?)null }))
+        {
+            Assert.True(created.IsSuccessStatusCode, await created.Content.ReadAsStringAsync());
+        }
+
+        Assert.Equal("olga", Convert.ToString(await _site.Scalar("SELECT owner FROM sales WHERE note = 'olga row'")));
+        var list = await Page(olga, "/sales");
+        Assert.Contains("olga row", list);
+        Assert.DoesNotContain("a4 &lt;b&gt;", list);
+    }
+}
+
+public sealed class SqlServerIdentityTests(SqlServerIdentitySite site) : ServerIdentityTests<SqlServerIdentitySite>(site), IClassFixture<SqlServerIdentitySite>;
+
+public sealed class MySqlIdentityTests(MySqlIdentitySite site) : ServerIdentityTests<MySqlIdentitySite>(site), IClassFixture<MySqlIdentitySite>;
+
+/// <summary>The editor's table creation on each server: an empty database gets all seven tables, a second run creates none.</summary>
+public class ServerIdentitySchemaTests
+{
+    [Theory]
+    [InlineData(DatabaseProviders.SqlServer)]
+    [InlineData(DatabaseProviders.MySql)]
+    public async Task CreateMissingTablesCreatesThemOnce(string provider)
+    {
+        if (ServerDatabases.Admin(provider) is not { } admin)
+        {
+            return;
+        }
+
+        var name = "wf_" + Guid.NewGuid().ToString("N")[..12];
+        var connectionString = ServerDatabases.Create(provider, admin, name);
+        try
+        {
+            await using (var connection = DatabaseConnections.Create(provider, connectionString))
+            {
+                await connection.OpenAsync();
+                Assert.Equal(IdentitySchema.TableNames("AspNet"), await IdentitySchema.CreateMissingTablesAsync(connection, provider, "AspNet"));
+                Assert.Empty(await IdentitySchema.CreateMissingTablesAsync(connection, provider, "AspNet"));
+                Assert.Equal(7, (await IdentitySchema.ExistingTablesAsync(connection, provider, "AspNet")).Count);
+                // A second set with another prefix fits beside the first: its constraint and index names do not clash.
+                Assert.Equal(IdentitySchema.TableNames("Site"), await IdentitySchema.CreateMissingTablesAsync(connection, provider, "Site"));
+            }
+
+            var tables = DatabaseConnections.SchemaReader(provider).ReadTables(connectionString);
+            var users = tables.Single(t => t.Name == "AspNetUsers");
+            Assert.Equal(["Id"], users.PrimaryKeys.Select(f => f.Name));
+            Assert.Equal(FieldType.Boolean, users.Fields.Single(f => f.Name == "EmailConfirmed").Type);
+            Assert.Contains(tables.Single(t => t.Name == "AspNetUserRoles").ForeignKeys, k => k.ReferencedTable == "AspNetRoles");
+        }
+        finally
+        {
+            ServerDatabases.Drop(provider, admin, name);
+        }
+    }
+}
