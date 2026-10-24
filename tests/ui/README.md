@@ -37,7 +37,8 @@ Scenarios:
   on day 3, 10, 17 or 24, amount n * 10.5, paid when n is even, and a Unix-time `stamp` column). Reports: a summary by
   region and month with a date range, region and paid pick lists and drill-down; a chart of the stamp by month; a
   crosstab of region by paid; a calendar with a region filter; a dashboard. The sales list has the filter and sort panel,
-  the quick filter and the reset button (`grid.spec.mjs`). No login. The tests only read data.
+  the quick filter and the reset button, and the view page of a region lists its sales in a
+  detail grid with a quick filter and sortable headers (`grid.spec.mjs`). No login. The tests only read data.
 
 ## Commands
 

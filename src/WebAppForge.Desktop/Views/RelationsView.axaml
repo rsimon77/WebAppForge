@@ -196,6 +196,8 @@
                         <CheckBox Content="Allow edit" Margin="0,0,16,0" IsChecked="{Binding AllowEdit}" AutomationProperties.AutomationId="AllowEditCheck" />
                         <CheckBox Content="Allow delete" IsChecked="{Binding AllowDelete}" AutomationProperties.AutomationId="AllowDeleteCheck" />
                     </WrapPanel>
+                    <CheckBox Content="Quick filter and column sorting on the view page" IsChecked="{Binding FilterAndSort}" AutomationProperties.AutomationId="DetailFilterAndSortCheck"
+                              ToolTip.Tip="A quick filter box, sortable column headers and a reset link above the grid when the master record is viewed." />
 
                     <TextBlock Classes="label" Text="Form page that holds the grid" />
                     <ComboBox ItemsSource="{Binding FormPageChoices}" SelectedItem="{Binding FormPageChoice}" MinWidth="200"

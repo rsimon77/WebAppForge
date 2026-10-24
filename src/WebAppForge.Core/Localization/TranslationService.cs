@@ -43,7 +43,7 @@ public static class LocalizationKeys
             }
         }
 
-        if (project.Tables.Any(t => t.Generate && Generation.Templates.UsesGridTools(t)))
+        if (Generation.Templates.UsesGridKit(project.Tables.Where(t => t.Generate)))
         {
             foreach (var ui in UiStrings.Grid)
             {

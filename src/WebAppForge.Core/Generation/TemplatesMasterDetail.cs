@@ -245,6 +245,20 @@ internal static partial class Templates
         foreach (var md in MdLinks(table))
         {
             sb.AppendLine($"    private const int MdPageSize{md.Index} = {Math.Clamp(md.Link.PageSize, 1, 200)};");
+            if (md.Link.FilterAndSort)
+            {
+                // The quick filter searches the grid's columns; the sortable ones may be sorted by their header.
+                var savedTable = _localizedTable;
+                _localizedTable = md.Detail.Name;
+                var filterable = MdColumns(md).Select(c => c.Field).Where(f => f.Type != FieldType.Binary).ToList();
+                var columns = filterable.Select(f => $"new({Lit(f.Name)}, {FieldText(f)}, {Lit(GridSql(md.Detail, f))}, {GridKind(f)})");
+                sb.AppendLine($"    private static GridKit.Column[] MdGridColumns{md.Index} => [{string.Join(", ", columns)}];");
+                var sortable = filterable.Where(f => f.Ui.Sortable).ToList();
+                sb.AppendLine($"    private static readonly string[] MdSortFields{md.Index} = {StringArray(sortable.Select(f => f.Name))};");
+                sb.AppendLine($"    private static readonly string[] MdSortColumns{md.Index} = {StringArray(sortable.Select(f => QuoteIdent(f.Name)))};");
+                _localizedTable = savedTable;
+            }
+
             var dClass = Identifier.Pascal(md.Detail.Name);
             foreach (var (field, _) in MdColumns(md))
             {
@@ -317,7 +331,7 @@ internal static partial class Templates
             sb.AppendLine("        Array.Fill(grids, string.Empty);");
             foreach (var l in MdEditLinks(table))
             {
-                sb.AppendLine($"        grids[{l.Index}] = await DetailGrid{l.Index}(context, connection, item, false);");
+                sb.AppendLine($"        grids[{l.Index}] = await DetailGrid{l.Index}(context, connection, item, false{MdToolsArg(l, false)});");
             }
 
             sb.AppendLine("        return grids;");
@@ -338,7 +352,7 @@ internal static partial class Templates
             sb.AppendLine("            return Results.NotFound();");
             sb.AppendLine("        }");
             sb.AppendLine();
-            sb.AppendLine($"        var grid = await DetailGrid{md.Index}(context, connection, item, true);");
+            sb.AppendLine($"        var grid = await DetailGrid{md.Index}(context, connection, item, true{MdToolsArg(md, false)});");
             sb.AppendLine("        return grid.Length == 0");
             sb.AppendLine("            ? Results.Text(\"You do not have permission to view this table.\", \"text/plain; charset=utf-8\", statusCode: StatusCodes.Status403Forbidden)");
             sb.AppendLine("            : Results.Content(\"<div data-partial=\\\"1\\\">\" + grid + \"</div>\", \"text/html; charset=utf-8\");");
@@ -346,6 +360,9 @@ internal static partial class Templates
             sb.AppendLine();
         }
     }
+
+    /// <summary>The tools argument of a DetailGrid call: empty for a link without filter and sort, so its code stays as it was.</summary>
+    private static string MdToolsArg(MdLink md, bool tools) => md.Link.FilterAndSort ? (tools ? ", true" : ", false") : string.Empty;
 
     private static void AppendMdGrid(StringBuilder sb, string className, MdLink md)
     {
@@ -368,7 +385,8 @@ internal static partial class Templates
         var savedTable = _localizedTable;
         _localizedTable = d.Name;
 
-        L($"    private static async Task<string> DetailGrid{i}(HttpContext context, SqliteConnection connection, {className} item, bool fragment)");
+        var tools = md.Link.FilterAndSort;
+        L($"    private static async Task<string> DetailGrid{i}(HttpContext context, SqliteConnection connection, {className} item, bool fragment{(tools ? ", bool tools" : string.Empty)})");
         L("    {");
         if (d.ViewMinLevel > 0)
         {
@@ -390,8 +408,34 @@ internal static partial class Templates
             cond += " AND " + OwnerCondition(d);
         }
 
-        L($"        const string where = {Lit(" WHERE " + cond)};");
         L("        var request = context.Request;");
+        if (tools)
+        {
+            // The quick filter and the header sort only apply where the grid shows them: on the view page.
+            L($"        var where = {Lit(" WHERE " + cond)};");
+            L($"        var order = {Lit(OrderSql(d))};");
+            L("        var gridParameters = new List<KeyValuePair<string, object>>();");
+            L("        if (tools)");
+            L("        {");
+            L($"            var quick = GridKit.QuickWhere(request.Query[{Lit("dq" + i)}].ToString(), MdGridColumns{i}, gridParameters);");
+            L("            if (quick.Length > 0)");
+            L("            {");
+            L("                where += \" AND \" + quick;");
+            L("            }");
+            L(string.Empty);
+            var tieBreak = keys.Count == 0 ? string.Empty : ", " + string.Join(", ", keys.Select(k => QuoteIdent(k.Name) + " ASC"));
+            L($"            if (GridKit.DetailOrder(request, {i}, MdSortFields{i}, MdSortColumns{i}) is {{ }} sorted)");
+            L("            {");
+            L($"                order = sorted + {Lit(tieBreak)};");
+            L("            }");
+            L("        }");
+            L(string.Empty);
+        }
+        else
+        {
+            L($"        const string where = {Lit(" WHERE " + cond)};");
+        }
+
         L($"        var requested = int.TryParse(request.Query[{Lit("dp" + i)}], out var parsed) ? parsed : 1;");
         L("        void Bind(SqliteCommand command)");
         L("        {");
@@ -403,6 +447,14 @@ internal static partial class Templates
         if (owned)
         {
             L("            command.Parameters.AddWithValue(\"@owner\", context.User.Identity?.Name ?? string.Empty);");
+        }
+
+        if (tools)
+        {
+            L("            foreach (var parameter in gridParameters)");
+            L("            {");
+            L("                command.Parameters.AddWithValue(parameter.Key, parameter.Value);");
+            L("            }");
         }
 
         L("        }");
@@ -420,7 +472,7 @@ internal static partial class Templates
         L($"        var rows = new List<{dClass}>();");
         L("        await using (var command = connection.CreateCommand())");
         L("        {");
-        L($"            command.CommandText = {Lit("SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name))} + where + {Lit(OrderSql(d))} + \" LIMIT @limit OFFSET @offset\";");
+        L($"            command.CommandText = {Lit("SELECT " + SelectColumns(d) + " FROM " + QuoteIdent(d.Name))} + where + {(tools ? "order" : Lit(OrderSql(d)))} + \" LIMIT @limit OFFSET @offset\";");
         L("            Bind(command);");
         L($"            command.Parameters.AddWithValue(\"@limit\", MdPageSize{i});");
         L($"            command.Parameters.AddWithValue(\"@offset\", (page - 1) * MdPageSize{i});");
@@ -441,7 +493,13 @@ internal static partial class Templates
         }
 
         L("        var grid = new StringBuilder();");
-        L($"        grid.Append({Lit("<div class=\"mt-4\" data-md-grid=\"" + i + "\"><div class=\"d-flex align-items-center mb-2\"><h2 class=\"h5 mb-0 me-auto\">")}).Append(Html.Encode({MdCaptionExpr(md)})).Append(\"</h2>\");");
+        var gridId = tools ? " id=\"md-grid-" + i + "\"" : string.Empty;
+        L($"        grid.Append({Lit("<div class=\"mt-4\"" + gridId + " data-md-grid=\"" + i + "\"><div class=\"d-flex align-items-center mb-2\"><h2 class=\"h5 mb-0 me-auto\">")}).Append(Html.Encode({MdCaptionExpr(md)})).Append(\"</h2>\");");
+        if (tools)
+        {
+            L($"        if (tools) grid.Append(GridKit.DetailTools(request, {i}));");
+        }
+
         if (canAdd)
         {
             var presetQuery = string.Join(" + \"&\" + ", md.Pairs.Select(p =>
@@ -467,7 +525,16 @@ internal static partial class Templates
         L("        grid.Append(\"<div class=\\\"table-responsive\\\"><table class=\\\"table table-sm table-striped align-middle\\\"><thead><tr>\");");
         foreach (var (field, width) in columns)
         {
-            L($"        grid.Append({Lit("<th" + CellAttributes(field, true, width) + ">")}).Append(Html.Encode({FieldText(field)})).Append(\"</th>\");");
+            var header = $"grid.Append({Lit("<th" + CellAttributes(field, true, width) + ">")}).Append(Html.Encode({FieldText(field)})).Append(\"</th>\");";
+            if (tools && field.Ui.Sortable && field.Type != FieldType.Binary)
+            {
+                L($"        if (tools) grid.Append(GridKit.DetailHeader(request, {i}, {Lit(field.Name)}, {FieldText(field)}, {Lit(CellAttributes(field, true, width))}));");
+                L($"        else {header}");
+            }
+            else
+            {
+                L($"        {header}");
+            }
         }
 
         if (showActions)

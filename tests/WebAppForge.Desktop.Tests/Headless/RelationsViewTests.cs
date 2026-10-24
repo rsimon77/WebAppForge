@@ -57,6 +57,7 @@ public class RelationsViewTests
         Find<ComboBox>(window, "OnDeleteCombo")!.SelectedItem = main.Relations.DeleteRuleOptions.Single(o => o.Rule == DeleteRule.Cascade);
         Find<ComboBox>(window, "PreviewModeCombo")!.SelectedItem = main.Relations.PreviewChoices.Single(c => c.Value == DetailPreview.Modal);
         Find<TextBox>(window, "DetailPageSizeBox")!.Text = "50";
+        Find<CheckBox>(window, "DetailFilterAndSortCheck")!.IsChecked = true;
         Settle(window);
 
         Assert.Equal("Customer orders", link.Caption);
@@ -64,6 +65,7 @@ public class RelationsViewTests
         Assert.Equal(DeleteRule.Cascade, link.OnDelete);
         Assert.Equal(DetailPreview.Modal, link.Preview);
         Assert.Equal(50, link.PageSize);
+        Assert.True(link.FilterAndSort);
         Assert.True(HasVisibleText(window, "Delete the detail records together with the master record, in one transaction."));
 
         Find<TextBox>(window, "DetailPageSizeBox")!.Text = "500";

@@ -372,6 +372,10 @@ static Project BuildReports(string db)
     sales.Designs.List.QuickFilter = true;
     sales.Designs.List.ResetButton = true;
     sales.Pages.PageSize = 50;
+    // The view page of a region lists its sales with the detail grid's quick filter and header sort.
+    var regionSales = new DetailLink { DetailTable = "sales", PageSize = 20, FilterAndSort = true };
+    regionSales.Links.Add(new KeyLink { MasterField = "code", DetailField = "region" });
+    project.Tables.Single(t => t.Name == "regions").Details.Add(regionSales);
 
     var summary = new ReportInfo { Name = "sales", Caption = "Sales by region", SourceTable = "sales", DateFilterField = "day", MenuGroup = "Reports" };
     summary.Groups.Add(new ReportGroup { Field = "region" });

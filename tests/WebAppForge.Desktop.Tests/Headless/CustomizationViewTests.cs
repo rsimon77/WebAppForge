@@ -213,6 +213,14 @@ public class CustomizationViewTests
         Assert.True(HasText(window, "Filter and sort"), "The preview does not show the filter button.");
         Assert.True(HasText(window, "Quick filter..."), "The preview does not show the quick filter box.");
 
+        // The button gives every other generated list the same three settings.
+        var others = main.Current.Tables.Where(t => t.Generate && t != table).ToList();
+        Assert.NotEmpty(others);
+        Find<Button>(window, "ApplyGridToolsButton")!.Command!.Execute(null);
+        Settle(window);
+        Assert.All(others, t => Assert.True(t.Designs.List is { FilterBuilder: true, QuickFilter: true, ResetButton: true }, t.Name));
+        Assert.StartsWith("Copied the searching, filtering and sorting options to", main.Status);
+
         Find<ListBox>(window, "PageTypeSelector")!.SelectedItem = PageKind.Edit;
         Settle(window);
         Assert.False(Find<CheckBox>(window, "FilterBuilderCheck")!.IsEffectivelyEnabled);
