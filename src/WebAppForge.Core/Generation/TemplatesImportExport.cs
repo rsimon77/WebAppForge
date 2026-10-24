@@ -1,4 +1,5 @@
 using System.Text;
+using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 
 namespace WebAppForge.Core.Generation;
@@ -174,7 +175,7 @@ internal static partial class Templates
                     properties.Add($"Pattern = {Lit(ui.Pattern.Trim())}");
                     if (ui.PatternMessage.Trim().Length > 0)
                     {
-                        properties.Add($"PatternMessage = {Lit(ui.PatternMessage.Trim())}");
+                        properties.Add($"PatternMessage = {ProjectText(LocalizationKeys.FieldUi(table.Name, field.Name, "pattern"), ui.PatternMessage.Trim())}");
                     }
                 }
             }
@@ -200,7 +201,7 @@ internal static partial class Templates
             else if (ControlOf(field) is EditControl.Select or EditControl.Radio && ui.Options.Count > 0)
             {
                 properties.Add("Choices = new DataExchange.Choice[] { "
-                    + string.Join(", ", ui.Options.Select(o => $"new({Lit(o.Value)}, {Lit(o.Text.Length > 0 ? o.Text : o.Value)})")) + " }");
+                    + string.Join(", ", ui.Options.Select(o => $"new({Lit(o.Value)}, {(o.Text.Trim().Length > 0 ? ProjectText(LocalizationKeys.FieldOption(table.Name, field.Name, o.Value), o.Text) : Lit(o.Text.Length > 0 ? o.Text : o.Value))})")) + " }");
             }
 
             var initializer = properties.Count == 0 ? string.Empty : " { " + string.Join(", ", properties) + " }";

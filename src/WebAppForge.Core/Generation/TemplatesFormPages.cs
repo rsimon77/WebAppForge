@@ -1,4 +1,5 @@
 using System.Text;
+using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 
 namespace WebAppForge.Core.Generation;
@@ -44,7 +45,10 @@ internal static partial class Templates
     private static string PageExpr(TableInfo table, int index, string html)
     {
         var page = table.FormPages[index];
-        return $"new FormPages.Page({index}, {Lit(page.Name.Trim())}, {Lit(PageCaption(page))}, {Lit(Token(page.Icon))}, {Lit(page.Description.Trim())}, {html})";
+        var name = page.Name.Trim();
+        var description = page.Description.Trim();
+        var descriptionExpr = description.Length > 0 ? ProjectText(LocalizationKeys.FormPage(table.Name, name, "description"), description) : Lit(description);
+        return $"new FormPages.Page({index}, {Lit(name)}, {ProjectText(LocalizationKeys.FormPage(table.Name, name, "caption"), PageCaption(page))}, {Lit(Token(page.Icon))}, {descriptionExpr}, {html})";
     }
 
     /// <summary>Pages that have at least one of the given fields, in page order, with their fields in field order.</summary>

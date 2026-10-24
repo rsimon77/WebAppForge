@@ -83,6 +83,37 @@ internal static partial class Templates
         ? $"Strings.F({Lit(UiStrings.KeyOf(id))}, {Lit(UiStrings.English(id))}, {FieldText(field)})"
         : Lit(UiStrings.English(id).Replace("{0}", FieldCaption(field)));
 
+    /// <summary>
+    /// C# expression for a text the project owner wrote (a design title, a help text, a menu group...). Localized, it is
+    /// looked up under <paramref name="key"/> with the written text as fallback; the key is listed by LocalizationKeys.ProjectTexts.
+    /// </summary>
+    internal static string ProjectText(string key, string text) => Localized
+        ? $"Strings.T({Lit(key)}, {Lit(text)})"
+        : Lit(text);
+
+    /// <summary>C# expression for a project text of a field of the table being generated.</summary>
+    private static string FieldUiText(FieldInfo field, string part, string text) =>
+        ProjectText(LocalizationKeys.FieldUi(_localizedTable ?? string.Empty, field.Name, part), text);
+
+    /// <summary>C# expression of the heading of a menu group: empty stays empty, so the items without a group stay ungrouped.</summary>
+    private static string MenuGroupText(string group) =>
+        group.Trim().Length == 0 ? Lit(group) : ProjectText(LocalizationKeys.MenuGroup(group.Trim()), group);
+
+    /// <summary>
+    /// A check message of a customized field: "{0} must be at most {1} characters." Localized, it is a format string in the
+    /// language of the request; otherwise the caption expression is followed by the English rest, as it always was.
+    /// </summary>
+    private static string CheckMessage(string id, string label, string argument)
+    {
+        if (Localized)
+        {
+            return $"Strings.F({Lit(UiStrings.KeyOf(id))}, {Lit(UiStrings.English(id))}, {label}, {Lit(argument)})";
+        }
+
+        var rest = UiStrings.English(id).Replace("{0}", string.Empty, StringComparison.Ordinal).Replace("{1}", argument, StringComparison.Ordinal);
+        return $"{label} + {Lit(rest)}";
+    }
+
     public static string Csproj(string sqliteVersion, ProjectMetadata? meta = null) => CsprojProperties(CsprojBase(sqliteVersion), meta);
 
     private static string CsprojBase(string sqliteVersion) => """
@@ -317,20 +348,20 @@ internal static partial class Templates
             var handler = secure ? "(HttpContext context, IAntiforgery antiforgery) => " : "() => ";
             var groupedMenu = MenuCustomized(tables);
             sb.AppendLine(groupedMenu
-                ? $"{target}.MapGet(\"/\", {handler}Html.Page({Lit(aspnet.Title)}, Html.GroupedMenu(new (string Group, string Caption, string Href, string Icon)[]"
-                : $"{target}.MapGet(\"/\", {handler}Html.Page({Lit(aspnet.Title)}, Html.Menu(new (string Caption, string Href)[]");
+                ? $"{target}.MapGet(\"/\", {handler}Html.Page({ProjectText(LocalizationKeys.SiteTitle, aspnet.Title)}, Html.GroupedMenu(new (string Group, string Caption, string Href, string Icon)[]"
+                : $"{target}.MapGet(\"/\", {handler}Html.Page({ProjectText(LocalizationKeys.SiteTitle, aspnet.Title)}, Html.Menu(new (string Caption, string Href)[]");
             sb.AppendLine("{");
             foreach (var table in groupedMenu ? MenuTables(tables) : tables)
             {
                 sb.AppendLine(groupedMenu
-                    ? $"    ({Lit(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}, {Lit(Token(table.Ui.Icon))}),"
+                    ? $"    ({MenuGroupText(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}, {Lit(Token(table.Ui.Icon))}),"
                     : $"    ({TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}),");
             }
 
             foreach (var report in MenuReports())
             {
                 sb.AppendLine(groupedMenu
-                    ? $"    ({Lit(report.MenuGroup)}, {ReportText(report)}, {Lit(ReportRoute(report))}, \"\"),"
+                    ? $"    ({MenuGroupText(report.MenuGroup)}, {ReportText(report)}, {Lit(ReportRoute(report))}, \"\"),"
                     : $"    ({ReportText(report)}, {Lit(ReportRoute(report))}),");
             }
 
@@ -1119,7 +1150,7 @@ internal static partial class Templates
             sb.AppendLine("        body.Append(\"<div class=\\\"mb-3\\\">\")");
             if (canAdd)
             {
-                var addText = designed && Has(design.AddButtonText) ? Lit(design.AddButtonText.Trim()) : Ui("add");
+                var addText = designed && Has(design.AddButtonText) ? ProjectText(LocalizationKeys.Page(table.Name, "list", "addButton"), design.AddButtonText.Trim()) : Ui("add");
                 sb.AppendLine($"            .Append({ActionLink(table, "add", "Route + \"/add\"", addText, "btn btn-sm btn-primary")}).Append(' ')");
             }
 
@@ -1144,7 +1175,7 @@ internal static partial class Templates
         }
 
         var width = columns.Count + (rowNumbers ? 1 : 0) + 1;
-        var emptyText = designed && Has(design.EmptyText) ? Lit(design.EmptyText.Trim()) : null;
+        var emptyText = designed && Has(design.EmptyText) ? ProjectText(LocalizationKeys.Page(table.Name, "list", "empty"), design.EmptyText.Trim()) : null;
         if (cards)
         {
             AppendCardList(sb, className, columns, rowNumbers, size, Actions, custom, rowClass);

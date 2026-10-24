@@ -49,13 +49,13 @@ public class LanguagesGenerateViewTests
         var list = Find<ListBox>(window, "LanguageList")!;
         Assert.Equal(4, list.ItemsSource!.Cast<object>().Count());
 
-        // One column per language after the key and source columns; adding a language adds a column.
+        // One column per language after the kind, key and source columns; adding a language adds a column.
         var grid = Find<DataGrid>(window, "TranslationsGrid")!;
-        Assert.Equal(2 + 4, grid.Columns.Count);
+        Assert.Equal(3 + 4, grid.Columns.Count);
         rig.Languages.NewLanguageText = "fr";
         Find<Button>(window, "AddLanguageButton")!.Command!.Execute(null);
         Settle(window);
-        Assert.Equal(2 + 5, grid.Columns.Count);
+        Assert.Equal(3 + 5, grid.Columns.Count);
         Assert.Contains("fr", rig.Settings.Languages);
 
         // A cell edit becomes a manual, reviewed entry.
@@ -79,7 +79,7 @@ public class LanguagesGenerateViewTests
         Assert.All(grid.ItemsSource!.Cast<TranslationRow>(), r => Assert.Contains("ustomer", r.Key + r.SourceText));
         rig.Languages.FilterLanguage = "hu";
         Settle(window);
-        Assert.Equal(2 + 1, grid.Columns.Count);
+        Assert.Equal(3 + 1, grid.Columns.Count);
         window.Close();
     }
 

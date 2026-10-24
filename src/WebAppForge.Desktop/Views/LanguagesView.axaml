@@ -143,11 +143,12 @@
                        AutomationProperties.AutomationId="TranslationResultText" />
         </StackPanel>
 
-        <!-- Rows are table captions, field captions and fixed UI strings; the language columns are added in code. -->
+        <!-- Rows are captions, the other project texts and fixed UI strings; the language columns are added in code. -->
         <DataGrid HorizontalScrollBarVisibility="Auto" Grid.Row="2" x:Name="TranslationsGrid" ItemsSource="{Binding Rows}" AutoGenerateColumns="False"
                   SelectionMode="Extended" IsReadOnly="True" CanUserResizeColumns="True" GridLinesVisibility="All"
                   AutomationProperties.AutomationId="TranslationsGrid">
             <DataGrid.Columns>
+                <DataGridTextColumn Header="Kind" Binding="{Binding Kind}" Width="100" />
                 <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="210" />
                 <DataGridTextColumn Header="Source text" Binding="{Binding SourceText}" Width="220" />
             </DataGrid.Columns>
