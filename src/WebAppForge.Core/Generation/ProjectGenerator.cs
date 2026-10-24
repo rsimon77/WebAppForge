@@ -64,6 +64,12 @@ public sealed class ProjectGenerator
             files["Web/PageKit.cs"] = Templates.PageKitRuntime(ns);
         }
 
+        // The filter builder, quick filter and reset button have their own runtime, written only when a list uses them.
+        if (tables.Any(Templates.UsesGridTools))
+        {
+            files["Web/GridKit.cs"] = Templates.GridKitRuntime(ns);
+        }
+
         // Multi-page forms need their own runtime, written only when a table splits a page into pages.
         if (tables.Any(Templates.UsesFormPages))
         {

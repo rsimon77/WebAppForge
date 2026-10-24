@@ -19,6 +19,7 @@
   relations : customers (text key), orders, order_lines (composite key), categories, products with master/detail links
            (restrict, cascade, set null; expandable row, offcanvas and modal previews) and multi-page forms (tabs, pills, wizard, accordion).
   reports : regions and 24 sales (Unix-time stamp column) with a summary (date range and pick-list filters, drill-down),
+           the filter builder, quick filter and reset button on the sales list,
            a chart, a crosstab, a calendar and a dashboard. No security.
   shop   : customers and orders tables, no security.
   secure : users (username, password, level), notes (owner = user name), reports (EditMinLevel 2),

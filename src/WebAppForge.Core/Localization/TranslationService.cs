@@ -43,6 +43,14 @@ public static class LocalizationKeys
             }
         }
 
+        if (project.Tables.Any(t => t.Generate && Generation.Templates.UsesGridTools(t)))
+        {
+            foreach (var ui in UiStrings.Grid)
+            {
+                result.Add(new SourceText(ui.Key, ui.English, "en"));
+            }
+        }
+
         var reports = project.Reports.Where(r => r.Generate).ToList();
         if (reports.Count > 0)
         {

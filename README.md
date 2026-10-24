@@ -12,6 +12,10 @@ produce a Dockerfile and compose file.
   site: list, view, add, copy, edit, delete and search pages, plus a JSON API.
 - Customization per field (edit control, validation, lookups, formats, badges, styling), per table (menu, row
   styles) and per page (layouts, columns, modal and side-panel pages, custom CSS and script).
+- Optional grid tools on list pages, each a checkbox in the Pages tab: a filter and sort panel (conditions per column
+  such as contains, =, >, between or empty, joined by all or any, and up to three sort levels), a quick filter box
+  (every word must match; "phrases", column:value and -word are understood) and a reset button that clears the
+  search, the filters and the sorting. They work without script and every value is bound as a SQL parameter.
 - Master/detail relationships with referential integrity, and multi-page forms (tabs, pills, accordion, wizard).
 - Report pages: summary (groups with subtotals and a grand total, optionally listing the rows), crosstab, chart (bar,
   horizontal bar, line, area, pie, doughnut, drawn on the server as SVG), month calendar and dashboard. Reports honor the

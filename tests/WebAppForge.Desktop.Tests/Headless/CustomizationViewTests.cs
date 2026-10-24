@@ -187,6 +187,39 @@ public class CustomizationViewTests
     }
 
     [AvaloniaFact]
+    public void TheListGridToolCheckboxesSetTheDesignAndShowInThePreview()
+    {
+        var (main, _) = CustomizationTests.Project();
+        var window = ShowWindow(main);
+        SelectTab(window, "Pages");
+        var table = main.Current.Tables[0];
+        main.Tables.SelectedTable = table;
+        Settle(window);
+        ExpandAll(window);
+
+        foreach (var id in new[] { "FilterBuilderCheck", "QuickFilterCheck", "ResetButtonCheck" })
+        {
+            var check = Find<CheckBox>(window, id)!;
+            Assert.True(check.IsEffectivelyEnabled, id);
+            Assert.False(check.IsChecked, id);
+            check.IsChecked = true;
+            Settle(window);
+        }
+
+        Assert.True(table.Designs.List.FilterBuilder);
+        Assert.True(table.Designs.List.QuickFilter);
+        Assert.True(table.Designs.List.ResetButton);
+        Assert.True(main.IsDirty);
+        Assert.True(HasText(window, "Filter and sort"), "The preview does not show the filter button.");
+        Assert.True(HasText(window, "Quick filter..."), "The preview does not show the quick filter box.");
+
+        Find<ListBox>(window, "PageTypeSelector")!.SelectedItem = PageKind.Edit;
+        Settle(window);
+        Assert.False(Find<CheckBox>(window, "FilterBuilderCheck")!.IsEffectivelyEnabled);
+        Assert.False(table.Designs.Edit.FilterBuilder);
+    }
+
+    [AvaloniaFact]
     public void EditingOnTheNewTabsMarksTheProjectDirtyThroughTheWindow()
     {
         var (main, dialogs) = CustomizationTests.Project();

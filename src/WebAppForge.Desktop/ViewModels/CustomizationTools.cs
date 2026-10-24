@@ -351,6 +351,20 @@ public static class SchematicBuilder
 
             top.Add(string.IsNullOrWhiteSpace(design.AddButtonText) ? "Add" : design.AddButtonText);
             top.Add("Search");
+            if (design.QuickFilter)
+            {
+                top.Add("Quick filter...");
+            }
+
+            if (design.FilterBuilder)
+            {
+                top.Add("Filter and sort");
+            }
+
+            if (design.ResetButton)
+            {
+                top.Add("Reset");
+            }
         }
         else
         {
