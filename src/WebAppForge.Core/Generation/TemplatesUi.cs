@@ -767,7 +767,8 @@ internal static partial class Templates
 
     /// <summary>True when any table changes its place or look in the home page menu.</summary>
     private static bool MenuCustomized(IReadOnlyList<TableInfo> tables) => tables.Any(t =>
-        t.Ui.MenuGroup.Length > 0 || !t.Ui.ShowInMenu || t.Ui.MenuOrder != 0 || Token(t.Ui.Icon).Length > 0);
+        t.Ui.MenuGroup.Length > 0 || !t.Ui.ShowInMenu || t.Ui.MenuOrder != 0 || Token(t.Ui.Icon).Length > 0)
+        || MenuReports().Any(r => r.MenuGroup.Length > 0);
 
     /// <summary>True when the shared layout gets a navigation menu: some table sets a menu group or hides itself.</summary>
     private static bool NavCustomized(IReadOnlyList<TableInfo> tables) => tables.Any(t => t.Ui.MenuGroup.Length > 0 || !t.Ui.ShowInMenu);
@@ -813,6 +814,11 @@ internal static partial class Templates
             foreach (var table in MenuTables(tables))
             {
                 menu.AppendLine($"            ({Lit(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}),");
+            }
+
+            foreach (var report in MenuReports())
+            {
+                menu.AppendLine($"            ({Lit(report.MenuGroup)}, {ReportText(report)}, {Lit(ReportRoute(report))}),");
             }
 
             menu.AppendLine("        };");

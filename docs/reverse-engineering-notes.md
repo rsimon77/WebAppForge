@@ -95,7 +95,7 @@ Not done:
 | Two-factor, external providers, SAML, LDAP, CAPTCHA, concurrent-session limits | Not started |
 | Lockout counter across restarts or processes | Not started (in memory only) |
 | Master/detail, multi-page, return pages, audit trail, email | Not started |
-| Summary, crosstab, calendar, chart, dashboard reports | Not started |
+| Summary, crosstab, calendar, chart, dashboard reports | Done (see the report section at the end) |
 | Lookup tables, custom views, linked tables, custom fields | Not started |
 | Multi-language, REST/export API options, tools menu | Not started |
 | Other database providers (MySQL, PostgreSQL, SQL Server, Oracle) | Deferred by request |
@@ -190,3 +190,38 @@ subject of the analysis.
 
 Still to do by hand: the repository folder on disk still carries the old name; rename it when no tool or session
 has it open.
+
+## Report pages (2026-10-24)
+
+Build: 0 errors, 0 warnings. Tests: 398 Core and 347 Desktop with `WEBAPPFORGE_NORTHWIND_DB` set (Northwind from
+jpwhite3/northwind-SQLite3: 16,282 orders, 609,283 order lines); without it 6 Core and 12 Desktop tests skip.
+
+Added
+- Report model (`Model/Reports.cs`, `Project.Reports`) stored in the project file under `<reports>`; the element is left
+  out when a project has no reports, and the generated output of such a project is unchanged (golden hashes untouched).
+- Generated `/reports/{name}` pages, one `Reports/{Name}Report.cs` each, and the runtime `Web/ReportKit.cs`:
+  - Summary: group levels (dates by year, quarter, month or day), Count, Sum, Average, Min and Max, subtotals per group,
+    grand total, optional row listing (first 5,000 rows listed; totals cover every row).
+  - Crosstab: row field by column field with row, column and grand totals; columns capped (default 50).
+  - Chart: bar, horizontal bar, line, area, pie and doughnut as server-side SVG with tooltips, an optional series field,
+    order by value with top N, and the data table below.
+  - Calendar: month grid with previous and next month, multi-day rows through an end date field, entries linked to the
+    view page.
+  - Dashboard: other reports in Bootstrap cards with a width per item.
+- Aggregation runs in SQL (COUNT, SUM, MIN, MAX per group) and ReportKit combines the groups, so averages of subtotals are
+  exact. Date grouping uses the leading characters of ISO date text, which covers both `YYYY-MM-DD` and
+  `YYYY-MM-DD HH:MM:SS` values (Northwind has both).
+- Security: reports are behind login when it is on; the report's own level and the table's view level both apply (the
+  stricter wins); rows are limited to the owner when the table has an owner field; dashboards leave out items the user
+  may not open; fields the site hides (password hash, user level) cannot be used.
+- Grouped values show the lookup display text or static option text of the field.
+- Localization: report captions, custom total headings and the report UI texts go through the translation store, only
+  for projects with reports.
+- Editor: Reports tab with the report list, kind-specific settings and the validation list (`ReportValidator`, shared
+  with the generator). Pill tab headers are 16px so the eleven tabs fit on one row of the default window.
+
+Known gaps
+- Charts are static SVG (tooltips, no zoom or click-through). No date-range or other runtime filter on report pages yet.
+- Dates stored as numbers (Unix or Julian) are not grouped by interval.
+- Detail columns of a summary are typed as a comma-separated list in the editor.
+- No Playwright scenario for reports yet; the pages are covered by HTTP tests against generated sites.

@@ -13,6 +13,9 @@ produce a Dockerfile and compose file.
 - Customization per field (edit control, validation, lookups, formats, badges, styling), per table (menu, row
   styles) and per page (layouts, columns, modal and side-panel pages, custom CSS and script).
 - Master/detail relationships with referential integrity, and multi-page forms (tabs, pills, accordion, wizard).
+- Report pages: summary (groups with subtotals and a grand total, optionally listing the rows), crosstab, chart (bar,
+  horizontal bar, line, area, pie, doughnut, drawn on the server as SVG), month calendar and dashboard. Reports honor the
+  table's filter, record ownership and user levels, and show lookup text for grouped fields.
 - Login, registration, password change, lockout, record-level ownership and user-level permissions.
 - Multi-language sites with opt-in translation through Google Cloud Translation or the Claude API
   (keys are read from the `GOOGLE_TRANSLATE_API_KEY` and `ANTHROPIC_API_KEY` environment variables only).
@@ -40,8 +43,10 @@ dotnet build WebAppForge.slnx
 dotnet test WebAppForge.slnx
 ```
 
-Some tests need a Northwind SQLite file. They skip with a message unless the `WEBAPPFORGE_NORTHWIND_DB`
-environment variable points to one. The FlaUI tests need Windows and a built desktop app. The browser tests in
+Some tests need a Northwind SQLite file, such as `dist/northwind.db` from
+[jpwhite3/northwind-SQLite3](https://github.com/jpwhite3/northwind-SQLite3). They skip with a message unless the
+`WEBAPPFORGE_NORTHWIND_DB` environment variable points to one. The report tests generate a Northwind site with every
+report kind and check its numbers against the database. The FlaUI tests need Windows and a built desktop app. The browser tests in
 `tests/ui` need Node.js; see its README.
 
 ## Branches

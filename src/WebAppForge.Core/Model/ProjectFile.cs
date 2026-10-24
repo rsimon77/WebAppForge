@@ -115,6 +115,7 @@ public static class ProjectFile
 
         LocalizationXml.Append(root, project.Localization);
         CustomizationXml.AppendMeta(root, project.Meta);
+        ReportXml.Append(root, project.Reports);
 
         return new XDocument(new XDeclaration("1.0", "utf-8", null), root);
     }
@@ -257,6 +258,8 @@ public static class ProjectFile
 
             project.Tables.Add(table);
         }
+
+        ReportXml.Read(root, project.Reports);
 
         return project;
     }

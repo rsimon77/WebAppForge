@@ -121,6 +121,11 @@ internal static partial class Templates
         }
 
         sb.AppendLine($"using {ns}.Pages;");
+        if (Reports.Count > 0)
+        {
+            sb.AppendLine($"using {ns}.Reports;");
+        }
+
         sb.AppendLine($"using {ns}.Web;");
         sb.AppendLine();
         sb.AppendLine("var builder = WebApplication.CreateBuilder(args);");
@@ -241,6 +246,14 @@ internal static partial class Templates
                     ? $"    ({Lit(table.Ui.MenuGroup)}, {TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}, {Lit(Token(table.Ui.Icon))}),"
                     : $"    ({TableText(table)}, {Lit("/" + Identifier.Route(table.Name))}),");
             }
+
+            foreach (var report in MenuReports())
+            {
+                sb.AppendLine(groupedMenu
+                    ? $"    ({Lit(report.MenuGroup)}, {ReportText(report)}, {Lit(ReportRoute(report))}, \"\"),"
+                    : $"    ({ReportText(report)}, {Lit(ReportRoute(report))}),");
+            }
+
             if (secure && security.AllowChangePassword)
             {
                 sb.AppendLine($"}}) + Html.Link(\"/changepassword\", {Ui("changePassword")}) + AuthPages.LogoutForm(context, antiforgery)));");
@@ -259,6 +272,11 @@ internal static partial class Templates
             var className = Identifier.Pascal(table.Name);
             sb.AppendLine($"{target}.Map{className}Endpoints(connectionString);");
             sb.AppendLine($"{target}.Map{className}Pages(connectionString);");
+        }
+
+        foreach (var report in Reports)
+        {
+            sb.AppendLine($"{target}.Map{ReportClass(report)}(connectionString);");
         }
 
         sb.AppendLine();
