@@ -1,0 +1,25 @@
+<views:PrefixedControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             xmlns:views="using:WebAppForge.Desktop.Views"
+             x:Class="WebAppForge.Desktop.Views.AggregateEditor">
+    <!-- DataContext: an AggregateRow. -->
+    <WrapPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Function" />
+            <ComboBox x:Name="FunctionCombo" ItemsSource="{x:Static vm:ReportChoices.Functions}" SelectedItem="{Binding Function}" MinWidth="140" />
+        </StackPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Field" />
+            <ComboBox x:Name="FieldCombo" ItemsSource="{Binding FieldChoices}" SelectedItem="{Binding Field}" MinWidth="170" />
+        </StackPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Heading" />
+            <TextBox x:Name="CaptionBox" Text="{Binding Caption}" Width="170" />
+        </StackPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Format (.NET, such as N2 or C)" />
+            <TextBox x:Name="FormatBox" Text="{Binding FormatString}" Width="120" />
+        </StackPanel>
+    </WrapPanel>
+</views:PrefixedControl>

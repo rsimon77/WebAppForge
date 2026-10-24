@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             xmlns:views="using:WebAppForge.Desktop.Views"
+             x:Class="WebAppForge.Desktop.Views.CrosstabReportView">
+    <!-- DataContext: a CrosstabReportViewModel. -->
+    <StackPanel Spacing="6">
+        <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
+                BorderBrush="{DynamicResource ValidationBrush}">
+            <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="CrosstabMessageText" />
+        </Border>
+
+        <TextBlock Classes="label" Text="Rows (down the left)" />
+        <views:ReportFieldEditor DataContext="{Binding Rows}" IdPrefix="CrosstabRows" />
+        <TextBlock Classes="label" Text="Columns (across the top)" />
+        <views:ReportFieldEditor DataContext="{Binding Columns}" IdPrefix="CrosstabColumns" />
+        <TextBlock Classes="label" Text="Value (in each cell)" />
+        <views:AggregateEditor DataContext="{Binding Value}" IdPrefix="CrosstabValue" />
+
+        <WrapPanel Margin="0,4,0,0">
+            <CheckBox Content="Row totals" Margin="0,0,16,0" IsChecked="{Binding ShowRowTotals}" AutomationProperties.AutomationId="CrosstabRowTotalsCheck" />
+            <CheckBox Content="Column totals" Margin="0,0,16,0" IsChecked="{Binding ShowColumnTotals}" AutomationProperties.AutomationId="CrosstabColumnTotalsCheck" />
+            <CheckBox Content="Grand total" IsChecked="{Binding ShowGrandTotal}" AutomationProperties.AutomationId="CrosstabGrandTotalCheck" />
+        </WrapPanel>
+        <TextBlock Classes="label" Text="Maximum columns (0 = no limit; the rest are folded into Other)" />
+        <TextBox Text="{Binding MaxColumnsText}" Width="120" HorizontalAlignment="Left" AutomationProperties.AutomationId="CrosstabMaxColumnsBox" />
+
+        <views:ReportFiltersEditor DataContext="{Binding Filters}" IdPrefix="Crosstab" />
+    </StackPanel>
+</UserControl>

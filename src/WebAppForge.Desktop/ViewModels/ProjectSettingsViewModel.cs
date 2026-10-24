@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -23,6 +24,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
     private readonly MainViewModel _main;
     private string _securitySummary = string.Empty;
     private string _localizationSummary = string.Empty;
+    private string _reportsSummary = string.Empty;
 
     public ProjectSettingsViewModel(MainViewModel main)
     {
@@ -500,6 +502,12 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         private set => SetProperty(ref _localizationSummary, value);
     }
 
+    public string ReportsSummary
+    {
+        get => _reportsSummary;
+        private set => SetProperty(ref _reportsSummary, value);
+    }
+
     public bool HasLocalizationTab => MainViewModel.TabNames.Contains("Languages");
 
     public void RefreshSummaries()
@@ -515,7 +523,24 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         LocalizationSummary = !localization.Enabled
             ? "Multi-language support is off."
             : $"Multi-language support is on: {string.Join(", ", localization.AllLanguages)} (default {localization.DefaultLanguage}).";
+
+        ReportsSummary = ReportsSummaryText(Project.Reports);
     }
+
+    /// <summary>"3 reports: 2 Summary, 1 Chart", or a note that there are none.</summary>
+    public static string ReportsSummaryText(IReadOnlyCollection<ReportDef> reports)
+    {
+        if (reports.Count == 0)
+        {
+            return "No reports. The generated site has only the table pages.";
+        }
+
+        var kinds = string.Join(", ", reports.GroupBy(r => r.Type).OrderBy(g => g.Key).Select(g => $"{g.Count()} {g.Key}"));
+        return $"{reports.Count} report{(reports.Count == 1 ? string.Empty : "s")}: {kinds}.";
+    }
+
+    [RelayCommand]
+    public void ShowReportsTab() => _main.ActiveTabIndex = MainViewModel.TabNames.ToList().IndexOf("Reports");
 
     [RelayCommand]
     public void ShowSecurityTab() => _main.ActiveTabIndex = MainViewModel.TabNames.ToList().IndexOf("Security");

@@ -8,6 +8,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using WebAppForge.Core.Model;
+using WebAppForge.Desktop.Services;
 using WebAppForge.Desktop.ViewModels;
 using WebAppForge.Desktop.Views;
 
@@ -87,6 +88,54 @@ public class GridLayoutTests
         var grid = Find<DataGrid>(window, "TranslationsGrid");
         AssertReadable(grid, width, "Key", "Source text");
         AssertScrollsWhenWider(grid);
+    }
+
+    [AvaloniaTheory]
+    [MemberData(nameof(Widths))]
+    public void ReportsTabKeepsItsGridColumnsReadableAndScrollable(int width)
+    {
+        var (main, _) = ReportsTests.Rig();
+        var window = new MainWindow { DataContext = main, Width = width, Height = 800 };
+        window.Show();
+        Settle(window);
+        SelectTab(window, "Reports");
+
+        // (report type, grids and the headers that must stay readable)
+        var cases = new (ReportType Type, (string Grid, string[] Headers)[] Grids)[]
+        {
+            (ReportType.Summary, [("SummaryGroupsGrid", ["Field", "Heading"]), ("SummaryAggregatesGrid", ["Function", "Field", "Caption"]), ("SummaryFiltersGrid", ["Field", "Caption"]), ("SummaryDetailFieldsGrid", ["Field"])]),
+            (ReportType.Crosstab, [("CrosstabFiltersGrid", ["Field", "Caption"])]),
+            (ReportType.Chart, [("ChartSeriesGrid", ["Function", "Field", "Caption", "Colour", "Kind"]), ("ChartFiltersGrid", ["Field", "Caption"])]),
+            (ReportType.Calendar, [("CalendarColorRulesGrid", ["Operator", "Value", "Colour or style"]), ("CalendarPopoverFieldsGrid", ["Field"]), ("CalendarFiltersGrid", ["Field", "Caption"])]),
+        };
+        foreach (var (type, grids) in cases)
+        {
+            main.Reports.AddReport(type);
+            Settle(window);
+            ExpandAll(window);
+            foreach (var (name, headers) in grids)
+            {
+                var grid = Find<DataGrid>(window, name);
+                AssertReadable(grid, width, headers);
+                AssertScrollsWhenWider(grid);
+            }
+        }
+
+        // The preview result grid: every column has a minimum width and the grid scrolls sideways.
+        var preview = new ReportsTests.FakePreview
+        {
+            Handler = (_, _) => Task.FromResult(new ReportPreviewResult(
+                Enumerable.Range(0, 12).Select(i => "Column" + i).ToArray(),
+                [Enumerable.Range(0, 12).Select(i => (object?)("value " + i)).ToArray()],
+                null)),
+        };
+        main.ReportPreview = preview;
+        main.Reports.RunPreviewAsync().GetAwaiter().GetResult();
+        Settle(window);
+        var result = Find<DataGrid>(window, "PreviewGrid");
+        Assert.Equal(12, result.Columns.Count);
+        AssertReadable(result, width, "Column0", "Column11");
+        AssertScrollsWhenWider(result);
     }
 
     [AvaloniaFact]

@@ -1,0 +1,134 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             xmlns:views="using:WebAppForge.Desktop.Views"
+             x:Class="WebAppForge.Desktop.Views.ChartReportView">
+    <!-- DataContext: a ChartReportViewModel. -->
+    <StackPanel Spacing="6">
+        <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
+                BorderBrush="{DynamicResource ValidationBrush}">
+            <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="ChartMessageText" />
+        </Border>
+
+        <TextBlock Classes="label" Text="Chart kind" />
+        <ComboBox ItemsSource="{Binding KindChoices}" SelectedItem="{Binding KindChoice}" MinWidth="220" AutomationProperties.AutomationId="ChartKindCombo">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Path Classes="icon" Data="{Binding Icon}" />
+                        <TextBlock Text="{Binding Label}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Classes="error" Text="{Binding PieSeriesWarning}" IsVisible="{Binding HasPieSeriesWarning}"
+                   AutomationProperties.AutomationId="ChartPieWarningText" />
+
+        <TextBlock Classes="label" Text="Category (the horizontal axis, or the slices of a pie)" />
+        <views:ReportFieldEditor DataContext="{Binding Category}" IdPrefix="ChartCategory" />
+
+        <TextBlock Classes="label" Text="Series" />
+        <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Series.Rows}" SelectedItem="{Binding Series.Selected, Mode=TwoWay}"
+                  AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="90" MaxHeight="220"
+                  AutomationProperties.AutomationId="ChartSeriesGrid">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Function" Width="Auto" MinWidth="130">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{x:Static vm:ReportChoices.Functions}" SelectedItem="{Binding Value.Function}" Margin="2,0" MinWidth="120" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Field" Width="Auto" MinWidth="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding Value.FieldChoices}" SelectedItem="{Binding Value.Field}" Margin="2,0" MinWidth="140" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Caption" Width="*" MinWidth="130">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Caption}" Margin="2,0" MinWidth="110" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Colour" Width="Auto" MinWidth="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" Margin="2,0">
+                                <Border Width="16" Height="16" CornerRadius="3" BorderThickness="1" VerticalAlignment="Center"
+                                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                        Background="{Binding Color, Converter={x:Static vm:ColorTextConverter.Instance}}" />
+                                <TextBox Text="{Binding Color}" MinWidth="80" PlaceholderText="palette" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Axis" Width="Auto" MinWidth="110">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{x:Static vm:ReportChoices.Axes}" SelectedItem="{Binding Axis}" Margin="2,0" MinWidth="100" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Kind" Width="Auto" MinWidth="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{x:Static vm:ReportChoices.SeriesKindChoices}" SelectedItem="{Binding KindOverride}" Margin="2,0" MinWidth="110" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <WrapPanel>
+            <Button Content="Add series" Margin="0,0,6,6" Command="{Binding Series.AddCommand}" AutomationProperties.AutomationId="AddChartSeriesButton" />
+            <Button Content="Remove" Margin="0,0,6,6" Command="{Binding Series.RemoveCommand}" AutomationProperties.AutomationId="RemoveChartSeriesButton" />
+            <Button Content="Move up" Margin="0,0,6,6" Command="{Binding Series.MoveUpCommand}" AutomationProperties.AutomationId="MoveChartSeriesUpButton" />
+            <Button Content="Move down" Margin="0,0,6,6" Command="{Binding Series.MoveDownCommand}" AutomationProperties.AutomationId="MoveChartSeriesDownButton" />
+        </WrapPanel>
+        <TextBlock Classes="hint" Text="Pick a colour for the selected series. A kind other than (chart kind) makes a combination chart (Column, Line or Area)." />
+        <views:SwatchStrip Command="{Binding SetColorCommand}" AutomationProperties.AutomationId="ChartSeriesSwatches" />
+
+        <CheckBox Content="One series per value of another field (the first series is the value)" IsChecked="{Binding UseSeriesField}"
+                  AutomationProperties.AutomationId="ChartUseSeriesFieldCheck" />
+        <StackPanel IsVisible="{Binding UseSeriesField}">
+            <views:ReportFieldEditor DataContext="{Binding SeriesField}" IdPrefix="ChartSeriesBy" />
+        </StackPanel>
+
+        <WrapPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Title" />
+                <TextBox Text="{Binding Title}" Width="240" AutomationProperties.AutomationId="ChartTitleBox" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Legend" />
+                <ComboBox ItemsSource="{x:Static vm:ReportChoices.Legends}" SelectedItem="{Binding Legend}" MinWidth="120" AutomationProperties.AutomationId="ChartLegendCombo" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Height (px)" />
+                <TextBox Text="{Binding HeightText}" Width="90" AutomationProperties.AutomationId="ChartHeightBox" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Top N (0 = all)" />
+                <TextBox Text="{Binding TopNText}" Width="90" AutomationProperties.AutomationId="ChartTopNBox" />
+            </StackPanel>
+        </WrapPanel>
+        <WrapPanel>
+            <CheckBox Content="Data labels" Margin="0,0,16,0" IsChecked="{Binding ShowDataLabels}" AutomationProperties.AutomationId="ChartDataLabelsCheck" />
+            <CheckBox Content="Trend line" IsChecked="{Binding TrendLine}" AutomationProperties.AutomationId="ChartTrendLineCheck" />
+        </WrapPanel>
+        <WrapPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="X axis title" />
+                <TextBox Text="{Binding XAxisTitle}" Width="200" AutomationProperties.AutomationId="ChartXAxisTitleBox" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Y axis title" />
+                <TextBox Text="{Binding YAxisTitle}" Width="200" AutomationProperties.AutomationId="ChartYAxisTitleBox" />
+            </StackPanel>
+        </WrapPanel>
+
+        <views:ReportFiltersEditor DataContext="{Binding Filters}" IdPrefix="Chart" />
+    </StackPanel>
+</UserControl>

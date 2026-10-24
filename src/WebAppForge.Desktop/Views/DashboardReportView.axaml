@@ -1,0 +1,100 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             xmlns:views="using:WebAppForge.Desktop.Views"
+             x:Class="WebAppForge.Desktop.Views.DashboardReportView">
+    <UserControl.Resources>
+        <DataTemplate x:Key="StyleItemTemplate">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Width="14" Height="14" CornerRadius="3" BorderThickness="1"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        Background="{Binding Converter={x:Static vm:StyleSwatchConverter.Instance}}" />
+                <TextBlock Text="{Binding}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+    <!-- DataContext: a DashboardReportViewModel. -->
+    <StackPanel Spacing="6">
+        <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
+                BorderBrush="{DynamicResource ValidationBrush}">
+            <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="DashboardMessageText" />
+        </Border>
+
+        <TextBlock Classes="label" Text="Items (in display order; they wrap onto new rows by their spans)" />
+        <ListBox ItemsSource="{Binding Items.Rows}" SelectedItem="{Binding Items.Selected, Mode=TwoWay}" MinHeight="90" MaxHeight="220"
+                 AutomationProperties.AutomationId="DashboardItemList">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Text}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <WrapPanel>
+            <Button Content="Add KPI card" Margin="0,0,6,6" Command="{Binding AddKpiCommand}" AutomationProperties.AutomationId="AddDashboardKpiButton" />
+            <Button Content="Add report" Margin="0,0,6,6" Command="{Binding AddReportCommand}" AutomationProperties.AutomationId="AddDashboardReportButton" />
+            <Button Content="Remove" Margin="0,0,6,6" Command="{Binding Items.RemoveCommand}" AutomationProperties.AutomationId="RemoveDashboardItemButton" />
+            <Button Content="Move up" Margin="0,0,6,6" Command="{Binding Items.MoveUpCommand}" AutomationProperties.AutomationId="MoveDashboardItemUpButton" />
+            <Button Content="Move down" Margin="0,0,6,6" Command="{Binding Items.MoveDownCommand}" AutomationProperties.AutomationId="MoveDashboardItemDownButton" />
+        </WrapPanel>
+
+        <!-- Settings of the selected item. -->
+        <StackPanel Spacing="4" DataContext="{Binding Items.Selected}" IsVisible="{Binding $parent[UserControl].DataContext.HasSelectedItem}">
+            <WrapPanel>
+                <StackPanel Spacing="2" Margin="0,0,16,6">
+                    <TextBlock Classes="label" Text="Span (1-12 columns)" />
+                    <TextBox Text="{Binding SpanText}" Width="90" AutomationProperties.AutomationId="DashboardSpanBox" />
+                </StackPanel>
+                <StackPanel Spacing="2" Margin="0,0,16,6">
+                    <TextBlock Classes="label" Text="Height (px, 0 = automatic)" />
+                    <TextBox Text="{Binding HeightText}" Width="110" AutomationProperties.AutomationId="DashboardHeightBox" />
+                </StackPanel>
+            </WrapPanel>
+
+            <StackPanel Spacing="4" IsVisible="{Binding IsReport}">
+                <TextBlock Classes="label" Text="Report (not a dashboard, not this one)" />
+                <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.EmbeddableReports}" SelectedItem="{Binding Report}" MinWidth="240"
+                          AutomationProperties.AutomationId="DashboardReportCombo" />
+            </StackPanel>
+
+            <StackPanel Spacing="4" IsVisible="{Binding IsKpi}">
+                <WrapPanel>
+                    <StackPanel Spacing="2" Margin="0,0,16,6">
+                        <TextBlock Classes="label" Text="Caption" />
+                        <TextBox Text="{Binding Caption}" Width="200" AutomationProperties.AutomationId="DashboardKpiCaptionBox" />
+                    </StackPanel>
+                    <StackPanel Spacing="2" Margin="0,0,16,6">
+                        <TextBlock Classes="label" Text="Table" />
+                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Owner.TableNames}" SelectedItem="{Binding Table}" MinWidth="170"
+                                  AutomationProperties.AutomationId="DashboardKpiTableCombo" />
+                    </StackPanel>
+                </WrapPanel>
+                <views:AggregateEditor DataContext="{Binding Value}" IdPrefix="DashboardKpi" />
+                <TextBlock Classes="label" Text="Filter (a SQL condition without WHERE)" />
+                <TextBox Classes="code" Text="{Binding Filter}" MinHeight="50" Height="60" AutomationProperties.AutomationId="DashboardKpiFilterBox" />
+                <WrapPanel>
+                    <StackPanel Spacing="2" Margin="0,0,16,6">
+                        <TextBlock Classes="label" Text="Style" />
+                        <ComboBox ItemsSource="{x:Static vm:ContextStyles.Names}" SelectedItem="{Binding Style}" ItemTemplate="{StaticResource StyleItemTemplate}"
+                                  MinWidth="150" AutomationProperties.AutomationId="DashboardKpiStyleCombo" />
+                    </StackPanel>
+                    <StackPanel Spacing="2" Margin="0,0,16,6">
+                        <TextBlock Classes="label" Text="Icon" />
+                        <ComboBox ItemsSource="{x:Static vm:CustomizationChoices.Icons}" Text="{Binding Icon}" IsEditable="True" MinWidth="180"
+                                  AutomationProperties.AutomationId="DashboardKpiIconCombo" />
+                    </StackPanel>
+                    <StackPanel Spacing="2" Margin="0,0,16,6">
+                        <TextBlock Classes="label" Text="Link to (a report or table)" />
+                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.LinkTargets}" SelectedItem="{Binding LinkTo}" MinWidth="180"
+                                  AutomationProperties.AutomationId="DashboardKpiLinkCombo" />
+                    </StackPanel>
+                </WrapPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <TextBlock Classes="label" Text="Refresh every (seconds, 0 = never)" />
+        <TextBox Text="{Binding RefreshSecondsText}" Width="120" HorizontalAlignment="Left" AutomationProperties.AutomationId="DashboardRefreshBox" />
+
+        <TextBlock Classes="label" Text="Layout (12 columns)" />
+        <views:DashboardStrip Boxes="{Binding Boxes}" AutomationProperties.AutomationId="DashboardLayoutStrip" />
+    </StackPanel>
+</UserControl>

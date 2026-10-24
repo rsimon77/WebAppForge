@@ -202,7 +202,7 @@
                 </StackPanel>
             </Expander>
 
-            <Expander Header="Security and localization" HorizontalAlignment="Stretch">
+            <Expander Header="Security, localization and reports" HorizontalAlignment="Stretch">
                 <StackPanel Spacing="6" Margin="0,4,0,0">
                     <TextBlock Classes="label" Text="Security" />
                     <TextBlock Text="{Binding SecuritySummary}" TextWrapping="Wrap" AutomationProperties.AutomationId="SecuritySummaryText" />
@@ -212,6 +212,10 @@
                     <TextBlock Text="{Binding LocalizationSummary}" TextWrapping="Wrap" AutomationProperties.AutomationId="LocalizationSummaryText" />
                     <Button Content="Go to Languages tab" Command="{Binding ShowLocalizationTabCommand}" HorizontalAlignment="Left"
                             AutomationProperties.AutomationId="GoToLocalizationButton" />
+                    <TextBlock Classes="label" Text="Reports" />
+                    <TextBlock Text="{Binding ReportsSummary}" TextWrapping="Wrap" AutomationProperties.AutomationId="ReportsSummaryText" />
+                    <Button Content="Go to Reports tab" Command="{Binding ShowReportsTabCommand}" HorizontalAlignment="Left"
+                            AutomationProperties.AutomationId="GoToReportsButton" />
                 </StackPanel>
             </Expander>
         </StackPanel>

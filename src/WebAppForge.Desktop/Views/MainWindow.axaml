@@ -11,7 +11,7 @@
         <Style Selector="TabControl.pills > TabItem">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border x:Name="PART_Border" CornerRadius="16" Padding="10,6" Margin="2,4"
+                    <Border x:Name="PART_Border" CornerRadius="16" Padding="7,6" Margin="1,4"
                             Background="Transparent">
                         <ContentPresenter x:Name="PART_ContentPresenter"
                                           Content="{TemplateBinding Header}"
@@ -144,6 +144,9 @@
             </TabItem>
             <TabItem Header="Relations">
                 <views:RelationsView />
+            </TabItem>
+            <TabItem Header="Reports">
+                <views:ReportsView />
             </TabItem>
         </TabControl>
     </DockPanel>

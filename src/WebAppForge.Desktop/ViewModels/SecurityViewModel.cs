@@ -355,7 +355,9 @@ public partial class SecurityViewModel : ViewModelBase
         SetItems(UserLevelFields, LevelFieldChoices(users));
 
         // Master/detail errors block generation like the login checks. The login problem is reported first.
-        ValidationMessage = Validate(Model, tables) ?? RelationValidator.FirstError(tables);
+        // Report errors (from the validation service) come last. The service runs on every refresh so the report lists stay current.
+        var reportError = _main.Reports.UpdateIssues();
+        ValidationMessage = Validate(Model, tables) ?? RelationValidator.FirstError(tables) ?? reportError;
     }
 
     private void ApplyCount(string text, string label, Action<int> store)

@@ -1,0 +1,33 @@
+<views:PrefixedControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             xmlns:views="using:WebAppForge.Desktop.Views"
+             x:Class="WebAppForge.Desktop.Views.ReportFieldEditor">
+    <!-- DataContext: a ReportFieldRow. -->
+    <WrapPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Field" />
+            <ComboBox x:Name="FieldCombo" ItemsSource="{Binding FieldChoices}" SelectedItem="{Binding Field}" MinWidth="170" />
+        </StackPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Interval" />
+            <ComboBox x:Name="IntervalCombo" ItemsSource="{Binding IntervalChoices}" SelectedItem="{Binding Interval}" MinWidth="130" />
+        </StackPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6" IsVisible="{Binding ShowRange}">
+            <TextBlock Classes="label" Text="Range size" />
+            <TextBox x:Name="RangeSizeBox" Text="{Binding RangeSizeText}" Width="90" />
+        </StackPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Sort" />
+            <ComboBox x:Name="SortCombo" ItemsSource="{x:Static vm:ReportChoices.Directions}" SelectedItem="{Binding Sort}" MinWidth="120" />
+        </StackPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Sort by" />
+            <ComboBox x:Name="SortByCombo" ItemsSource="{x:Static vm:ReportChoices.SortBys}" SelectedItem="{Binding SortBy}" MinWidth="120" />
+        </StackPanel>
+        <StackPanel Spacing="2" Margin="0,0,12,6">
+            <TextBlock Classes="label" Text="Heading (empty: the field caption)" />
+            <TextBox x:Name="CaptionBox" Text="{Binding Caption}" Width="190" />
+        </StackPanel>
+    </WrapPanel>
+</views:PrefixedControl>

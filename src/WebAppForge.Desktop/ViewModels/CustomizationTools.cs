@@ -110,6 +110,8 @@ public static class CustomizationFingerprint
             }
         }
 
+        // The reports: every setting of every report (the report editor writes them straight into the model).
+        text.Append("#reports").Append(JsonSerializer.Serialize(project.Reports));
         return text.ToString();
     }
 }

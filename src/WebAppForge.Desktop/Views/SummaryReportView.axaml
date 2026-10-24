@@ -1,0 +1,137 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             xmlns:views="using:WebAppForge.Desktop.Views"
+             x:Class="WebAppForge.Desktop.Views.SummaryReportView">
+    <!-- DataContext: a SummaryReportViewModel. -->
+    <StackPanel Spacing="6">
+        <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
+                BorderBrush="{DynamicResource ValidationBrush}">
+            <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="SummaryMessageText" />
+        </Border>
+
+        <TextBlock Classes="label" Text="Groups (outermost first)" />
+        <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Groups.Rows}" SelectedItem="{Binding Groups.Selected, Mode=TwoWay}"
+                  AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="200"
+                  AutomationProperties.AutomationId="SummaryGroupsGrid">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Field" Width="Auto" MinWidth="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding FieldChoices}" SelectedItem="{Binding Field}" Margin="2,0" MinWidth="140" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Interval" Width="Auto" MinWidth="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding IntervalChoices}" SelectedItem="{Binding Interval}" Margin="2,0" MinWidth="110" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Range size" Width="Auto" MinWidth="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding RangeSizeText}" IsEnabled="{Binding ShowRange}" Margin="2,0" MinWidth="80" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Sort" Width="Auto" MinWidth="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{x:Static vm:ReportChoices.Directions}" SelectedItem="{Binding Sort}" Margin="2,0" MinWidth="110" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Sort by" Width="Auto" MinWidth="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{x:Static vm:ReportChoices.SortBys}" SelectedItem="{Binding SortBy}" Margin="2,0" MinWidth="110" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Heading" Width="*" MinWidth="130">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Caption}" Margin="2,0" MinWidth="110" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <WrapPanel>
+            <Button Content="Add group" Margin="0,0,6,6" Command="{Binding Groups.AddCommand}" AutomationProperties.AutomationId="AddSummaryGroupButton" />
+            <Button Content="Remove" Margin="0,0,6,6" Command="{Binding Groups.RemoveCommand}" AutomationProperties.AutomationId="RemoveSummaryGroupButton" />
+            <Button Content="Move up" Margin="0,0,6,6" Command="{Binding Groups.MoveUpCommand}" AutomationProperties.AutomationId="MoveSummaryGroupUpButton" />
+            <Button Content="Move down" Margin="0,0,6,6" Command="{Binding Groups.MoveDownCommand}" AutomationProperties.AutomationId="MoveSummaryGroupDownButton" />
+        </WrapPanel>
+
+        <TextBlock Classes="label" Text="Aggregates" />
+        <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding Aggregates.Rows}" SelectedItem="{Binding Aggregates.Selected, Mode=TwoWay}"
+                  AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="200"
+                  AutomationProperties.AutomationId="SummaryAggregatesGrid">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Function" Width="Auto" MinWidth="130">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{x:Static vm:ReportChoices.Functions}" SelectedItem="{Binding Function}" Margin="2,0" MinWidth="120" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Field" Width="Auto" MinWidth="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding FieldChoices}" SelectedItem="{Binding Field}" Margin="2,0" MinWidth="140" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Caption" Width="*" MinWidth="130">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Caption}" Margin="2,0" MinWidth="110" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Format" Width="Auto" MinWidth="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding FormatString}" Margin="2,0" MinWidth="80" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <WrapPanel>
+            <Button Content="Add aggregate" Margin="0,0,6,6" Command="{Binding Aggregates.AddCommand}" AutomationProperties.AutomationId="AddSummaryAggregateButton" />
+            <Button Content="Remove" Margin="0,0,6,6" Command="{Binding Aggregates.RemoveCommand}" AutomationProperties.AutomationId="RemoveSummaryAggregateButton" />
+            <Button Content="Move up" Margin="0,0,6,6" Command="{Binding Aggregates.MoveUpCommand}" AutomationProperties.AutomationId="MoveSummaryAggregateUpButton" />
+            <Button Content="Move down" Margin="0,0,6,6" Command="{Binding Aggregates.MoveDownCommand}" AutomationProperties.AutomationId="MoveSummaryAggregateDownButton" />
+        </WrapPanel>
+
+        <TextBlock Classes="label" Text="Layout" />
+        <ComboBox ItemsSource="{x:Static vm:ReportChoices.Layouts}" SelectedItem="{Binding Layout}" MinWidth="160"
+                  AutomationProperties.AutomationId="SummaryLayoutCombo" />
+
+        <StackPanel Spacing="4" IsVisible="{Binding IsDetailLayout}">
+            <TextBlock Classes="label" Text="Detail fields (none: the table's list fields)" />
+            <views:FieldNameListEditor DataContext="{Binding DetailFields}" IdPrefix="SummaryDetail" />
+        </StackPanel>
+
+        <WrapPanel Margin="0,4,0,0">
+            <CheckBox Content="Show group totals" Margin="0,0,16,0" IsChecked="{Binding ShowGroupTotals}" AutomationProperties.AutomationId="SummaryGroupTotalsCheck" />
+            <CheckBox Content="Show grand total" IsChecked="{Binding ShowGrandTotal}" AutomationProperties.AutomationId="SummaryGrandTotalCheck" />
+        </WrapPanel>
+        <WrapPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Groups per page (0 = all)" />
+                <TextBox Text="{Binding GroupsPerPageText}" Width="120" AutomationProperties.AutomationId="SummaryGroupsPerPageBox" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Detail rows per group (0 = all)" />
+                <TextBox Text="{Binding DetailRowsPerGroupText}" Width="120" AutomationProperties.AutomationId="SummaryDetailRowsBox" />
+            </StackPanel>
+        </WrapPanel>
+
+        <views:ReportFiltersEditor DataContext="{Binding Filters}" IdPrefix="Summary" />
+    </StackPanel>
+</UserControl>

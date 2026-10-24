@@ -1,0 +1,121 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             xmlns:views="using:WebAppForge.Desktop.Views"
+             x:Class="WebAppForge.Desktop.Views.CalendarReportView">
+    <!-- DataContext: a CalendarReportViewModel. -->
+    <StackPanel Spacing="6">
+        <Border IsVisible="{Binding HasMessage}" Padding="8" BorderThickness="1" CornerRadius="4"
+                BorderBrush="{DynamicResource ValidationBrush}">
+            <TextBlock Classes="error" Text="{Binding Message}" AutomationProperties.AutomationId="CalendarMessageText" />
+        </Border>
+
+        <WrapPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Title field" />
+                <ComboBox ItemsSource="{Binding TitleFieldChoices}" SelectedItem="{Binding TitleField}" MinWidth="170" AutomationProperties.AutomationId="CalendarTitleFieldCombo" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Start (date or date-time)" />
+                <ComboBox ItemsSource="{Binding StartFieldChoices}" SelectedItem="{Binding StartField}" MinWidth="170" AutomationProperties.AutomationId="CalendarStartFieldCombo" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="End (optional)" />
+                <ComboBox ItemsSource="{Binding EndFieldChoices}" SelectedItem="{Binding EndField}" MinWidth="170" AutomationProperties.AutomationId="CalendarEndFieldCombo" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="All-day (yes/no field)" />
+                <ComboBox ItemsSource="{Binding AllDayFieldChoices}" SelectedItem="{Binding AllDayField}" MinWidth="170" AutomationProperties.AutomationId="CalendarAllDayFieldCombo" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Colour field" />
+                <ComboBox ItemsSource="{Binding ColorFieldChoices}" SelectedItem="{Binding ColorField}" MinWidth="170" AutomationProperties.AutomationId="CalendarColorFieldCombo" />
+            </StackPanel>
+        </WrapPanel>
+
+        <TextBlock Classes="label" Text="Colour rules (a Bootstrap style such as success, or a CSS colour such as #ff8800)" />
+        <DataGrid HorizontalScrollBarVisibility="Auto" ItemsSource="{Binding ColorRules.Rows}" SelectedItem="{Binding ColorRules.Selected, Mode=TwoWay}"
+                  AutoGenerateColumns="False" GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="200"
+                  AutomationProperties.AutomationId="CalendarColorRulesGrid">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Operator" Width="Auto" MinWidth="140">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{x:Static vm:ReportChoices.Operators}" SelectedItem="{Binding Operator}" Margin="2,0" MinWidth="130" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Value" Width="*" MinWidth="130">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Value}" IsEnabled="{Binding NeedsValue}" Margin="2,0" MinWidth="110" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Colour or style" Width="Auto" MinWidth="190">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" Margin="2,0">
+                                <Border Width="16" Height="16" CornerRadius="3" BorderThickness="1" VerticalAlignment="Center"
+                                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                        Background="{Binding Style, Converter={x:Static vm:ColorTextConverter.Instance}}" />
+                                <TextBox Text="{Binding Style}" MinWidth="120" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <WrapPanel>
+            <Button Content="Add rule" Margin="0,0,6,6" Command="{Binding ColorRules.AddCommand}" AutomationProperties.AutomationId="AddCalendarRuleButton" />
+            <Button Content="Remove" Margin="0,0,6,6" Command="{Binding ColorRules.RemoveCommand}" AutomationProperties.AutomationId="RemoveCalendarRuleButton" />
+            <Button Content="Move up" Margin="0,0,6,6" Command="{Binding ColorRules.MoveUpCommand}" AutomationProperties.AutomationId="MoveCalendarRuleUpButton" />
+            <Button Content="Move down" Margin="0,0,6,6" Command="{Binding ColorRules.MoveDownCommand}" AutomationProperties.AutomationId="MoveCalendarRuleDownButton" />
+        </WrapPanel>
+        <TextBlock Classes="hint" Text="Palette for the selected rule:" />
+        <views:SwatchStrip Command="{Binding SetRuleColorCommand}" AutomationProperties.AutomationId="CalendarRuleSwatches" />
+
+        <TextBlock Classes="label" Text="Default colour (CSS; empty: the theme colour)" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+            <Border Width="20" Height="20" CornerRadius="3" BorderThickness="1" VerticalAlignment="Center"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    Background="{Binding DefaultColor, Converter={x:Static vm:ColorTextConverter.Instance}}" />
+            <TextBox Text="{Binding DefaultColor}" Width="140" AutomationProperties.AutomationId="CalendarDefaultColorBox" />
+        </StackPanel>
+        <views:SwatchStrip Command="{Binding SetDefaultColorCommand}" AutomationProperties.AutomationId="CalendarDefaultSwatches" />
+
+        <TextBlock Classes="label" Text="Popover fields (none: every field shown in the view page)" />
+        <views:FieldNameListEditor DataContext="{Binding PopoverFields}" IdPrefix="CalendarPopover" />
+
+        <TextBlock Classes="label" Text="Views" />
+        <ItemsControl ItemsSource="{Binding ViewToggles}" AutomationProperties.AutomationId="CalendarViewList">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <CheckBox Content="{Binding View}" IsChecked="{Binding IsIncluded}" Margin="0,0,16,0" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <WrapPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="Default view" />
+                <ComboBox ItemsSource="{Binding DefaultViewChoices}" SelectedItem="{Binding DefaultView}" MinWidth="130" AutomationProperties.AutomationId="CalendarDefaultViewCombo" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,16,6">
+                <TextBlock Classes="label" Text="First day of the week" />
+                <ComboBox ItemsSource="{Binding Days}" SelectedItem="{Binding FirstDayChoice}" MinWidth="140" AutomationProperties.AutomationId="CalendarFirstDayCombo" />
+            </StackPanel>
+        </WrapPanel>
+        <WrapPanel>
+            <CheckBox Content="Show weekends" Margin="0,0,16,0" IsChecked="{Binding ShowWeekends}" AutomationProperties.AutomationId="CalendarWeekendsCheck" />
+            <CheckBox Content="Allow add (click an empty day)" Margin="0,0,16,0" IsChecked="{Binding AllowAdd}" AutomationProperties.AutomationId="CalendarAllowAddCheck" />
+            <CheckBox Content="Allow open (click an event)" IsChecked="{Binding AllowOpen}" AutomationProperties.AutomationId="CalendarAllowOpenCheck" />
+        </WrapPanel>
+
+        <views:ReportFiltersEditor DataContext="{Binding Filters}" IdPrefix="Calendar" />
+    </StackPanel>
+</UserControl>

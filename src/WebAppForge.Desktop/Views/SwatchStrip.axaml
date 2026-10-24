@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WebAppForge.Desktop.ViewModels"
+             xmlns:views="using:WebAppForge.Desktop.Views"
+             x:Class="WebAppForge.Desktop.Views.SwatchStrip">
+    <ItemsControl ItemsSource="{x:Static vm:ReportPalette.Swatches}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <WrapPanel />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Button Width="22" Height="22" MinWidth="22" MinHeight="22" Padding="0" Margin="0,0,4,4"
+                        Background="{Binding Brush}" ToolTip.Tip="{Binding Hex}"
+                        Command="{Binding $parent[UserControl].Command}" CommandParameter="{Binding Hex}" />
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

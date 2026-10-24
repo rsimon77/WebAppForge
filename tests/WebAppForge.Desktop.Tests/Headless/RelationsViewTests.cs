@@ -193,7 +193,8 @@ public class RelationsViewTests
         var tabs = window.GetVisualDescendants().OfType<TabControl>().Single();
 
         Assert.Equal(MainViewModel.TabNames.ToArray(), tabs.Items.OfType<TabItem>().Select(t => t.Header?.ToString() ?? string.Empty).ToArray());
-        Assert.Equal("Relations", tabs.Items.OfType<TabItem>().Last().Header);
+        Assert.Equal("Reports", tabs.Items.OfType<TabItem>().Last().Header);
+        Assert.Equal("Relations", tabs.Items.OfType<TabItem>().SkipLast(1).Last().Header);
 
         // Every tab header fits on one row of the default window; a wrapped strip would squeeze the tab content.
         Assert.All(tabs.Items.OfType<TabItem>(), t => Assert.Equal(0, t.Bounds.Y));

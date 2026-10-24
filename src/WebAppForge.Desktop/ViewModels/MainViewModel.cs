@@ -15,7 +15,7 @@ namespace WebAppForge.Desktop.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     /// <summary>Tab names in TabControl order. <see cref="ActiveTabIndex"/> indexes this list.</summary>
-    public static IReadOnlyList<string> TabNames { get; } = ["Database", "Tables", "Fields", "ASP.NET", "Security", "Generate", "Project", "Pages", "Languages", "Relations"];
+    public static IReadOnlyList<string> TabNames { get; } = ["Database", "Tables", "Fields", "ASP.NET", "Security", "Generate", "Project", "Pages", "Languages", "Relations", "Reports"];
 
     private readonly IDialogService _dialogs;
     private readonly SettingsStore? _store;
@@ -67,6 +67,7 @@ public partial class MainViewModel : ViewModelBase
         PageDesigner = new PageDesignerViewModel(this);
         Languages = new LanguagesViewModel(this);
         Relations = new RelationsViewModel(this);
+        Reports = new ReportsViewModel(this);
 
         Settings = store?.Load() ?? new AppSettings();
         _idle = new SessionIdleTracker(TimeSpan.FromMinutes(Settings.SessionTimeoutMinutes), DateTime.UtcNow);
@@ -101,6 +102,33 @@ public partial class MainViewModel : ViewModelBase
 
     /// <summary>The Relations tab (master/detail links and their validation).</summary>
     public RelationsViewModel Relations { get; }
+
+    /// <summary>The Reports tab (summary, crosstab, chart, calendar and dashboard reports).</summary>
+    public ReportsViewModel Reports { get; }
+
+    private IReportValidationService _reportValidation = new NoReportValidation();
+    private IReportPreviewService _reportPreview = new NoReportPreview();
+
+    /// <summary>
+    /// Checks the reports after every change; its errors disable Generate. The default finds nothing. Wire the Core validator
+    /// here (it is read at each validation, and setting it validates again).
+    /// </summary>
+    public IReportValidationService ReportValidation
+    {
+        get => _reportValidation;
+        set
+        {
+            _reportValidation = value ?? new NoReportValidation();
+            Security.Refresh();
+        }
+    }
+
+    /// <summary>Runs a report for the "Run preview" button. The default reports "Preview is not available yet". Wire the Core runner here.</summary>
+    public IReportPreviewService ReportPreview
+    {
+        get => _reportPreview;
+        set => _reportPreview = value ?? new NoReportPreview();
+    }
 
     /// <summary>Build runner, site runner, translation providers and other machine services of the Generate and Languages tabs. Tests replace them.</summary>
     public ToolServices Tools { get; init; } = new();
@@ -147,6 +175,11 @@ public partial class MainViewModel : ViewModelBase
             if (tab == "Relations" && Relations.SelectedLink is { } relation && !string.IsNullOrWhiteSpace(relation.Link.DetailTable))
             {
                 parts.Add(relation.Link.DetailTable);
+            }
+
+            if (tab == "Reports" && Reports.SelectedReport is { } report)
+            {
+                parts.Add(report.Caption);
             }
 
             if (tab == "Fields" && Tables.SelectedField is { } selectedField)
@@ -443,6 +476,7 @@ public partial class MainViewModel : ViewModelBase
         PageDesigner.Reload();
         Languages.Reload();
         Relations.Reload();
+        Reports.Reload();
         _savedSnapshot = Snapshot(project);
         Status = status;
     }
