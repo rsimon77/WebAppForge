@@ -83,14 +83,14 @@ def load_resx():
     return entries
 
 
-def save_resx(entries):
-    lines = [RESX_HEADER]
+def save_resx(entries, path=RESX, header=RESX_HEADER):
+    lines = [header]
     for key in sorted(entries, key=str.lower):
         value = html.escape(entries[key], quote=False)
         lines.append(f'  <data name="{key}" xml:space="preserve">\n    <value>{value}</value>\n  </data>\n')
     lines.append("</root>\n")
-    RESX.parent.mkdir(parents=True, exist_ok=True)
-    RESX.write_text("".join(lines), encoding="utf-8", newline="\n")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(lines), encoding="utf-8", newline="\n")
 
 
 def literals(source, ignored):
