@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English messages of Core for the editor (checks, generator, build and translation errors). Read by CoreMessages. -->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Audit_ExcludedMissing" xml:space="preserve">
+    <value>Table '{0}' excludes the field '{1}' from the audit trail, but it has no such field.</value>
+  </data>
+  <data name="Audit_LogTableClash" xml:space="preserve">
+    <value>The audit log table '{0}' has the name of a table of the project. Choose another name, or remove that table.</value>
+  </data>
+  <data name="Audit_NoLogTable" xml:space="preserve">
+    <value>The audit trail needs the name of its log table.</value>
+  </data>
+  <data name="Build_Cancelled" xml:space="preserve">
+    <value>Cancelled.</value>
+  </data>
+  <data name="Build_ConfiguredPathMissing" xml:space="preserve">
+    <value>The configured {0} path was not found: {1}</value>
+  </data>
+  <data name="Build_CouldNotStart" xml:space="preserve">
+    <value>Could not start {0}: {1}</value>
+  </data>
+  <data name="Build_DockerMissing" xml:space="preserve">
+    <value>The docker CLI was not found on PATH. Install Docker and try again.</value>
+  </data>
+  <data name="Build_DockerOff" xml:space="preserve">
+    <value>Building the Docker image is turned off in the build settings.</value>
+  </data>
+  <data name="Build_DotnetMissing" xml:space="preserve">
+    <value>The dotnet CLI was not found on PATH. Install the .NET SDK (https://dotnet.microsoft.com/download) and try again.</value>
+  </data>
+  <data name="Build_ExitCode" xml:space="preserve">
+    <value>{0} failed with exit code {1}.</value>
+  </data>
+  <data name="Build_FileCount" xml:space="preserve">
+    <value>{0} files</value>
+  </data>
+  <data name="Build_FirstError" xml:space="preserve">
+    <value>{0} error(s). First: {1}({2}): {3}: {4}</value>
+  </data>
+  <data name="Build_FolderMissing" xml:space="preserve">
+    <value>The folder '{0}' does not exist. Generate the site first.</value>
+  </data>
+  <data name="Build_ManyProjects" xml:space="preserve">
+    <value>More than one .csproj file was found in '{0}'.</value>
+  </data>
+  <data name="Build_NoDockerfile" xml:space="preserve">
+    <value>No Dockerfile was found in '{0}'. Generate the Docker files first.</value>
+  </data>
+  <data name="Build_NoExecutable" xml:space="preserve">
+    <value>No executable was given.</value>
+  </data>
+  <data name="Build_NoProject" xml:space="preserve">
+    <value>No .csproj file was found in '{0}'. Generate the site first.</value>
+  </data>
+  <data name="Build_TimedOut" xml:space="preserve">
+    <value>{0} timed out after {1} and was stopped.</value>
+  </data>
+  <data name="Build_VersionExitCode" xml:space="preserve">
+    <value>'{0} --version' exited with code {1}.</value>
+  </data>
+  <data name="Build_VersionNothing" xml:space="preserve">
+    <value>'{0} --version' printed nothing.</value>
+  </data>
+  <data name="Build_VersionTimedOut" xml:space="preserve">
+    <value>'{0} --version' timed out after {1}.</value>
+  </data>
+  <data name="Build_WarningCount" xml:space="preserve">
+    <value>{0} warning(s)</value>
+  </data>
+  <data name="Build_WasCancelled" xml:space="preserve">
+    <value>{0} was cancelled.</value>
+  </data>
+  <data name="Function_Average" xml:space="preserve">
+    <value>Average</value>
+  </data>
+  <data name="Function_Count" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="Function_Max" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="Function_Min" xml:space="preserve">
+    <value>Min</value>
+  </data>
+  <data name="Function_Sum" xml:space="preserve">
+    <value>Sum</value>
+  </data>
+  <data name="Generator_AssetFavicon" xml:space="preserve">
+    <value>favicon</value>
+  </data>
+  <data name="Generator_AssetLogo" xml:space="preserve">
+    <value>logo</value>
+  </data>
+  <data name="Generator_AssetMissing" xml:space="preserve">
+    <value>The {0} file '{1}' was not found (looked for '{2}').</value>
+  </data>
+  <data name="Generator_BacktickInName" xml:space="preserve">
+    <value>Identifier '{0}' contains a backtick and cannot be generated.</value>
+  </data>
+  <data name="Generator_BracketInName" xml:space="preserve">
+    <value>Identifier '{0}' contains a closing bracket and cannot be generated.</value>
+  </data>
+  <data name="Generator_CompositeAutoIncrement" xml:space="preserve">
+    <value>Table '{0}' has a composite key with an auto-increment column, which SQLite does not support.</value>
+  </data>
+  <data name="Generator_LanguageCode" xml:space="preserve">
+    <value>'{0}' is not a valid language code. Use a BCP-47 code such as 'en' or 'pt-BR'.</value>
+  </data>
+  <data name="Generator_LevelMissing" xml:space="preserve">
+    <value>User level security is enabled but table '{0}' has no user level field '{1}'.</value>
+  </data>
+  <data name="Generator_LevelNotInteger" xml:space="preserve">
+    <value>The user level field '{0}' in table '{1}' must be an integer column, but it is {2}.</value>
+  </data>
+  <data name="Generator_OwnerMissing" xml:space="preserve">
+    <value>User ID security is enabled for table '{0}' but it has no owner field '{1}'.</value>
+  </data>
+  <data name="Generator_OwnerNotText" xml:space="preserve">
+    <value>The owner field '{0}' in table '{1}' must be a text column to hold the user name, but it is {2}.</value>
+  </data>
+  <data name="Generator_PasswordMissing" xml:space="preserve">
+    <value>Security is enabled but table '{0}' has no password field '{1}'.</value>
+  </data>
+  <data name="Generator_PasswordNotText" xml:space="preserve">
+    <value>The password field '{0}' in table '{1}' must be a text column to hold the password hash, but it is {2}.</value>
+  </data>
+  <data name="Generator_ProviderNotSupported" xml:space="preserve">
+    <value>Provider '{0}' is not supported.</value>
+  </data>
+  <data name="Generator_QuoteInName" xml:space="preserve">
+    <value>Identifier '{0}' contains a double quote and cannot be generated.</value>
+  </data>
+  <data name="Generator_UnsupportedProvider" xml:space="preserve">
+    <value>Provider '{0}' is not supported. Use one of: {1}.</value>
+  </data>
+  <data name="Generator_UserNameMissing" xml:space="preserve">
+    <value>Security is enabled but table '{0}' has no user name field '{1}'.</value>
+  </data>
+  <data name="Generator_UserTableMissing" xml:space="preserve">
+    <value>Security is enabled but the user table '{0}' is not one of the generated tables.</value>
+  </data>
+  <data name="Identity_AdminLevel" xml:space="preserve">
+    <value>The administrator level must be at least 1.</value>
+  </data>
+  <data name="Identity_AdminName" xml:space="preserve">
+    <value>Name the administrator the site creates when it has no users.</value>
+  </data>
+  <data name="Identity_AdminVariable" xml:space="preserve">
+    <value>'{0}' is not a valid environment variable name for the administrator's password: use letters, digits and underscores, not starting with a digit.</value>
+  </data>
+  <data name="Identity_Lockout" xml:space="preserve">
+    <value>The lockout needs at least one failed attempt and a lockout time of at least one minute.</value>
+  </data>
+  <data name="Identity_NoteNoCreate" xml:space="preserve">
+    <value>The site does not create the identity tables: they must exist in the database before it starts.</value>
+  </data>
+  <data name="Identity_NoteUserTable" xml:space="preserve">
+    <value>The user table, user name, password and user level fields are not used: ASP.NET Core Identity keeps the users.</value>
+  </data>
+  <data name="Identity_PasswordLength" xml:space="preserve">
+    <value>The minimum password length must be between 1 and 128.</value>
+  </data>
+  <data name="Identity_Prefix" xml:space="preserve">
+    <value>The identity table prefix '{0}' is not valid: use 1 to 30 letters, digits and underscores, starting with a letter.</value>
+  </data>
+  <data name="Identity_RegisteredLevel" xml:space="preserve">
+    <value>The level of users who sign up must be 0 or more and lower than the administrator level.</value>
+  </data>
+  <data name="ImportExport_DateFormat" xml:space="preserve">
+    <value>the date format '{0}' cannot be used: it must write a date that it can also read back (for example yyyy-MM-dd).</value>
+  </data>
+  <data name="ImportExport_Delimiter" xml:space="preserve">
+    <value>the CSV separator must be one character such as , ; | or tab.</value>
+  </data>
+  <data name="ImportExport_ExcludedMissing" xml:space="preserve">
+    <value>the excluded field '{0}' does not exist.</value>
+  </data>
+  <data name="ImportExport_FileNameBrace" xml:space="preserve">
+    <value>the export file name has an unmatched brace.</value>
+  </data>
+  <data name="ImportExport_FileNameCharacter" xml:space="preserve">
+    <value>the export file name has a character that a file name cannot contain.</value>
+  </data>
+  <data name="ImportExport_FileNameEmpty" xml:space="preserve">
+    <value>the export file name cannot be empty.</value>
+  </data>
+  <data name="ImportExport_FileNameLetter" xml:space="preserve">
+    <value>the export file name needs a letter or digit.</value>
+  </data>
+  <data name="ImportExport_FileNamePart" xml:space="preserve">
+    <value>the export file name has an unknown part {0}; use {{table}}, {{date}} or {{datetime}}.</value>
+  </data>
+  <data name="ImportExport_KeyLeftOut" xml:space="preserve">
+    <value>the key field '{0}' is left out, so rows cannot be matched.</value>
+  </data>
+  <data name="ImportExport_MaxRows" xml:space="preserve">
+    <value>the most rows of an export cannot be negative.</value>
+  </data>
+  <data name="ImportExport_NegativeLevel" xml:space="preserve">
+    <value>the lowest user levels cannot be negative.</value>
+  </data>
+  <data name="ImportExport_NoFormat" xml:space="preserve">
+    <value>turn on at least one export or import format.</value>
+  </data>
+  <data name="ImportExport_Problem" xml:space="preserve">
+    <value>Import/export: {0}</value>
+  </data>
+  <data name="ImportExport_RequiredLeftOut" xml:space="preserve">
+    <value>the required field '{0}' is left out, so an import could not add rows.</value>
+  </data>
+  <data name="ImportExport_TableProblem" xml:space="preserve">
+    <value>Import/export table {0}: {1}</value>
+  </data>
+  <data name="ImportExport_UploadLimit" xml:space="preserve">
+    <value>the largest upload must be between 1 and {0} MB.</value>
+  </data>
+  <data name="ImportExport_UpsertNoKey" xml:space="preserve">
+    <value>updating existing rows needs a primary key, and the table has none.</value>
+  </data>
+  <data name="Interval_Day" xml:space="preserve">
+    <value>day</value>
+  </data>
+  <data name="Interval_Month" xml:space="preserve">
+    <value>month</value>
+  </data>
+  <data name="Interval_Quarter" xml:space="preserve">
+    <value>quarter</value>
+  </data>
+  <data name="Interval_Year" xml:space="preserve">
+    <value>year</value>
+  </data>
+  <data name="MasterDetail_ChooseDetail" xml:space="preserve">
+    <value>choose the detail table.</value>
+  </data>
+  <data name="MasterDetail_Cycle" xml:space="preserve">
+    <value>Cascade delete cycle: {0}. Cascade delete rules may not form a cycle; change one of them to Restrict or Set null.</value>
+  </data>
+  <data name="MasterDetail_DetailFieldMissing" xml:space="preserve">
+    <value>the detail field '{0}' does not exist in table '{1}'.</value>
+  </data>
+  <data name="MasterDetail_DetailMissing" xml:space="preserve">
+    <value>the detail table '{0}' does not exist.</value>
+  </data>
+  <data name="MasterDetail_DetailNotGenerated" xml:space="preserve">
+    <value>the detail table '{0}' is not generated (Generate is off).</value>
+  </data>
+  <data name="MasterDetail_Duplicate" xml:space="preserve">
+    <value>duplicate of another link of '{0}' to '{1}' with the same key fields.</value>
+  </data>
+  <data name="MasterDetail_FormPageMissing" xml:space="preserve">
+    <value>the grid is placed on form page '{0}', which '{1}' does not have.</value>
+  </data>
+  <data name="MasterDetail_FormPageNoName" xml:space="preserve">
+    <value>Table '{0}': a form page has no name.</value>
+  </data>
+  <data name="MasterDetail_FormPageTwice" xml:space="preserve">
+    <value>Table '{0}': the form page '{1}' exists twice.</value>
+  </data>
+  <data name="MasterDetail_GridColumnMissing" xml:space="preserve">
+    <value>the grid column '{0}' does not exist in table '{1}'.</value>
+  </data>
+  <data name="MasterDetail_LinkNoDetail" xml:space="preserve">
+    <value>key link {0} has no detail field.</value>
+  </data>
+  <data name="MasterDetail_LinkNoMaster" xml:space="preserve">
+    <value>key link {0} has no master field.</value>
+  </data>
+  <data name="MasterDetail_LinkTwice" xml:space="preserve">
+    <value>the key link '{0} = {1}' is listed twice.</value>
+  </data>
+  <data name="MasterDetail_MasterFieldMissing" xml:space="preserve">
+    <value>the master field '{0}' does not exist in table '{1}'.</value>
+  </data>
+  <data name="MasterDetail_MasterNoKey" xml:space="preserve">
+    <value>the master table '{0}' has no primary key.</value>
+  </data>
+  <data name="MasterDetail_NoLinks" xml:space="preserve">
+    <value>add at least one key link (master field = detail field).</value>
+  </data>
+  <data name="MasterDetail_PageSize" xml:space="preserve">
+    <value>the page size {0} must be from 1 to 200.</value>
+  </data>
+  <data name="MasterDetail_Problem" xml:space="preserve">
+    <value>Master/detail {0} -&gt; {1}: {2}</value>
+  </data>
+  <data name="MasterDetail_SelfCascade" xml:space="preserve">
+    <value>a table cannot cascade delete to itself (Cascade delete cycle: {0} -&gt; {0}). Use Restrict or Set null.</value>
+  </data>
+  <data name="MasterDetail_SetNullRequired" xml:space="preserve">
+    <value>on delete 'Set null' needs nullable link fields, but '{0}' of '{1}' is required.</value>
+  </data>
+  <data name="MasterDetail_ShowOnAdd" xml:space="preserve">
+    <value>the details are shown after add (ShowOnAdd) but the edit page of '{0}' is not generated.</value>
+  </data>
+  <data name="Preview_Dashboard" xml:space="preserve">
+    <value>A dashboard shows other reports. Preview them one at a time.</value>
+  </data>
+  <data name="Preview_Empty" xml:space="preserve">
+    <value>(empty)</value>
+  </data>
+  <data name="Preview_Entry" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="Preview_FirstCategories" xml:space="preserve">
+    <value>First {0} categories.</value>
+  </data>
+  <data name="Preview_FirstGroups" xml:space="preserve">
+    <value>First {0} groups.</value>
+  </data>
+  <data name="Preview_FirstRows" xml:space="preserve">
+    <value>First {0} rows.</value>
+  </data>
+  <data name="Preview_FunctionOf" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="Preview_LatestEntries" xml:space="preserve">
+    <value>The latest entries.</value>
+  </data>
+  <data name="Preview_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Preview_NoDatedRows" xml:space="preserve">
+    <value>No dated rows.</value>
+  </data>
+  <data name="Preview_NoRows" xml:space="preserve">
+    <value>No rows.</value>
+  </data>
+  <data name="Preview_PivotRows" xml:space="preserve">
+    <value>{0}, first {1} rows.</value>
+  </data>
+  <data name="Preview_PivotRowsColumns" xml:space="preserve">
+    <value>{0}, first {1} rows and {2} of {3} columns.</value>
+  </data>
+  <data name="Preview_QueryRefused" xml:space="preserve">
+    <value>The database refused the query: {0}</value>
+  </data>
+  <data name="Preview_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="ProjectFile_MissingAttribute" xml:space="preserve">
+    <value>Element '{0}' is missing attribute '{1}'.</value>
+  </data>
+  <data name="ProjectFile_NoRoot" xml:space="preserve">
+    <value>Project file has no root element.</value>
+  </data>
+  <data name="ProjectFile_WrongRoot" xml:space="preserve">
+    <value>Expected root element '{0}' but found '{1}'.</value>
+  </data>
+  <data name="Report_AggregateNeedsNumber" xml:space="preserve">
+    <value>{0} needs a number field, but '{1}' is {2}.</value>
+  </data>
+  <data name="Report_Binary" xml:space="preserve">
+    <value>the {0} '{1}' holds binary data, which a report cannot show.</value>
+  </data>
+  <data name="Report_CalendarDateRange" xml:space="preserve">
+    <value>a calendar moves by month; clear the date range field.</value>
+  </data>
+  <data name="Report_ChartNotNumber" xml:space="preserve">
+    <value>a chart plots numbers, but the {0} of '{1}' is not a number.</value>
+  </data>
+  <data name="Report_ChooseField" xml:space="preserve">
+    <value>choose the {0}.</value>
+  </data>
+  <data name="Report_ChooseTable" xml:space="preserve">
+    <value>choose the table it reads.</value>
+  </data>
+  <data name="Report_DashboardEmpty" xml:space="preserve">
+    <value>add at least one report to the dashboard.</value>
+  </data>
+  <data name="Report_DashboardMissing" xml:space="preserve">
+    <value>the dashboard shows '{0}', which is not a generated report.</value>
+  </data>
+  <data name="Report_DashboardNested" xml:space="preserve">
+    <value>a dashboard cannot show another dashboard ('{0}').</value>
+  </data>
+  <data name="Report_DashboardWidth" xml:space="preserve">
+    <value>the width of '{0}' must be between 1 and 12 columns.</value>
+  </data>
+  <data name="Report_FilterTwice" xml:space="preserve">
+    <value>the filter field '{0}' is listed twice.</value>
+  </data>
+  <data name="Report_GroupNotDate" xml:space="preserve">
+    <value>the {0} '{1}' is not a date, so it cannot be grouped by {2}.</value>
+  </data>
+  <data name="Report_MaxColumns" xml:space="preserve">
+    <value>the most columns must be at least 1.</value>
+  </data>
+  <data name="Report_NameNeeded" xml:space="preserve">
+    <value>give the report a name with at least one letter or digit.</value>
+  </data>
+  <data name="Report_NameTaken" xml:space="preserve">
+    <value>another report has the same name or URL.</value>
+  </data>
+  <data name="Report_NoName" xml:space="preserve">
+    <value>(no name)</value>
+  </data>
+  <data name="Report_NotADate" xml:space="preserve">
+    <value>the {0} '{1}' is not a date.</value>
+  </data>
+  <data name="Report_NotAField" xml:space="preserve">
+    <value>the {0} '{1}' is not a field of '{2}'.</value>
+  </data>
+  <data name="Report_PieOneSeries" xml:space="preserve">
+    <value>a pie or doughnut chart has one series; clear the series field.</value>
+  </data>
+  <data name="Report_Problem" xml:space="preserve">
+    <value>Report {0}: {1}</value>
+  </data>
+  <data name="Report_SeriesOrder" xml:space="preserve">
+    <value>a chart with a series field is ordered by category; choose the category order.</value>
+  </data>
+  <data name="Report_TableNotGenerated" xml:space="preserve">
+    <value>the table '{0}' is not one of the generated tables.</value>
+  </data>
+  <data name="Report_TopCountNegative" xml:space="preserve">
+    <value>the number of categories shown cannot be negative.</value>
+  </data>
+  <data name="ReportField_Category" xml:space="preserve">
+    <value>category field</value>
+  </data>
+  <data name="ReportField_Column" xml:space="preserve">
+    <value>column field</value>
+  </data>
+  <data name="ReportField_Date" xml:space="preserve">
+    <value>date field</value>
+  </data>
+  <data name="ReportField_DateRange" xml:space="preserve">
+    <value>date range field</value>
+  </data>
+  <data name="ReportField_DetailColumn" xml:space="preserve">
+    <value>detail column</value>
+  </data>
+  <data name="ReportField_EndDate" xml:space="preserve">
+    <value>end date field</value>
+  </data>
+  <data name="ReportField_Filter" xml:space="preserve">
+    <value>filter field</value>
+  </data>
+  <data name="ReportField_Group" xml:space="preserve">
+    <value>group field</value>
+  </data>
+  <data name="ReportField_Row" xml:space="preserve">
+    <value>row field</value>
+  </data>
+  <data name="ReportField_Series" xml:space="preserve">
+    <value>series field</value>
+  </data>
+  <data name="ReportField_Title" xml:space="preserve">
+    <value>title field</value>
+  </data>
+  <data name="ReportField_Value" xml:space="preserve">
+    <value>value field</value>
+  </data>
+  <data name="TextKind_Detail" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="TextKind_Field" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="TextKind_FieldGroup" xml:space="preserve">
+    <value>Field group</value>
+  </data>
+  <data name="TextKind_FieldSetting" xml:space="preserve">
+    <value>Field setting</value>
+  </data>
+  <data name="TextKind_FormPage" xml:space="preserve">
+    <value>Form page</value>
+  </data>
+  <data name="TextKind_Menu" xml:space="preserve">
+    <value>Menu</value>
+  </data>
+  <data name="TextKind_Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="TextKind_Report" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="TextKind_Site" xml:space="preserve">
+    <value>Site</value>
+  </data>
+  <data name="TextKind_Table" xml:space="preserve">
+    <value>Table</value>
+  </data>
+  <data name="TextKind_UI" xml:space="preserve">
+    <value>UI</value>
+  </data>
+  <data name="Translation_AutoOff" xml:space="preserve">
+    <value>Automatic translation is not enabled for this project (Localization.AutoTranslate is off).</value>
+  </data>
+  <data name="Translation_Failed" xml:space="preserve">
+    <value>{0} translation failed: {1}.</value>
+  </data>
+  <data name="Translation_FailedAfter" xml:space="preserve">
+    <value>{0} translation failed after {1} attempts: {2}.</value>
+  </data>
+  <data name="Translation_InvalidJson" xml:space="preserve">
+    <value>{0} translation did not answer with valid JSON.</value>
+  </data>
+  <data name="Translation_NetworkError" xml:space="preserve">
+    <value>network error: {0}</value>
+  </data>
+  <data name="Translation_NoKey" xml:space="preserve">
+    <value>No {0} API key is configured. Set the environment variable {1}.</value>
+  </data>
+  <data name="Translation_NoResponse" xml:space="preserve">
+    <value>no response</value>
+  </data>
+  <data name="Translation_NotArray" xml:space="preserve">
+    <value>{0} translation did not answer with a JSON array.</value>
+  </data>
+  <data name="Translation_NotStrings" xml:space="preserve">
+    <value>{0} translation answered with an array that holds something other than strings.</value>
+  </data>
+  <data name="Translation_ProviderWrongCount" xml:space="preserve">
+    <value>The translation provider returned {0} texts for {1} requested.</value>
+  </data>
+  <data name="Translation_TimedOut" xml:space="preserve">
+    <value>request timed out</value>
+  </data>
+  <data name="Translation_Unreadable" xml:space="preserve">
+    <value>{0} translation returned a response that could not be read.</value>
+  </data>
+  <data name="Translation_WrongCount" xml:space="preserve">
+    <value>{0} translation returned {1} texts for {2} requested.</value>
+  </data>
+</root>

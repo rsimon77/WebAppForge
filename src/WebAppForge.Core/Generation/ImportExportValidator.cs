@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using WebAppForge.Core.Model;
+using M = WebAppForge.Core.Localization.CoreMessages;
 
 namespace WebAppForge.Core.Generation;
 
@@ -84,35 +85,35 @@ public static class ImportExportRules
             return problems;
         }
 
-        const string prefix = "Import/export: ";
+        static string Prefix(string text) => M.Format("ImportExport_Problem", text);
         if (s.ExportFormats == DataFormats.None && s.ImportFormats == DataFormats.None)
         {
-            problems.Add(prefix + "turn on at least one export or import format.");
+            problems.Add(Prefix(M.Text("ImportExport_NoFormat")));
         }
 
         if (s.MaxUploadMb < 1 || s.MaxUploadMb > MaxUploadLimitMb)
         {
-            problems.Add(prefix + $"the largest upload must be between 1 and {MaxUploadLimitMb} MB.");
+            problems.Add(Prefix(M.Format("ImportExport_UploadLimit", MaxUploadLimitMb)));
         }
 
         if (s.DelimiterChar is null)
         {
-            problems.Add(prefix + "the CSV separator must be one character such as , ; | or tab.");
+            problems.Add(Prefix(M.Text("ImportExport_Delimiter")));
         }
 
         if (!IsUsableDateFormat(s.DateFormat))
         {
-            problems.Add(prefix + $"the date format '{s.DateFormat}' cannot be used: it must write a date that it can also read back (for example yyyy-MM-dd).");
+            problems.Add(Prefix(M.Format("ImportExport_DateFormat", s.DateFormat)));
         }
 
         if (FileNameProblem(s.ExportFileNamePattern) is { } nameProblem)
         {
-            problems.Add(prefix + nameProblem);
+            problems.Add(Prefix(nameProblem));
         }
 
         if (s.ExportMinLevel < 0 || s.ImportMinLevel < 0)
         {
-            problems.Add(prefix + "the lowest user levels cannot be negative.");
+            problems.Add(Prefix(M.Text("ImportExport_NegativeLevel")));
         }
 
         foreach (var table in project.Tables.Where(t => t.Generate))
@@ -123,15 +124,15 @@ public static class ImportExportRules
                 continue;
             }
 
-            var label = $"Import/export table {table.Name}: ";
+            void Add(string text) => problems.Add(M.Format("ImportExport_TableProblem", table.Name, text));
             if (settings.ExportMaxRows < 0)
             {
-                problems.Add(label + "the most rows of an export cannot be negative.");
+                Add(M.Text("ImportExport_MaxRows"));
             }
 
             foreach (var excluded in settings.ExcludedFields.Where(x => !table.Fields.Any(f => Same(f.Name, x))))
             {
-                problems.Add(label + $"the excluded field '{excluded}' does not exist.");
+                Add(M.Format("ImportExport_ExcludedMissing", excluded));
             }
 
             if (!CanImport(project, table))
@@ -144,12 +145,12 @@ public static class ImportExportRules
             {
                 if (table.PrimaryKeys.Count == 0)
                 {
-                    problems.Add(label + "updating existing rows needs a primary key, and the table has none.");
+                    Add(M.Text("ImportExport_UpsertNoKey"));
                 }
 
                 foreach (var key in table.PrimaryKeys.Where(k => !fields.Contains(k)))
                 {
-                    problems.Add(label + $"the key field '{key.Name}' is left out, so rows cannot be matched.");
+                    Add(M.Format("ImportExport_KeyLeftOut", key.Name));
                 }
             }
 
@@ -157,7 +158,7 @@ public static class ImportExportRules
             foreach (var field in table.Fields.Where(f =>
                 f.IsRequired && !f.HasDefault && !f.IsAutoIncrement && !fields.Contains(f) && (owner.Length == 0 || !Same(f.Name, owner))))
             {
-                problems.Add(label + $"the required field '{field.Name}' is left out, so an import could not add rows.");
+                Add(M.Format("ImportExport_RequiredLeftOut", field.Name));
             }
         }
 
@@ -189,28 +190,28 @@ public static class ImportExportRules
     {
         if (string.IsNullOrWhiteSpace(pattern))
         {
-            return "the export file name cannot be empty.";
+            return M.Text("ImportExport_FileNameEmpty");
         }
 
         foreach (Match match in Token.Matches(pattern))
         {
             if (match.Value is not ("{table}" or "{date}" or "{datetime}"))
             {
-                return $"the export file name has an unknown part {match.Value}; use {{table}}, {{date}} or {{datetime}}.";
+                return M.Format("ImportExport_FileNamePart", match.Value);
             }
         }
 
         var plain = Token.Replace(pattern, "x");
         if (plain.Contains('{') || plain.Contains('}'))
         {
-            return "the export file name has an unmatched brace.";
+            return M.Text("ImportExport_FileNameBrace");
         }
 
         if (plain.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || plain.Contains('/') || plain.Contains('\\'))
         {
-            return "the export file name has a character that a file name cannot contain.";
+            return M.Text("ImportExport_FileNameCharacter");
         }
 
-        return plain.Any(char.IsLetterOrDigit) ? null : "the export file name needs a letter or digit.";
+        return plain.Any(char.IsLetterOrDigit) ? null : M.Text("ImportExport_FileNameLetter");
     }
 }

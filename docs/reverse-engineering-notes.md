@@ -352,8 +352,13 @@ Messages that view models and services build (status line, validation, confirmat
 Strings.resx, through Localizer.Instance["Key"] or Localizer.Instance.Format("Key", args); Format uses the UI language's number
 format. Choice lists that are built once (report kinds, chart types, delete rules) take the language in effect when they are
 first shown, so a switch reaches them after a restart. Not translated on purpose: theme names (stored in settings), the English
-names in the language list, connection-string samples, and the mock site text in the previews. Messages that come from Core
-(generator and build errors) are still English.
+names in the language list, connection-string samples, and the mock site text in the previews.
+Messages that come from Core (report, identity, master/detail, import/export and audit checks, generator, project file, build
+and translation errors, report preview notes, the kinds on the Languages tab) are in src/WebAppForge.Core/Localization/
+Messages.resx and Messages.<culture>.resx, read by CoreMessages. Their language is CoreMessages.Culture (null = the current UI
+culture); the desktop Localizer sets it to its own language, so they switch with Apply. Still English on purpose: what dotnet,
+MSBuild and docker print, exception texts of .NET and the database drivers, and the prompt sent to the Claude translator.
+The editor no longer recognizes a missing tool path by its English text but by BuildResult.ToolPathMissing.
 Hungarian (Strings.hu.resx, formal register) covers every key; LocalizationTests fails when a key has no Hungarian entry or a
 placeholder differs, and UiLanguageTests renders every tab in Hungarian and fails on text that is cut off or an untranslated key.
 Tests pin the UI to English (TestSupport/EnglishUi.cs), so they pass on a Hungarian Windows too.

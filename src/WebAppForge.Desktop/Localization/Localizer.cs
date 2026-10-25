@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Resources;
+using WebAppForge.Core.Localization;
 
 namespace WebAppForge.Desktop.Localization;
 
@@ -27,10 +28,19 @@ public sealed class Localizer
         Culture = culture;
     }
 
-    /// <summary>The app-wide instance the views bind to through <see cref="TrExtension"/>.</summary>
-    public static Localizer Instance { get; } = new(
-        new ResourceManager("WebAppForge.Desktop.Localization.Strings", typeof(Localizer).Assembly),
-        CultureInfo.CurrentUICulture);
+    /// <summary>
+    /// The app-wide instance the views bind to through <see cref="TrExtension"/>. The messages of Core (<see cref="CoreMessages"/>)
+    /// follow its language.
+    /// </summary>
+    public static Localizer Instance { get; } = CreateInstance();
+
+    private static Localizer CreateInstance()
+    {
+        var localizer = new Localizer(new ResourceManager("WebAppForge.Desktop.Localization.Strings", typeof(Localizer).Assembly), CultureInfo.CurrentUICulture);
+        CoreMessages.Culture = localizer.Culture;
+        localizer.CultureChanged += (_, _) => CoreMessages.Culture = localizer.Culture;
+        return localizer;
+    }
 
     /// <summary>The UI language in effect.</summary>
     public CultureInfo Culture { get; private set; }

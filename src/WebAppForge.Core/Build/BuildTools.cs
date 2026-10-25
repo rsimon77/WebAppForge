@@ -28,7 +28,7 @@ public sealed record BuildTools(string? DotnetPath = null, string? DockerPath = 
     {
         if (string.IsNullOrWhiteSpace(executable))
         {
-            return new ToolVersionResult(false, string.Empty, "No executable was given.");
+            return new ToolVersionResult(false, string.Empty, Localization.CoreMessages.Text("Build_NoExecutable"));
         }
 
         string? first = null;
@@ -65,24 +65,24 @@ public sealed record BuildTools(string? DotnetPath = null, string? DockerPath = 
             var exit = await runner.RunAsync(spec, OnLine, timeoutSource.Token).ConfigureAwait(false);
             if (exit != 0)
             {
-                return new ToolVersionResult(false, string.Empty, firstError ?? first ?? $"'{executable} --version' exited with code {exit}.");
+                return new ToolVersionResult(false, string.Empty, firstError ?? first ?? Localization.CoreMessages.Format("Build_VersionExitCode", executable, exit));
             }
 
             return first is null
-                ? new ToolVersionResult(false, string.Empty, $"'{executable} --version' printed nothing.")
+                ? new ToolVersionResult(false, string.Empty, Localization.CoreMessages.Format("Build_VersionNothing", executable))
                 : new ToolVersionResult(true, first, string.Empty);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            return new ToolVersionResult(false, string.Empty, $"'{executable} --version' timed out after {ToolRun.FormatDuration(timeout)}.");
+            return new ToolVersionResult(false, string.Empty, Localization.CoreMessages.Format("Build_VersionTimedOut", executable, ToolRun.FormatDuration(timeout)));
         }
         catch (OperationCanceledException)
         {
-            return new ToolVersionResult(false, string.Empty, "Cancelled.");
+            return new ToolVersionResult(false, string.Empty, Localization.CoreMessages.Text("Build_Cancelled"));
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException or InvalidOperationException)
         {
-            return new ToolVersionResult(false, string.Empty, $"Could not start {executable}: {ex.Message}");
+            return new ToolVersionResult(false, string.Empty, Localization.CoreMessages.Format("Build_CouldNotStart", executable, ex.Message));
         }
     }
 
@@ -98,7 +98,7 @@ public sealed record BuildTools(string? DotnetPath = null, string? DockerPath = 
                 return path;
             }
 
-            failure = BuildResult.Failure($"The configured {name} path was not found: {configured}");
+            failure = BuildResult.MissingToolPath(Localization.CoreMessages.Format("Build_ConfiguredPathMissing", name, configured));
             return null;
         }
 

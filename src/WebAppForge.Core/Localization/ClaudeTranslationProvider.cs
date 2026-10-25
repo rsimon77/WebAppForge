@@ -119,14 +119,14 @@ public sealed class ClaudeTranslationProvider : ITranslationProvider
         }
         catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException)
         {
-            throw new TranslationException("Claude translation returned a response that could not be read.", ex);
+            throw new TranslationException(CoreMessages.Format("Translation_Unreadable", "Claude"), ex);
         }
 
         var start = text.IndexOf('[');
         var end = text.LastIndexOf(']');
         if (start < 0 || end <= start)
         {
-            throw new TranslationException("Claude translation did not answer with a JSON array.");
+            throw new TranslationException(CoreMessages.Format("Translation_NotArray", "Claude"));
         }
 
         List<string> list;
@@ -135,7 +135,7 @@ public sealed class ClaudeTranslationProvider : ITranslationProvider
             using var array = JsonDocument.Parse(text[start..(end + 1)]);
             if (array.RootElement.ValueKind != JsonValueKind.Array)
             {
-                throw new TranslationException("Claude translation did not answer with a JSON array.");
+                throw new TranslationException(CoreMessages.Format("Translation_NotArray", "Claude"));
             }
 
             list = [];
@@ -143,7 +143,7 @@ public sealed class ClaudeTranslationProvider : ITranslationProvider
             {
                 if (item.ValueKind != JsonValueKind.String)
                 {
-                    throw new TranslationException("Claude translation answered with an array that holds something other than strings.");
+                    throw new TranslationException(CoreMessages.Format("Translation_NotStrings", "Claude"));
                 }
 
                 list.Add(item.GetString() ?? string.Empty);
@@ -151,12 +151,12 @@ public sealed class ClaudeTranslationProvider : ITranslationProvider
         }
         catch (JsonException ex)
         {
-            throw new TranslationException("Claude translation did not answer with valid JSON.", ex);
+            throw new TranslationException(CoreMessages.Format("Translation_InvalidJson", "Claude"), ex);
         }
 
         if (list.Count != expected)
         {
-            throw new TranslationException($"Claude translation returned {list.Count} texts for {expected} requested.");
+            throw new TranslationException(CoreMessages.Format("Translation_WrongCount", "Claude", list.Count, expected));
         }
 
         return list;

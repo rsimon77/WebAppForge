@@ -54,13 +54,13 @@ public static class LocalizationKeys
     public static string Detail(string master, int index) => "detail." + master + "." + index;
 
     /// <summary>
-    /// What a key is, for the editor: "UI" (a fixed text), "Table", "Field", "Report", "Site", "Menu", "Page", "Field setting",
-    /// "Field group", "Form page" or "Detail".
+    /// What a key is, for the editor, in the message language (<see cref="CoreMessages"/>): "UI" (a fixed text), "Table", "Field",
+    /// "Report", "Site", "Menu", "Page", "Field setting", "Field group", "Form page" or "Detail".
     /// </summary>
     public static string KindOf(string key)
     {
         var prefix = key.Split('.', 2)[0];
-        return prefix switch
+        return CoreMessages.Text("TextKind_" + prefix switch
         {
             "table" => "Table",
             "field" => "Field",
@@ -68,12 +68,12 @@ public static class LocalizationKeys
             "site" => "Site",
             "menu" => "Menu",
             "page" => "Page",
-            "fieldui" => "Field setting",
-            "group" => "Field group",
-            "formpage" => "Form page",
+            "fieldui" => "FieldSetting",
+            "group" => "FieldGroup",
+            "formpage" => "FormPage",
             "detail" => "Detail",
             _ => "UI",
-        };
+        });
     }
 
     /// <summary>The page kinds whose design texts are enumerated, in the order of <c>PageDesigns</c>.</summary>
@@ -324,7 +324,7 @@ public sealed class TranslationService
         var settings = project.Localization;
         if (!settings.AutoTranslate)
         {
-            throw new InvalidOperationException("Automatic translation is not enabled for this project (Localization.AutoTranslate is off).");
+            throw new InvalidOperationException(CoreMessages.Text("Translation_AutoOff"));
         }
 
         var targets = (targetLanguages ?? settings.AllLanguages)
@@ -375,7 +375,7 @@ public sealed class TranslationService
                     pending.Select(p => p.Text).ToList(), group.Key, target, NotesOrNull(settings), cancellationToken).ConfigureAwait(false);
                 if (results.Count != pending.Count)
                 {
-                    throw new TranslationException($"The translation provider returned {results.Count} texts for {pending.Count} requested.");
+                    throw new TranslationException(CoreMessages.Format("Translation_ProviderWrongCount", results.Count, pending.Count));
                 }
 
                 for (var i = 0; i < pending.Count; i++)

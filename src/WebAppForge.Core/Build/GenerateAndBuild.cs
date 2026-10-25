@@ -83,14 +83,14 @@ public sealed class GenerateAndBuild
         }
         catch (OperationCanceledException)
         {
-            return Stop(BuildStage.Generate, StageStatus.Cancelled, "Cancelled.", stages);
+            return Stop(BuildStage.Generate, StageStatus.Cancelled, Localization.CoreMessages.Text("Build_Cancelled"), stages);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             return Stop(BuildStage.Generate, StageStatus.Failed, ex.Message, stages);
         }
 
-        stages?.Report(new StageProgress(BuildStage.Generate, StageStatus.Succeeded, $"{generated.Count} files"));
+        stages?.Report(new StageProgress(BuildStage.Generate, StageStatus.Succeeded, Localization.CoreMessages.Format("Build_FileCount", generated.Count)));
 
         // Docker files
         IReadOnlyList<string> dockerFiles = [];
@@ -124,7 +124,7 @@ public sealed class GenerateAndBuild
                 return Stop(BuildStage.Build, build.Cancelled ? StageStatus.Cancelled : StageStatus.Failed, Describe(build), stages, generated, dockerFiles, build);
             }
 
-            stages?.Report(new StageProgress(BuildStage.Build, StageStatus.Succeeded, $"{build.Warnings} warning(s)"));
+            stages?.Report(new StageProgress(BuildStage.Build, StageStatus.Succeeded, Localization.CoreMessages.Format("Build_WarningCount", build.Warnings)));
         }
         else
         {
@@ -182,7 +182,7 @@ public sealed class GenerateAndBuild
     {
         if (result.Errors > 0 && result.ParsedDiagnostics.FirstOrDefault(d => d.IsError) is { } first)
         {
-            return $"{result.Errors} error(s). First: {first.File}({first.Line}): {first.Code}: {first.Message}";
+            return Localization.CoreMessages.Format("Build_FirstError", result.Errors, first.File, first.Line, first.Code, first.Message);
         }
 
         return result.Message;

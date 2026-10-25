@@ -799,8 +799,20 @@
   <data name="Generate_Severity" xml:space="preserve">
     <value>Súlyosság</value>
   </data>
+  <data name="Generate_SeverityError" xml:space="preserve">
+    <value>Hiba</value>
+  </data>
+  <data name="Generate_SeverityWarning" xml:space="preserve">
+    <value>Figyelmeztetés</value>
+  </data>
   <data name="Generate_StageBuild" xml:space="preserve">
     <value>Fordítás</value>
+  </data>
+  <data name="Generate_StageFailed" xml:space="preserve">
+    <value>{0} sikertelen: {1}</value>
+  </data>
+  <data name="Generate_StageFailedErrors" xml:space="preserve">
+    <value>{0} sikertelen: {1} hiba. {2}</value>
   </data>
   <data name="Generate_StagePublish" xml:space="preserve">
     <value>Közzététel</value>
@@ -855,6 +867,9 @@
   </data>
   <data name="Generate_WaitForTheCurrentBuildTo" xml:space="preserve">
     <value>Várja meg, amíg az aktuális fordítás befejeződik, mielőtt futtatja a webhelyet.</value>
+  </data>
+  <data name="Generate_WarningCount" xml:space="preserve">
+    <value>{0} figyelmeztetés</value>
   </data>
   <data name="Generate_WasCancelled" xml:space="preserve">
     <value>A(z) {0} megszakítva.</value>

@@ -71,7 +71,7 @@ public sealed class SiteBuilder
     {
         if (!Directory.Exists(siteFolder))
         {
-            return BuildResult.Failure($"The folder '{siteFolder}' does not exist. Generate the site first.");
+            return BuildResult.Failure(Localization.CoreMessages.Format("Build_FolderMissing", siteFolder));
         }
 
         var dotnet = BuildTools.Resolve("dotnet", tools.DotnetPath, locate, out var configuredFailure);
@@ -82,15 +82,15 @@ public sealed class SiteBuilder
 
         if (string.IsNullOrEmpty(dotnet))
         {
-            return BuildResult.Failure("The dotnet CLI was not found on PATH. Install the .NET SDK (https://dotnet.microsoft.com/download) and try again.");
+            return BuildResult.Failure(Localization.CoreMessages.Text("Build_DotnetMissing"));
         }
 
         var projects = Directory.GetFiles(siteFolder, "*.csproj", SearchOption.TopDirectoryOnly);
         if (projects.Length != 1)
         {
             return BuildResult.Failure(projects.Length == 0
-                ? $"No .csproj file was found in '{siteFolder}'. Generate the site first."
-                : $"More than one .csproj file was found in '{siteFolder}'.");
+                ? Localization.CoreMessages.Format("Build_NoProject", siteFolder)
+                : Localization.CoreMessages.Format("Build_ManyProjects", siteFolder));
         }
 
         var arguments = new List<string>

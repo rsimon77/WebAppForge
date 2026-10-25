@@ -1,5 +1,6 @@
 using WebAppForge.Core.Model;
 using WebAppForge.Core.Schema;
+using M = WebAppForge.Core.Localization.CoreMessages;
 
 namespace WebAppForge.Core.Generation;
 
@@ -21,37 +22,37 @@ public static class IdentityRules
         var identity = project.Security.Identity;
         if (!IdentitySchema.IsValidPrefix(identity.TablePrefix))
         {
-            problems.Add($"The identity table prefix '{identity.TablePrefix}' is not valid: use 1 to 30 letters, digits and underscores, starting with a letter.");
+            problems.Add(M.Format("Identity_Prefix", identity.TablePrefix));
         }
 
         if (identity.MinPasswordLength is < 1 or > 128)
         {
-            problems.Add("The minimum password length must be between 1 and 128.");
+            problems.Add(M.Text("Identity_PasswordLength"));
         }
 
         if (string.IsNullOrWhiteSpace(identity.AdminUserName))
         {
-            problems.Add("Name the administrator the site creates when it has no users.");
+            problems.Add(M.Text("Identity_AdminName"));
         }
 
         if (!IsVariableName(identity.AdminPasswordVariable))
         {
-            problems.Add($"'{identity.AdminPasswordVariable}' is not a valid environment variable name for the administrator's password: use letters, digits and underscores, not starting with a digit.");
+            problems.Add(M.Format("Identity_AdminVariable", identity.AdminPasswordVariable));
         }
 
         if (identity.AdminLevel < 1)
         {
-            problems.Add("The administrator level must be at least 1.");
+            problems.Add(M.Text("Identity_AdminLevel"));
         }
 
         if (identity.RegisteredUserLevel < 0 || identity.RegisteredUserLevel >= identity.AdminLevel)
         {
-            problems.Add("The level of users who sign up must be 0 or more and lower than the administrator level.");
+            problems.Add(M.Text("Identity_RegisteredLevel"));
         }
 
         if (project.Security.MaxFailedAttempts < 1 || project.Security.FailedAttemptsWindowMinutes < 1)
         {
-            problems.Add("The lockout needs at least one failed attempt and a lockout time of at least one minute.");
+            problems.Add(M.Text("Identity_Lockout"));
         }
 
         return problems;
@@ -70,12 +71,12 @@ public static class IdentityRules
         var security = project.Security;
         if (security.UserTable.Length > 0 || security.UserNameField.Length > 0 || security.PasswordField.Length > 0 || security.UserLevelField.Length > 0)
         {
-            notes.Add("The user table, user name, password and user level fields are not used: ASP.NET Core Identity keeps the users.");
+            notes.Add(M.Text("Identity_NoteUserTable"));
         }
 
         if (!security.Identity.CreateTablesAtStartup)
         {
-            notes.Add("The site does not create the identity tables: they must exist in the database before it starts.");
+            notes.Add(M.Text("Identity_NoteNoCreate"));
         }
 
         return notes;

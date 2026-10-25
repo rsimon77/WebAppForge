@@ -15,7 +15,7 @@ internal static class TranslationHttp
     public static async Task<string> SendAsync(
         HttpClient client, Func<HttpRequestMessage> createRequest, string apiKey, string service, TimeSpan baseDelay, CancellationToken cancellationToken)
     {
-        string lastProblem = "no response";
+        string lastProblem = CoreMessages.Text("Translation_NoResponse");
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
             try
@@ -33,16 +33,16 @@ internal static class TranslationHttp
                 var retryable = response.StatusCode == HttpStatusCode.TooManyRequests || status >= 500;
                 if (!retryable)
                 {
-                    throw new TranslationException($"{service} translation failed: {lastProblem}.");
+                    throw new TranslationException(CoreMessages.Format("Translation_Failed", service, lastProblem));
                 }
             }
             catch (HttpRequestException ex)
             {
-                lastProblem = "network error: " + Redact(ex.Message, apiKey);
+                lastProblem = CoreMessages.Format("Translation_NetworkError", Redact(ex.Message, apiKey));
             }
             catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
-                lastProblem = "request timed out";
+                lastProblem = CoreMessages.Text("Translation_TimedOut");
             }
 
             if (attempt < MaxAttempts && baseDelay > TimeSpan.Zero)
@@ -51,7 +51,7 @@ internal static class TranslationHttp
             }
         }
 
-        throw new TranslationException($"{service} translation failed after {MaxAttempts} attempts: {lastProblem}.");
+        throw new TranslationException(CoreMessages.Format("Translation_FailedAfter", service, MaxAttempts, lastProblem));
     }
 
     /// <summary>Removes the key from a text that may echo it.</summary>
@@ -89,7 +89,7 @@ internal static class TranslationHttp
         var key = keys.GetApiKey(provider);
         if (string.IsNullOrWhiteSpace(key))
         {
-            throw new TranslationException($"No {service} API key is configured. Set the environment variable {EnvironmentApiKeyProvider.VariableFor(provider)}.");
+            throw new TranslationException(CoreMessages.Format("Translation_NoKey", service, EnvironmentApiKeyProvider.VariableFor(provider)));
         }
 
         return key.Trim();

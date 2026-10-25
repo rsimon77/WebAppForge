@@ -67,8 +67,8 @@ internal static class LocalizationXml
         {
             settings.Entries.Add(new TranslationEntry
             {
-                Key = entry.Attribute("key")?.Value ?? throw new InvalidDataException("Element 'entry' is missing attribute 'key'."),
-                Language = entry.Attribute("language")?.Value ?? throw new InvalidDataException("Element 'entry' is missing attribute 'language'."),
+                Key = entry.Attribute("key")?.Value ?? throw new InvalidDataException(Localization.CoreMessages.Format("ProjectFile_MissingAttribute", "entry", "key")),
+                Language = entry.Attribute("language")?.Value ?? throw new InvalidDataException(Localization.CoreMessages.Format("ProjectFile_MissingAttribute", "entry", "language")),
                 Source = Enum.TryParse<TranslationSource>(entry.Attribute("source")?.Value, out var source) ? source : TranslationSource.Manual,
                 Reviewed = Bool(entry, "reviewed", false),
                 SourceHash = Text(entry, "sourceHash", string.Empty),

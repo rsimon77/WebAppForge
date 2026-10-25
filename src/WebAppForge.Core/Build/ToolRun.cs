@@ -73,15 +73,15 @@ internal static class ToolRun
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && limit is not null)
         {
-            return BuildResult.Failure($"{tool} timed out after {FormatDuration(limit.Value)} and was stopped.", duration: stopwatch.Elapsed);
+            return BuildResult.Failure(Localization.CoreMessages.Format("Build_TimedOut", tool, FormatDuration(limit.Value)), duration: stopwatch.Elapsed);
         }
         catch (OperationCanceledException)
         {
-            return BuildResult.Failure($"{tool} was cancelled.", cancelled: true, duration: stopwatch.Elapsed);
+            return BuildResult.Failure(Localization.CoreMessages.Format("Build_WasCancelled", tool), cancelled: true, duration: stopwatch.Elapsed);
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException or InvalidOperationException)
         {
-            return BuildResult.Failure($"Could not start {tool}: {ex.Message}", duration: stopwatch.Elapsed);
+            return BuildResult.Failure(Localization.CoreMessages.Format("Build_CouldNotStart", tool, ex.Message), duration: stopwatch.Elapsed);
         }
 
         string[] snapshot;
@@ -99,7 +99,7 @@ internal static class ToolRun
             Errors = parsed.Errors,
             Warnings = parsed.Warnings,
             ParsedDiagnostics = parsed.Diagnostics,
-            Message = exitCode == 0 ? string.Empty : $"{tool} failed with exit code {exitCode}.",
+            Message = exitCode == 0 ? string.Empty : Localization.CoreMessages.Format("Build_ExitCode", tool, exitCode),
         };
     }
 }

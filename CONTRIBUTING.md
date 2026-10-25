@@ -67,6 +67,10 @@ dotnet test WebAppForge.slnx
   literal text left in a view, unless the value is listed in `scripts/desktop-strings-ignore.txt`. Add the Hungarian
   text for every new key to `Strings.hu.resx`; the tests fail on a missing entry. In code, use
   `Localizer.Instance["Key"]` or `Localizer.Instance.Format("Key", ...)`.
+- Messages that Core gives the editor (checks, generator, build and translation errors) live in
+  `src/WebAppForge.Core/Localization/Messages.resx` and `Messages.hu.resx`. Use `CoreMessages.Text("Key")` or
+  `CoreMessages.Format("Key", ...)`; `CoreMessagesTests` fails on a missing key or a missing Hungarian entry. Text that a
+  generated site shows is not a message: it goes through `UiStrings` and the translation packs.
 
 ## Pull requests
 
