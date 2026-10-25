@@ -335,3 +335,14 @@ is updated (TranslationPackTests fails on stale or missing entries). Precedence:
 machine), then a fresh pack entry, then English. Packs apply only to fixed UI strings, never to captions or project texts.
 The Languages tab shows pack texts as "Built-in", counts them as translated, and automatic translation does not send them.
 First pack: Hungarian (hu), formal register.
+
+## Desktop UI language (2026-10-25)
+
+The editor's own texts (menus, tabs, dialogs, labels) are in src/WebAppForge.Desktop/Localization/Strings.resx (English).
+Another language is a Strings.<culture>.resx beside it; the build turns it into a satellite assembly, and Options >
+Appearance lists every language that has one. Views bind through `{l:Tr Key}`, so switching the language with Apply updates
+the open windows at once. A key missing in a language falls back to English; a key missing everywhere shows as the key.
+Only the UI language changes: number and date formats keep the system settings. The setting is AppSettings.UiLanguage (null =
+the system's UI language); the environment variable WEBAPPFORGE_UI_LANGUAGE overrides it, and the FlaUI tests set it to "en".
+Tabs keep English ids (MainViewModel.TabNames, automation ids Tab_<Id>), and their titles come from the Tab_<Id> keys.
+Messages that view models build (status line, validation, dialogs) are still English; they move to Strings.resx in the next phase.

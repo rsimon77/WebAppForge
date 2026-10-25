@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:WebAppForge.Desktop.Localization"
              x:Class="WebAppForge.Desktop.Views.ReportsView">
     <Grid DataContext="{Binding Reports}" Margin="12">
         <Grid.ColumnDefinitions>
@@ -12,7 +13,7 @@
         <Border Classes="card" Padding="12,10" Grid.Column="0">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Spacing="8" Margin="0,0,8,0">
-                    <TextBlock Classes="label" Text="Reports" />
+                    <TextBlock Classes="label" Text="{l:Tr Common_Reports}" />
                     <ListBox ItemsSource="{Binding Reports}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}" MinHeight="120" MaxHeight="320"
                              AutomationProperties.AutomationId="ReportList">
                         <ListBox.ItemTemplate>
@@ -22,18 +23,18 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                     <WrapPanel>
-                        <Button Content="Add report" Margin="0,0,6,6" Command="{Binding AddReportCommand}" AutomationProperties.AutomationId="AddReportButton" />
-                        <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveReportCommand}" AutomationProperties.AutomationId="RemoveReportButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
-                        <Button Classes="icon ghost" ToolTip.Tip="Move up" AutomationProperties.Name="Move up" Margin="0,0,2,4" Command="{Binding MoveReportUpCommand}" AutomationProperties.AutomationId="MoveReportUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
-                        <Button Classes="icon ghost" ToolTip.Tip="Move down" AutomationProperties.Name="Move down" Margin="0,0,2,4" Command="{Binding MoveReportDownCommand}" AutomationProperties.AutomationId="MoveReportDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
+                        <Button Content="{l:Tr Reports_AddReport}" Margin="0,0,6,6" Command="{Binding AddReportCommand}" AutomationProperties.AutomationId="AddReportButton" />
+                        <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_Remove}" AutomationProperties.Name="{l:Tr Common_Remove}" Margin="0,0,2,4" Command="{Binding RemoveReportCommand}" AutomationProperties.AutomationId="RemoveReportButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                        <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_MoveUp}" AutomationProperties.Name="{l:Tr Common_MoveUp}" Margin="0,0,2,4" Command="{Binding MoveReportUpCommand}" AutomationProperties.AutomationId="MoveReportUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
+                        <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_MoveDown}" AutomationProperties.Name="{l:Tr Common_MoveDown}" Margin="0,0,2,4" Command="{Binding MoveReportDownCommand}" AutomationProperties.AutomationId="MoveReportDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
                     </WrapPanel>
                     <TextBlock Classes="hint" TextWrapping="Wrap"
-                               Text="A report reads one table. The table's filter, owner field and view level apply to it, and charts are drawn on the server, so the site needs no extra script." />
+                               Text="{l:Tr Reports_AReportReadsOneTableThe}" />
 
-                    <Expander Header="Preview" IsExpanded="True" HorizontalAlignment="Stretch" IsEnabled="{Binding HasReport}">
+                    <Expander Header="{l:Tr Common_Preview}" IsExpanded="True" HorizontalAlignment="Stretch" IsEnabled="{Binding HasReport}">
                     <StackPanel Spacing="6" Margin="0,4,0,0">
                         <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="Preview" Classes="primary" Command="{Binding PreviewCommand}"
+                            <Button DockPanel.Dock="Right" Content="{l:Tr Common_Preview}" Classes="primary" Command="{Binding PreviewCommand}"
                                     AutomationProperties.AutomationId="ReportPreviewButton" />
                             <TextBlock Classes="hint" Text="{Binding PreviewMessage}" VerticalAlignment="Center" Margin="0,0,8,0"
                                        AutomationProperties.AutomationId="ReportPreviewMessage" />
@@ -74,11 +75,11 @@
                                 </ItemsControl>
                             </StackPanel>
                         </ScrollViewer>
-                        <TextBlock Classes="hint" Text="Owner fields and user levels are not applied in the preview." />
+                        <TextBlock Classes="hint" Text="{l:Tr Reports_OwnerFieldsAndUserLevelsAre}" />
                     </StackPanel>
                 </Expander>
 
-                <Expander Header="Validation" IsExpanded="True" HorizontalAlignment="Stretch">
+                <Expander Header="{l:Tr Common_Validation}" IsExpanded="True" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="4" Margin="0,4,0,0">
                             <TextBlock Classes="hint" Text="{Binding ProblemSummary}" AutomationProperties.AutomationId="ReportProblemSummaryText" />
                             <ItemsControl ItemsSource="{Binding Problems}" AutomationProperties.AutomationId="ReportProblemList">
@@ -105,46 +106,46 @@
                     </Border>
 
                     <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,Auto">
-                        <TextBlock Classes="label" Text="Name" />
+                        <TextBlock Classes="label" Text="{l:Tr Common_Name}" />
                         <TextBox Grid.Row="1" Text="{Binding Name}" AutomationProperties.AutomationId="ReportNameBox" />
-                        <TextBlock Grid.Column="2" Classes="label" Text="Kind" />
+                        <TextBlock Grid.Column="2" Classes="label" Text="{l:Tr Common_Kind}" />
                         <ComboBox Grid.Column="2" Grid.Row="1" ItemsSource="{Binding KindChoices}" SelectedItem="{Binding Kind}" HorizontalAlignment="Stretch"
                                   AutomationProperties.AutomationId="ReportKindCombo" />
                     </Grid>
                     <TextBlock Classes="hint" Text="{Binding Route}" AutomationProperties.AutomationId="ReportRouteText" />
 
-                    <TextBlock Classes="label" Text="Caption (empty: the name)" />
+                    <TextBlock Classes="label" Text="{l:Tr Reports_CaptionEmptyTheName}" />
                     <TextBox Text="{Binding Caption}" AutomationProperties.AutomationId="ReportCaptionBox" />
-                    <TextBlock Classes="label" Text="Description (shown under the heading)" />
+                    <TextBlock Classes="label" Text="{l:Tr Reports_DescriptionShownUnderTheHeading}" />
                     <TextBox Text="{Binding Description}" AutomationProperties.AutomationId="ReportDescriptionBox" />
 
                     <StackPanel Spacing="4" IsVisible="{Binding HasSource}">
-                        <TextBlock Classes="label" Text="Table" />
+                        <TextBlock Classes="label" Text="{l:Tr Common_Table}" />
                         <ComboBox ItemsSource="{Binding TableNames}" SelectedItem="{Binding SourceTable}" MinWidth="240"
                                   AutomationProperties.AutomationId="ReportTableCombo" />
-                        <TextBlock Classes="label" Text="Filter (SQL without WHERE, added to the table's own filter)" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_FilterSQLWithoutWHEREAddedTo}" />
                         <TextBox Classes="code" Text="{Binding Filter}" AutomationProperties.AutomationId="ReportFilterBox" />
                     </StackPanel>
 
                     <WrapPanel Margin="0,4,0,0">
-                        <CheckBox Content="Generate" Margin="0,0,16,0" IsChecked="{Binding Generate}" AutomationProperties.AutomationId="ReportGenerateCheck" />
-                        <CheckBox Content="Show in menu" Margin="0,0,16,0" IsChecked="{Binding ShowInMenu}" AutomationProperties.AutomationId="ReportShowInMenuCheck" />
+                        <CheckBox Content="{l:Tr Common_Generate}" Margin="0,0,16,0" IsChecked="{Binding Generate}" AutomationProperties.AutomationId="ReportGenerateCheck" />
+                        <CheckBox Content="{l:Tr Common_ShowInMenu}" Margin="0,0,16,0" IsChecked="{Binding ShowInMenu}" AutomationProperties.AutomationId="ReportShowInMenuCheck" />
                     </WrapPanel>
                     <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,Auto">
-                        <TextBlock Classes="label" Text="Menu group (empty: with the tables)" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_MenuGroupEmptyWithTheTables}" />
                         <TextBox Grid.Row="1" Text="{Binding MenuGroup}" AutomationProperties.AutomationId="ReportMenuGroupBox" />
-                        <TextBlock Grid.Column="2" Classes="label" Text="Lowest user level (0: any user)" />
+                        <TextBlock Grid.Column="2" Classes="label" Text="{l:Tr Reports_LowestUserLevel0AnyUser}" />
                         <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding MinLevel}" AutomationProperties.AutomationId="ReportMinLevelBox" />
                     </Grid>
 
                     <!-- Summary -->
                     <StackPanel Spacing="4" IsVisible="{Binding IsSummary}" Margin="0,8,0,0">
-                        <TextBlock Classes="label" Text="Group by (outermost first)" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_GroupByOutermostFirst}" />
                         <DataGrid ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup, Mode=TwoWay}" AutoGenerateColumns="False"
                                   GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="180" HorizontalScrollBarVisibility="Auto"
                                   AutomationProperties.AutomationId="ReportGroupsGrid">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Field" Width="*" MinWidth="140">
+                                <DataGridTemplateColumn Header="{l:Tr Common_Field}" Width="*" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.FieldNames}"
@@ -152,7 +153,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Group dates by" Width="Auto">
+                                <DataGridTemplateColumn Header="{l:Tr Reports_GroupDatesBy}" Width="Auto">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.IntervalChoices}"
@@ -160,20 +161,20 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridCheckBoxColumn Header="Descending" Binding="{Binding Descending}" Width="Auto" />
+                                <DataGridCheckBoxColumn Header="{l:Tr Reports_Descending}" Binding="{Binding Descending}" Width="Auto" />
                             </DataGrid.Columns>
                         </DataGrid>
                         <WrapPanel>
-                            <Button Content="Add group" Margin="0,0,6,6" Command="{Binding AddGroupCommand}" AutomationProperties.AutomationId="AddReportGroupButton" />
-                            <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveGroupCommand}" AutomationProperties.AutomationId="RemoveReportGroupButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                            <Button Content="{l:Tr Reports_AddGroup}" Margin="0,0,6,6" Command="{Binding AddGroupCommand}" AutomationProperties.AutomationId="AddReportGroupButton" />
+                            <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_Remove}" AutomationProperties.Name="{l:Tr Common_Remove}" Margin="0,0,2,4" Command="{Binding RemoveGroupCommand}" AutomationProperties.AutomationId="RemoveReportGroupButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
                         </WrapPanel>
 
-                        <TextBlock Classes="label" Text="Totals (none: a row count)" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_TotalsNoneARowCount}" />
                         <DataGrid ItemsSource="{Binding Aggregates}" SelectedItem="{Binding SelectedAggregate, Mode=TwoWay}" AutoGenerateColumns="False"
                                   GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="180" HorizontalScrollBarVisibility="Auto"
                                   AutomationProperties.AutomationId="ReportAggregatesGrid">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Function" Width="Auto">
+                                <DataGridTemplateColumn Header="{l:Tr Reports_Function}" Width="Auto">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.FunctionChoices}"
@@ -181,7 +182,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Field" Width="*" MinWidth="140">
+                                <DataGridTemplateColumn Header="{l:Tr Common_Field}" Width="*" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.ValueFieldNames}"
@@ -189,27 +190,27 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="Heading (empty: e.g. Sum of Freight)" Binding="{Binding Caption}" Width="*" />
+                                <DataGridTextColumn Header="{l:Tr Reports_HeadingEmptyEGSumOf}" Binding="{Binding Caption}" Width="*" />
                             </DataGrid.Columns>
                         </DataGrid>
                         <WrapPanel>
-                            <Button Content="Add total" Margin="0,0,6,6" Command="{Binding AddAggregateCommand}" AutomationProperties.AutomationId="AddReportAggregateButton" />
-                            <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveAggregateCommand}" AutomationProperties.AutomationId="RemoveReportAggregateButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                            <Button Content="{l:Tr Reports_AddTotal}" Margin="0,0,6,6" Command="{Binding AddAggregateCommand}" AutomationProperties.AutomationId="AddReportAggregateButton" />
+                            <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_Remove}" AutomationProperties.Name="{l:Tr Common_Remove}" Margin="0,0,2,4" Command="{Binding RemoveAggregateCommand}" AutomationProperties.AutomationId="RemoveReportAggregateButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
                         </WrapPanel>
                         <WrapPanel>
-                            <CheckBox Content="List the rows of each group" Margin="0,0,16,0" IsChecked="{Binding ShowDetails}" AutomationProperties.AutomationId="ReportShowDetailsCheck" />
-                            <CheckBox Content="Grand total" IsChecked="{Binding ShowGrandTotal}" AutomationProperties.AutomationId="ReportGrandTotalCheck" />
+                            <CheckBox Content="{l:Tr Reports_ListTheRowsOfEachGroup}" Margin="0,0,16,0" IsChecked="{Binding ShowDetails}" AutomationProperties.AutomationId="ReportShowDetailsCheck" />
+                            <CheckBox Content="{l:Tr Reports_GrandTotal}" IsChecked="{Binding ShowGrandTotal}" AutomationProperties.AutomationId="ReportGrandTotalCheck" />
                         </WrapPanel>
                     </StackPanel>
 
                     <!-- Row columns: listed under each group, and on the drill-down page. -->
                     <StackPanel Spacing="4" IsVisible="{Binding HasDrillDown}" Margin="0,8,0,0">
-                        <TextBlock Classes="label" Text="Row columns, for listed rows and the drill-down page (none: the fields shown in the list)" TextWrapping="Wrap" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_RowColumnsForListedRowsAnd}" TextWrapping="Wrap" />
                         <DataGrid ItemsSource="{Binding DetailColumns}" SelectedItem="{Binding SelectedDetailColumn, Mode=TwoWay}" AutoGenerateColumns="False"
                                   GridLinesVisibility="All" SelectionMode="Single" MinHeight="70" MaxHeight="180" HorizontalScrollBarVisibility="Auto"
                                   AutomationProperties.AutomationId="ReportDetailColumnsGrid">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Field" Width="*" MinWidth="160">
+                                <DataGridTemplateColumn Header="{l:Tr Common_Field}" Width="*" MinWidth="160">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.FieldNames}"
@@ -220,12 +221,12 @@
                             </DataGrid.Columns>
                         </DataGrid>
                         <WrapPanel>
-                            <Button Content="Add column" Margin="0,0,6,6" Command="{Binding AddDetailColumnCommand}" AutomationProperties.AutomationId="AddReportColumnButton" />
-                            <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveDetailColumnCommand}" AutomationProperties.AutomationId="RemoveReportColumnButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
-                            <Button Classes="icon ghost" ToolTip.Tip="Move up" AutomationProperties.Name="Move up" Margin="0,0,2,4" Command="{Binding MoveDetailColumnUpCommand}" AutomationProperties.AutomationId="MoveReportColumnUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
-                            <Button Classes="icon ghost" ToolTip.Tip="Move down" AutomationProperties.Name="Move down" Margin="0,0,2,4" Command="{Binding MoveDetailColumnDownCommand}" AutomationProperties.AutomationId="MoveReportColumnDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
+                            <Button Content="{l:Tr Common_AddColumn}" Margin="0,0,6,6" Command="{Binding AddDetailColumnCommand}" AutomationProperties.AutomationId="AddReportColumnButton" />
+                            <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_Remove}" AutomationProperties.Name="{l:Tr Common_Remove}" Margin="0,0,2,4" Command="{Binding RemoveDetailColumnCommand}" AutomationProperties.AutomationId="RemoveReportColumnButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                            <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_MoveUp}" AutomationProperties.Name="{l:Tr Common_MoveUp}" Margin="0,0,2,4" Command="{Binding MoveDetailColumnUpCommand}" AutomationProperties.AutomationId="MoveReportColumnUpButton"><Path Classes="icon" Data="{StaticResource IconUp}" /></Button>
+                            <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_MoveDown}" AutomationProperties.Name="{l:Tr Common_MoveDown}" Margin="0,0,2,4" Command="{Binding MoveDetailColumnDownCommand}" AutomationProperties.AutomationId="MoveReportColumnDownButton"><Path Classes="icon" Data="{StaticResource IconDown}" /></Button>
                         </WrapPanel>
-                        <CheckBox Content="Link the numbers to the rows behind them" IsChecked="{Binding DrillDown}" AutomationProperties.AutomationId="ReportDrillDownCheck" />
+                        <CheckBox Content="{l:Tr Reports_LinkTheNumbersToTheRows}" IsChecked="{Binding DrillDown}" AutomationProperties.AutomationId="ReportDrillDownCheck" />
                     </StackPanel>
 
                     <!-- Crosstab and chart -->
@@ -234,7 +235,7 @@
                             <TextBlock Classes="label" Text="{Binding RowFieldLabel}" />
                             <ComboBox Grid.Row="1" ItemsSource="{Binding FieldNames}" SelectedItem="{Binding RowField}" HorizontalAlignment="Stretch"
                                       AutomationProperties.AutomationId="ReportRowFieldCombo" />
-                            <TextBlock Grid.Column="2" Classes="label" Text="Group dates by" />
+                            <TextBlock Grid.Column="2" Classes="label" Text="{l:Tr Reports_GroupDatesBy}" />
                             <ComboBox Grid.Column="2" Grid.Row="1" ItemsSource="{Binding IntervalChoices}" SelectedItem="{Binding RowInterval}" MinWidth="120"
                                       AutomationProperties.AutomationId="ReportRowIntervalCombo" />
                             <TextBlock Grid.Row="2" Classes="label" Text="{Binding ColumnFieldLabel}" />
@@ -242,59 +243,59 @@
                                       AutomationProperties.AutomationId="ReportColumnFieldCombo" />
                             <ComboBox Grid.Column="2" Grid.Row="3" ItemsSource="{Binding IntervalChoices}" SelectedItem="{Binding ColumnInterval}" MinWidth="120"
                                       AutomationProperties.AutomationId="ReportColumnIntervalCombo" />
-                            <TextBlock Grid.Row="4" Classes="label" Text="Value" />
+                            <TextBlock Grid.Row="4" Classes="label" Text="{l:Tr Common_Value}" />
                             <ComboBox Grid.Row="5" ItemsSource="{Binding ValueFieldNames}" SelectedItem="{Binding ValueField}" HorizontalAlignment="Stretch"
                                       AutomationProperties.AutomationId="ReportValueFieldCombo" />
-                            <TextBlock Grid.Column="2" Grid.Row="4" Classes="label" Text="Function" />
+                            <TextBlock Grid.Column="2" Grid.Row="4" Classes="label" Text="{l:Tr Reports_Function}" />
                             <ComboBox Grid.Column="2" Grid.Row="5" ItemsSource="{Binding FunctionChoices}" SelectedItem="{Binding Function}" MinWidth="120"
                                       AutomationProperties.AutomationId="ReportFunctionCombo" />
                         </Grid>
-                        <TextBlock Classes="label" Text="Most columns or series (1 to 500)" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_MostColumnsOrSeries1To}" />
                         <TextBox Text="{Binding MaxColumns}" Width="100" HorizontalAlignment="Left" AutomationProperties.AutomationId="ReportMaxColumnsBox" />
                     </StackPanel>
 
                     <!-- Chart -->
                     <StackPanel Spacing="4" IsVisible="{Binding IsChart}">
                         <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,Auto">
-                            <TextBlock Classes="label" Text="Chart type" />
+                            <TextBlock Classes="label" Text="{l:Tr Reports_ChartType}" />
                             <ComboBox Grid.Row="1" ItemsSource="{Binding ChartTypeChoices}" SelectedItem="{Binding ChartType}" HorizontalAlignment="Stretch"
                                       AutomationProperties.AutomationId="ReportChartTypeCombo" />
-                            <TextBlock Grid.Column="2" Classes="label" Text="Order" />
+                            <TextBlock Grid.Column="2" Classes="label" Text="{l:Tr Reports_Order}" />
                             <ComboBox Grid.Column="2" Grid.Row="1" ItemsSource="{Binding ChartOrderChoices}" SelectedItem="{Binding ChartOrder}" HorizontalAlignment="Stretch"
                                       AutomationProperties.AutomationId="ReportChartOrderCombo" />
                         </Grid>
-                        <TextBlock Classes="label" Text="Most categories shown (0: all)" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_MostCategoriesShown0All}" />
                         <TextBox Text="{Binding TopCount}" Width="100" HorizontalAlignment="Left" AutomationProperties.AutomationId="ReportTopCountBox" />
-                        <CheckBox Content="Show the data table below the chart" IsChecked="{Binding ShowDataTable}" AutomationProperties.AutomationId="ReportDataTableCheck" />
+                        <CheckBox Content="{l:Tr Reports_ShowTheDataTableBelowThe}" IsChecked="{Binding ShowDataTable}" AutomationProperties.AutomationId="ReportDataTableCheck" />
                     </StackPanel>
 
                     <!-- Calendar -->
                     <StackPanel Spacing="4" IsVisible="{Binding IsCalendar}" Margin="0,8,0,0">
-                        <TextBlock Classes="label" Text="Date field" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_DateField}" />
                         <ComboBox ItemsSource="{Binding FieldNames}" SelectedItem="{Binding DateField}" MinWidth="240" AutomationProperties.AutomationId="ReportDateFieldCombo" />
-                        <TextBlock Classes="label" Text="End date field (for rows that span several days)" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_EndDateFieldForRowsThat}" />
                         <ComboBox ItemsSource="{Binding OptionalFieldNames}" SelectedItem="{Binding EndDateField}" MinWidth="240" AutomationProperties.AutomationId="ReportEndDateFieldCombo" />
-                        <TextBlock Classes="label" Text="Title field (none: the first text field)" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_TitleFieldNoneTheFirstText}" />
                         <ComboBox ItemsSource="{Binding OptionalFieldNames}" SelectedItem="{Binding TitleField}" MinWidth="240" AutomationProperties.AutomationId="ReportTitleFieldCombo" />
                         <WrapPanel>
-                            <CheckBox Content="Link entries to the view page" Margin="0,0,16,0" IsChecked="{Binding LinkToView}" AutomationProperties.AutomationId="ReportLinkToViewCheck" />
-                            <CheckBox Content="Weeks start on Monday" IsChecked="{Binding WeekStartsMonday}" AutomationProperties.AutomationId="ReportMondayCheck" />
+                            <CheckBox Content="{l:Tr Reports_LinkEntriesToTheViewPage}" Margin="0,0,16,0" IsChecked="{Binding LinkToView}" AutomationProperties.AutomationId="ReportLinkToViewCheck" />
+                            <CheckBox Content="{l:Tr Reports_WeeksStartOnMonday}" IsChecked="{Binding WeekStartsMonday}" AutomationProperties.AutomationId="ReportMondayCheck" />
                         </WrapPanel>
                     </StackPanel>
 
                     <!-- Filters shown above the report -->
                     <StackPanel Spacing="4" IsVisible="{Binding HasSource}" Margin="0,8,0,0">
                         <StackPanel Spacing="4" IsVisible="{Binding HasDateRange}">
-                            <TextBlock Classes="label" Text="Date range filter (From and To above the report)" />
+                            <TextBlock Classes="label" Text="{l:Tr Reports_DateRangeFilterFromAndTo}" />
                             <ComboBox ItemsSource="{Binding DateFieldNames}" SelectedItem="{Binding DateFilterField}" MinWidth="240"
                                       AutomationProperties.AutomationId="ReportDateFilterCombo" />
                         </StackPanel>
-                        <TextBlock Classes="label" Text="Pick-list filters" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_PickListFilters}" />
                         <DataGrid ItemsSource="{Binding FilterFields}" SelectedItem="{Binding SelectedFilterField, Mode=TwoWay}" AutoGenerateColumns="False"
                                   GridLinesVisibility="All" SelectionMode="Single" MinHeight="70" MaxHeight="180" HorizontalScrollBarVisibility="Auto"
                                   AutomationProperties.AutomationId="ReportFilterFieldsGrid">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Field" Width="*" MinWidth="160">
+                                <DataGridTemplateColumn Header="{l:Tr Common_Field}" Width="*" MinWidth="160">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.FieldNames}"
@@ -305,19 +306,19 @@
                             </DataGrid.Columns>
                         </DataGrid>
                         <WrapPanel>
-                            <Button Content="Add filter" Margin="0,0,6,6" Command="{Binding AddFilterFieldCommand}" AutomationProperties.AutomationId="AddReportFilterButton" />
-                            <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveFilterFieldCommand}" AutomationProperties.AutomationId="RemoveReportFilterButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                            <Button Content="{l:Tr Reports_AddFilter}" Margin="0,0,6,6" Command="{Binding AddFilterFieldCommand}" AutomationProperties.AutomationId="AddReportFilterButton" />
+                            <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_Remove}" AutomationProperties.Name="{l:Tr Common_Remove}" Margin="0,0,2,4" Command="{Binding RemoveFilterFieldCommand}" AutomationProperties.AutomationId="RemoveReportFilterButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
                         </WrapPanel>
                     </StackPanel>
 
                     <!-- Dashboard -->
                     <StackPanel Spacing="4" IsVisible="{Binding IsDashboard}" Margin="0,8,0,0">
-                        <TextBlock Classes="label" Text="Reports on the dashboard" />
+                        <TextBlock Classes="label" Text="{l:Tr Reports_ReportsOnTheDashboard}" />
                         <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" AutoGenerateColumns="False"
                                   GridLinesVisibility="All" SelectionMode="Single" MinHeight="80" MaxHeight="220" HorizontalScrollBarVisibility="Auto"
                                   AutomationProperties.AutomationId="DashboardItemsGrid">
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="Report" Width="*" MinWidth="160">
+                                <DataGridTemplateColumn Header="{l:Tr Reports_Report}" Width="*" MinWidth="160">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Reports.DashboardChoices}"
@@ -325,7 +326,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Width (1 to 12)" Width="Auto">
+                                <DataGridTemplateColumn Header="{l:Tr Reports_Width1To12}" Width="Auto">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <NumericUpDown Value="{Binding WidthValue}" Minimum="1" Maximum="12" Increment="1" FormatString="0" Margin="2,0" MinWidth="110" />
@@ -335,10 +336,10 @@
                             </DataGrid.Columns>
                         </DataGrid>
                         <WrapPanel>
-                            <Button Content="Add report" Margin="0,0,6,6" Command="{Binding AddItemCommand}" AutomationProperties.AutomationId="AddDashboardItemButton" />
-                            <Button Classes="icon ghost" ToolTip.Tip="Remove" AutomationProperties.Name="Remove" Margin="0,0,2,4" Command="{Binding RemoveItemCommand}" AutomationProperties.AutomationId="RemoveDashboardItemButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
+                            <Button Content="{l:Tr Reports_AddReport}" Margin="0,0,6,6" Command="{Binding AddItemCommand}" AutomationProperties.AutomationId="AddDashboardItemButton" />
+                            <Button Classes="icon ghost" ToolTip.Tip="{l:Tr Common_Remove}" AutomationProperties.Name="{l:Tr Common_Remove}" Margin="0,0,2,4" Command="{Binding RemoveItemCommand}" AutomationProperties.AutomationId="RemoveDashboardItemButton"><Path Classes="icon" Data="{StaticResource IconRemove}" /></Button>
                         </WrapPanel>
-                        <TextBlock Classes="hint" TextWrapping="Wrap" Text="12 columns fill a row. Reports a user may not open are left out of the dashboard for that user." />
+                        <TextBlock Classes="hint" TextWrapping="Wrap" Text="{l:Tr Reports_12ColumnsFillARowReports}" />
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

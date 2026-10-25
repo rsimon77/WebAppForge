@@ -1,0 +1,8 @@
+# Literal AXAML values that are not translated: brand and program names, key captions and sample input.
+# One exact value per line. Read by extract-desktop-strings.py and LocalizationGuardTests.
+WebAppForge
+dotnet
+node
+docker
+Ctrl K
+http://proxy.example.com:8080

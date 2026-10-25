@@ -90,6 +90,9 @@ public sealed class AppSettings
 
     // Appearance
 
+    /// <summary>Culture name of the UI language (such as "en" or "hu"), or null for the operating system's language.</summary>
+    public string? UiLanguage { get; set; }
+
     /// <summary>Name of a <see cref="ThemePalettes"/> entry. Applied as the accent colour.</summary>
     public string ThemeName { get; set; } = ThemePalettes.Default.Name;
 
@@ -164,6 +167,7 @@ public sealed class AppSettings
         }
 
         copy.ThemeName = ThemePalettes.Find(copy.ThemeName).Name;
+        copy.UiLanguage = NullIfBlank(copy.UiLanguage);
         copy.CustomStylesPath = NullIfBlank(copy.CustomStylesPath);
         copy.LastProjectPath = NullIfBlank(copy.LastProjectPath);
         copy.DotnetPath = NullIfBlank(copy.DotnetPath);

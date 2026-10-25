@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:WebAppForge.Desktop.Localization"
         x:Class="WebAppForge.Desktop.Views.OptionsWindow"
-        Title="Options"
+        Title="{l:Tr Common_Options}"
         Width="860" Height="600" MinWidth="720" MinHeight="460"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner">
@@ -28,16 +29,16 @@
     <DockPanel Margin="16">
         <!-- Buttons -->
         <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*,Auto" Margin="0,12,0,0">
-            <Button Grid.Column="0" Content="Reset this page to defaults" Command="{Binding ResetPageCommand}"
+            <Button Grid.Column="0" Content="{l:Tr Options_ResetThisPageToDefaults}" Command="{Binding ResetPageCommand}"
                     AutomationProperties.AutomationId="ResetPageButton" />
             <TextBlock Grid.Column="1" Text="{Binding Message}" Classes="hint" VerticalAlignment="Center" Margin="12,0"
                        AutomationProperties.AutomationId="OptionsMessage" />
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                <Button Content="OK" IsDefault="True" Click="OnOkClick" IsEnabled="{Binding CanApply}"
+                <Button Content="{l:Tr Common_OK}" IsDefault="True" Click="OnOkClick" IsEnabled="{Binding CanApply}"
                         AutomationProperties.AutomationId="OkButton" MinWidth="80" HorizontalContentAlignment="Center" />
-                <Button Content="Cancel" IsCancel="True" Click="OnCancelClick"
+                <Button Content="{l:Tr Common_Cancel}" IsCancel="True" Click="OnCancelClick"
                         AutomationProperties.AutomationId="CancelButton" MinWidth="80" HorizontalContentAlignment="Center" />
-                <Button Content="Apply" Click="OnApplyClick" IsEnabled="{Binding CanApply}"
+                <Button Content="{l:Tr Options_Apply}" Click="OnApplyClick" IsEnabled="{Binding CanApply}"
                         AutomationProperties.AutomationId="ApplyButton" MinWidth="80" HorizontalContentAlignment="Center" />
             </StackPanel>
         </Grid>
@@ -47,7 +48,7 @@
                      AutomationProperties.AutomationId="CategoryList" Margin="0,0,12,0">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Title}" Padding="4,6" />
+                        <TextBlock Text="{Binding Title.Value}" Padding="4,6" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
@@ -56,25 +57,25 @@
                 <Panel>
                     <!-- General -->
                     <StackPanel IsVisible="{Binding IsGeneralPage}" Spacing="6" AutomationProperties.AutomationId="GeneralPage">
-                        <TextBlock Text="General" Classes="page-title" />
-                        <CheckBox Content="Reopen the last project at startup" IsChecked="{Binding ReopenLastProject}"
+                        <TextBlock Text="{l:Tr Options_General}" Classes="page-title" />
+                        <CheckBox Content="{l:Tr Options_ReopenTheLastProjectAtStartup}" IsChecked="{Binding ReopenLastProject}"
                                   AutomationProperties.AutomationId="ReopenLastProjectCheckBox" />
-                        <TextBlock Text="Recent files list length (5 to 20)" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_RecentFilesListLength5To}" Classes="label" />
                         <TextBox Text="{Binding RecentFilesLengthText}" Width="120" HorizontalAlignment="Left"
                                  AutomationProperties.AutomationId="RecentFilesLengthBox" />
                         <TextBlock Text="{Binding RecentFilesLengthError}" Classes="error"
                                    IsVisible="{Binding RecentFilesLengthError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                        <CheckBox Content="Ask before exiting when the project has unsaved changes (off: exit without asking)"
+                        <CheckBox Content="{l:Tr Options_AskBeforeExitingWhenTheProject}"
                                   IsChecked="{Binding ConfirmOnExit}" Margin="0,8,0,0"
                                   AutomationProperties.AutomationId="ConfirmOnExitCheckBox" />
-                        <TextBlock Text="Autosave interval in minutes (0 = off)" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_AutosaveIntervalInMinutes0Off}" Classes="label" />
                         <TextBox Text="{Binding AutosaveMinutesText}" Width="120" HorizontalAlignment="Left"
                                  AutomationProperties.AutomationId="AutosaveMinutesBox" />
                         <TextBlock Text="{Binding AutosaveMinutesError}" Classes="error"
                                    IsVisible="{Binding AutosaveMinutesError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                         <TextBlock Classes="hint"
-                                   Text="Autosave writes a backup copy next to the project file as name.autosave.xml. The project file itself is never overwritten." />
-                        <TextBlock Text="Session idle timeout in minutes (no input)" Classes="label" />
+                                   Text="{l:Tr Options_AutosaveWritesABackupCopyNext}" />
+                        <TextBlock Text="{l:Tr Options_SessionIdleTimeoutInMinutesNo}" Classes="label" />
                         <TextBox Text="{Binding SessionTimeoutText}" Width="120" HorizontalAlignment="Left"
                                  AutomationProperties.AutomationId="SessionTimeoutBox" />
                         <TextBlock Text="{Binding SessionTimeoutError}" Classes="error"
@@ -83,147 +84,151 @@
 
                     <!-- Appearance -->
                     <StackPanel IsVisible="{Binding IsAppearancePage}" Spacing="6" AutomationProperties.AutomationId="AppearancePage">
-                        <TextBlock Text="Appearance" Classes="page-title" />
-                        <TextBlock Text="Theme palette (accent colour)" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_Appearance}" Classes="page-title" />
+                        <TextBlock Text="{l:Tr Options_UiLanguage}" Classes="label" />
+                        <ComboBox ItemsSource="{Binding UiLanguages}" SelectedItem="{Binding UiLanguage}" Width="240" HorizontalAlignment="Left"
+                                  AutomationProperties.AutomationId="UiLanguageCombo" />
+                        <TextBlock Classes="hint" Text="{l:Tr Options_UiLanguageHint}" />
+                        <TextBlock Text="{l:Tr Options_ThemePaletteAccentColour}" Classes="label" />
                         <ComboBox ItemsSource="{Binding ThemeNames}" SelectedItem="{Binding ThemeName}" HorizontalAlignment="Stretch"
                                   AutomationProperties.AutomationId="ThemeCombo" />
                         <TextBlock Classes="hint"
-                                   Text="Approximations of the Bootstrap 5.3 palette family (primary, success, info, warning, danger, and neutral steps)." />
-                        <TextBlock Text="Appearance mode" Classes="label" />
+                                   Text="{l:Tr Options_ApproximationsOfTheBootstrap53}" />
+                        <TextBlock Text="{l:Tr Options_AppearanceMode}" Classes="label" />
                         <ComboBox ItemsSource="{Binding Appearances}" SelectedItem="{Binding Appearance}" Width="180" HorizontalAlignment="Left"
                                   AutomationProperties.AutomationId="AppearanceCombo" />
-                        <TextBlock Text="UI font size (10 to 20)" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_UIFontSize10To20}" Classes="label" />
                         <TextBox Text="{Binding UiFontSizeText}" Width="120" HorizontalAlignment="Left"
                                  AutomationProperties.AutomationId="UiFontSizeBox" />
                         <TextBlock Text="{Binding UiFontSizeError}" Classes="error"
                                    IsVisible="{Binding UiFontSizeError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                        <CheckBox Content="Compact tables (smaller row height)" IsChecked="{Binding CompactTables}" Margin="0,8,0,0"
+                        <CheckBox Content="{l:Tr Options_CompactTablesSmallerRowHeight}" IsChecked="{Binding CompactTables}" Margin="0,8,0,0"
                                   AutomationProperties.AutomationId="CompactTablesCheckBox" />
-                        <TextBlock Text="Custom styles (AXAML resource dictionary, optional)" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_CustomStylesAXAMLResourceDictionaryOptional}" Classes="label" />
                         <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                            <TextBox Grid.Column="0" Text="{Binding CustomStylesPath}" PlaceholderText="No file chosen" IsReadOnly="True"
+                            <TextBox Grid.Column="0" Text="{Binding CustomStylesPath}" PlaceholderText="{l:Tr Options_NoFileChosen}" IsReadOnly="True"
                                      AutomationProperties.AutomationId="CustomStylesPathBox" />
-                            <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseCustomStylesCommand}"
+                            <Button Grid.Column="1" Content="{l:Tr Common_Browse}" Command="{Binding BrowseCustomStylesCommand}"
                                     AutomationProperties.AutomationId="BrowseCustomStylesButton" />
-                            <Button Grid.Column="2" Content="Clear" Command="{Binding ClearCustomStylesCommand}"
+                            <Button Grid.Column="2" Content="{l:Tr Common_Clear}" Command="{Binding ClearCustomStylesCommand}"
                                     AutomationProperties.AutomationId="ClearCustomStylesButton" />
                         </Grid>
                         <TextBlock Classes="hint"
-                                   Text="Resources only: the file must be a ResourceDictionary without x:Class." />
+                                   Text="{l:Tr Options_ResourcesOnlyTheFileMustBe}" />
                     </StackPanel>
 
                     <!-- Generate -->
                     <StackPanel IsVisible="{Binding IsGeneratePage}" Spacing="6" AutomationProperties.AutomationId="GeneratePage">
-                        <TextBlock Text="Generate" Classes="page-title" />
-                        <TextBlock Text="Default output folder pattern" Classes="label" />
+                        <TextBlock Text="{l:Tr Common_Generate}" Classes="page-title" />
+                        <TextBlock Text="{l:Tr Options_DefaultOutputFolderPattern}" Classes="label" />
                         <TextBox Text="{Binding OutputFolderPattern}" HorizontalAlignment="Stretch"
                                  AutomationProperties.AutomationId="OutputFolderPatternBox" />
                         <TextBlock Text="{Binding OutputFolderPatternError}" Classes="error"
                                    IsVisible="{Binding OutputFolderPatternError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                        <TextBlock Text="Default page size" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_DefaultPageSize}" Classes="label" />
                         <ComboBox ItemsSource="{Binding PageSizes}" SelectedItem="{Binding DefaultPageSize}" Width="120" HorizontalAlignment="Left"
                                   AutomationProperties.AutomationId="DefaultPageSizeCombo" />
-                        <CheckBox Content="Open the output folder after generating" IsChecked="{Binding OpenOutputAfterGenerate}" Margin="0,8,0,0"
+                        <CheckBox Content="{l:Tr Options_OpenTheOutputFolderAfterGenerating}" IsChecked="{Binding OpenOutputAfterGenerate}" Margin="0,8,0,0"
                                   AutomationProperties.AutomationId="OpenOutputAfterGenerateCheckBox" />
-                        <CheckBox Content="Clear the output folder before generating" IsChecked="{Binding ClearOutputBeforeGenerate}"
+                        <CheckBox Content="{l:Tr Options_ClearTheOutputFolderBeforeGenerating}" IsChecked="{Binding ClearOutputBeforeGenerate}"
                                   AutomationProperties.AutomationId="ClearOutputBeforeGenerateCheckBox" />
                         <TextBlock Classes="error" IsVisible="{Binding IsClearOutputWarningVisible}"
                                    AutomationProperties.AutomationId="ClearOutputWarning"
-                                   Text="Warning: everything in the output folder would be deleted before each generate. Files you added by hand are lost." />
-                        <CheckBox Content="Build after generating" IsChecked="{Binding BuildAfterGenerate}"
+                                   Text="{l:Tr Options_WarningEverythingInTheOutputFolder}" />
+                        <CheckBox Content="{l:Tr Common_BuildAfterGenerating}" IsChecked="{Binding BuildAfterGenerate}"
                                   AutomationProperties.AutomationId="BuildAfterGenerateCheckBox" />
-                        <TextBlock Text="Default build configuration" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_DefaultBuildConfiguration}" Classes="label" />
                         <ComboBox ItemsSource="{Binding BuildConfigurations}" SelectedItem="{Binding BuildConfiguration}" Width="160" HorizontalAlignment="Left"
                                   AutomationProperties.AutomationId="BuildConfigurationCombo" />
                         <TextBlock Classes="hint"
-                                   Text="Stored for later features: the output folder pattern, default page size, clear-before-generate and the build options are not used by Generate yet. Opening the output folder works now." />
+                                   Text="{l:Tr Options_StoredForLaterFeaturesTheOutput}" />
                     </StackPanel>
 
                     <!-- Tools and paths -->
                     <StackPanel IsVisible="{Binding IsToolsPage}" Spacing="6" AutomationProperties.AutomationId="ToolsPage">
-                        <TextBlock Text="Tools and paths" Classes="page-title" />
-                        <TextBlock Classes="hint" Text="Leave a path empty to use the program found on PATH." />
+                        <TextBlock Text="{l:Tr Options_ToolsAndPaths}" Classes="page-title" />
+                        <TextBlock Classes="hint" Text="{l:Tr Options_LeaveAPathEmptyToUse}" />
                         <TextBlock Text="dotnet" Classes="label" />
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                            <TextBox Grid.Column="0" Text="{Binding DotnetPath}" PlaceholderText="(use PATH)"
+                            <TextBox Grid.Column="0" Text="{Binding DotnetPath}" PlaceholderText="{l:Tr Options_UsePATH}"
                                      AutomationProperties.AutomationId="DotnetPathBox" />
-                            <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseDotnetCommand}"
+                            <Button Grid.Column="1" Content="{l:Tr Common_Browse}" Command="{Binding BrowseDotnetCommand}"
                                     AutomationProperties.AutomationId="BrowseDotnetButton" />
                         </Grid>
                         <TextBlock Text="{Binding DotnetStatus}" Classes="hint" AutomationProperties.AutomationId="DotnetStatus" />
                         <TextBlock Text="node" Classes="label" />
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                            <TextBox Grid.Column="0" Text="{Binding NodePath}" PlaceholderText="(use PATH)"
+                            <TextBox Grid.Column="0" Text="{Binding NodePath}" PlaceholderText="{l:Tr Options_UsePATH}"
                                      AutomationProperties.AutomationId="NodePathBox" />
-                            <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseNodeCommand}"
+                            <Button Grid.Column="1" Content="{l:Tr Common_Browse}" Command="{Binding BrowseNodeCommand}"
                                     AutomationProperties.AutomationId="BrowseNodeButton" />
                         </Grid>
                         <TextBlock Text="{Binding NodeStatus}" Classes="hint" AutomationProperties.AutomationId="NodeStatus" />
                         <TextBlock Text="docker" Classes="label" />
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                            <TextBox Grid.Column="0" Text="{Binding DockerPath}" PlaceholderText="(use PATH)"
+                            <TextBox Grid.Column="0" Text="{Binding DockerPath}" PlaceholderText="{l:Tr Options_UsePATH}"
                                      AutomationProperties.AutomationId="DockerPathBox" />
-                            <Button Grid.Column="1" Content="Browse..." Command="{Binding BrowseDockerCommand}"
+                            <Button Grid.Column="1" Content="{l:Tr Common_Browse}" Command="{Binding BrowseDockerCommand}"
                                     AutomationProperties.AutomationId="BrowseDockerButton" />
                         </Grid>
                         <TextBlock Text="{Binding DockerStatus}" Classes="hint" AutomationProperties.AutomationId="DockerStatus" />
-                        <Button Content="Detect" Command="{Binding DetectToolsCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"
+                        <Button Content="{l:Tr Options_Detect}" Command="{Binding DetectToolsCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"
                                 AutomationProperties.AutomationId="DetectButton" />
                         <TextBlock Classes="hint"
-                                   Text="Detect runs each program with --version (5 second limit). The paths are stored for later features; the app does not run these tools yet." />
+                                   Text="{l:Tr Options_DetectRunsEachProgramWithVersion}" />
                     </StackPanel>
 
                     <!-- Translation and AI -->
                     <StackPanel IsVisible="{Binding IsTranslationPage}" Spacing="6" AutomationProperties.AutomationId="TranslationPage">
-                        <TextBlock Text="Translation and AI" Classes="page-title" />
-                        <TextBlock Text="Translation provider" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_TranslationAndAI}" Classes="page-title" />
+                        <TextBlock Text="{l:Tr Options_TranslationProvider}" Classes="label" />
                         <ComboBox ItemsSource="{Binding TranslationProviders}" SelectedItem="{Binding TranslationProvider}" Width="180" HorizontalAlignment="Left"
                                   AutomationProperties.AutomationId="TranslationProviderCombo" />
-                        <TextBlock Text="Claude model id" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_ClaudeModelId}" Classes="label" />
                         <TextBox Text="{Binding ClaudeModelId}" HorizontalAlignment="Stretch"
                                  AutomationProperties.AutomationId="ClaudeModelIdBox" />
                         <TextBlock Text="{Binding ClaudeModelIdError}" Classes="error"
                                    IsVisible="{Binding ClaudeModelIdError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                        <TextBlock Text="Key status" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_KeyStatus}" Classes="label" />
                         <TextBlock Text="{Binding GoogleKeyStatus}" AutomationProperties.AutomationId="GoogleKeyStatus" />
                         <TextBlock Text="{Binding AnthropicKeyStatus}" AutomationProperties.AutomationId="AnthropicKeyStatus" />
-                        <Button Content="Check again" Command="{Binding RefreshKeyStatusCommand}" HorizontalAlignment="Left"
+                        <Button Content="{l:Tr Options_CheckAgain}" Command="{Binding RefreshKeyStatusCommand}" HorizontalAlignment="Left"
                                 AutomationProperties.AutomationId="RefreshKeyStatusButton" />
                         <TextBlock Classes="hint"
-                                   Text="Keys are read from environment variables and are never saved in project files or in these settings. The provider and model are stored for later features; nothing translates yet." />
+                                   Text="{l:Tr Options_KeysAreReadFromEnvironmentVariables}" />
                     </StackPanel>
 
                     <!-- Network -->
                     <StackPanel IsVisible="{Binding IsNetworkPage}" Spacing="6" AutomationProperties.AutomationId="NetworkPage">
-                        <TextBlock Text="Network" Classes="page-title" />
-                        <TextBlock Text="HTTP proxy URL (optional)" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_Network}" Classes="page-title" />
+                        <TextBlock Text="{l:Tr Options_HTTPProxyURLOptional}" Classes="label" />
                         <TextBox Text="{Binding HttpProxyUrl}" PlaceholderText="http://proxy.example.com:8080" HorizontalAlignment="Stretch"
                                  AutomationProperties.AutomationId="HttpProxyUrlBox" />
                         <TextBlock Text="{Binding HttpProxyUrlError}" Classes="error"
                                    IsVisible="{Binding HttpProxyUrlError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                        <TextBlock Text="Request timeout in seconds (0 = no limit for build and publish)" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_RequestTimeoutInSeconds0No}" Classes="label" />
                         <TextBox Text="{Binding RequestTimeoutText}" Width="120" HorizontalAlignment="Left"
                                  AutomationProperties.AutomationId="RequestTimeoutBox" />
                         <TextBlock Text="{Binding RequestTimeoutError}" Classes="error"
                                    IsVisible="{Binding RequestTimeoutError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                        <TextBlock Classes="hint" Text="Stored for later features: the app makes no network requests yet." />
+                        <TextBlock Classes="hint" Text="{l:Tr Options_StoredForLaterFeaturesTheApp}" />
                     </StackPanel>
 
                     <!-- Advanced -->
                     <StackPanel IsVisible="{Binding IsAdvancedPage}" Spacing="6" AutomationProperties.AutomationId="AdvancedPage">
-                        <TextBlock Text="Advanced" Classes="page-title" />
-                        <TextBlock Text="Log level" Classes="label" />
+                        <TextBlock Text="{l:Tr Options_Advanced}" Classes="page-title" />
+                        <TextBlock Text="{l:Tr Common_LogLevel}" Classes="label" />
                         <ComboBox ItemsSource="{Binding LogLevels}" SelectedItem="{Binding LogLevel}" Width="160" HorizontalAlignment="Left"
                                   AutomationProperties.AutomationId="LogLevelCombo" />
-                        <TextBlock Classes="hint" Text="Stored only for now: the app does not write a log yet." />
-                        <TextBlock Text="Settings file" Classes="label" />
+                        <TextBlock Classes="hint" Text="{l:Tr Options_StoredOnlyForNowTheApp}" />
+                        <TextBlock Text="{l:Tr Options_SettingsFile}" Classes="label" />
                         <TextBlock Text="{Binding SettingsFilePath}" TextWrapping="Wrap" />
-                        <Button Content="Open settings folder" Command="{Binding OpenSettingsFolderCommand}" HorizontalAlignment="Left"
+                        <Button Content="{l:Tr Options_OpenSettingsFolder}" Command="{Binding OpenSettingsFolderCommand}" HorizontalAlignment="Left"
                                 AutomationProperties.AutomationId="OpenSettingsFolderButton" />
-                        <Button Content="Reset ALL settings..." Command="{Binding ResetAllCommand}" HorizontalAlignment="Left" Margin="0,16,0,0"
+                        <Button Content="{l:Tr Options_ResetALLSettings}" Command="{Binding ResetAllCommand}" HorizontalAlignment="Left" Margin="0,16,0,0"
                                 AutomationProperties.AutomationId="ResetAllButton" />
                         <TextBlock Classes="hint"
-                                   Text="Reset ALL asks for confirmation, then sets every option on every page to its default and applies it at once." />
+                                   Text="{l:Tr Options_ResetALLAsksForConfirmationThen}" />
                     </StackPanel>
                 </Panel>
             </ScrollViewer>

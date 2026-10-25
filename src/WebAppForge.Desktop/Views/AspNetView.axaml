@@ -1,11 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:WebAppForge.Desktop.Localization"
              x:Class="WebAppForge.Desktop.Views.AspNetView">
     <Border Classes="card" Margin="12" MaxWidth="600" HorizontalAlignment="Left" VerticalAlignment="Top">
         <StackPanel Spacing="8">
-            <TextBlock Text="Application title" FontWeight="SemiBold" />
+            <TextBlock Text="{l:Tr AspNet_ApplicationTitle}" FontWeight="SemiBold" />
             <TextBox Text="{Binding Current.AspNet.Title}" />
-            <CheckBox Content="Include home page" IsChecked="{Binding Current.AspNet.IncludeHomePage}" Margin="0,8,0,0" />
+            <CheckBox Content="{l:Tr Common_IncludeHomePage}" IsChecked="{Binding Current.AspNet.IncludeHomePage}" Margin="0,8,0,0" />
         </StackPanel>
     </Border>
 </UserControl>

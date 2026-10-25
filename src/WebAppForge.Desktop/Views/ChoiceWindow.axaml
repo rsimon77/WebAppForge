@@ -1,14 +1,15 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:WebAppForge.Desktop.Localization"
         x:Class="WebAppForge.Desktop.Views.ChoiceWindow"
-        Title="Choose"
+        Title="{l:Tr Choice_Choose}"
         Width="460" Height="420" MinHeight="300"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner">
     <DockPanel Margin="20">
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
-            <Button x:Name="OkButton" Content="OK" AutomationProperties.AutomationId="ChoiceOkButton" IsDefault="True" Click="OnOkClick" />
-            <Button Content="Cancel" AutomationProperties.AutomationId="ChoiceCancelButton" IsCancel="True" Click="OnCancelClick" />
+            <Button x:Name="OkButton" Content="{l:Tr Common_OK}" AutomationProperties.AutomationId="ChoiceOkButton" IsDefault="True" Click="OnOkClick" />
+            <Button Content="{l:Tr Common_Cancel}" AutomationProperties.AutomationId="ChoiceCancelButton" IsCancel="True" Click="OnCancelClick" />
         </StackPanel>
         <TextBlock x:Name="MessageText" DockPanel.Dock="Top" TextWrapping="Wrap" Margin="0,0,0,8" />
         <ListBox x:Name="ChoiceList" AutomationProperties.AutomationId="ChoiceList" />

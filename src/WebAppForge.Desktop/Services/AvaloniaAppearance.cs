@@ -5,11 +5,12 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.Services;
 
 /// <summary>
-/// Applies the appearance settings to the application: the accent colour, the light or dark variant, and the custom
+/// Applies the appearance settings to the application: the UI language, the accent colour, the light or dark variant, and the custom
 /// styles. The accent and the custom styles are resource dictionaries merged into the application resources, in that
 /// order, so a custom file can override any accent key. Each call replaces both.
 /// </summary>
@@ -27,6 +28,9 @@ public sealed class AvaloniaAppearance(Application application) : IAppearance
     /// <summary>Row height used for DataGrids when "compact tables" is on.</summary>
     public const double CompactRowHeight = 24;
 
+    /// <summary>A culture name (such as "en") that overrides the UI language setting. The desktop UI tests set it.</summary>
+    public const string UiLanguageVariable = "WEBAPPFORGE_UI_LANGUAGE";
+
     private ResourceDictionary? _accent;
     private Style? _compactTables;
     private ResourceDictionary? _customStyles;
@@ -34,6 +38,10 @@ public sealed class AvaloniaAppearance(Application application) : IAppearance
     public string? Apply(AppSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
+
+        // The environment variable wins over the setting, so UI tests always run in one language.
+        var language = Environment.GetEnvironmentVariable(UiLanguageVariable);
+        Localizer.Instance.SetCulture(Localizer.Resolve(string.IsNullOrWhiteSpace(language) ? settings.UiLanguage : language));
 
         application.RequestedThemeVariant = settings.Appearance switch
         {
