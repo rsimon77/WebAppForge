@@ -77,7 +77,7 @@ public class LanguagesGenerateViewTests
         Find<TextBox>(window, "TranslationSearchBox")!.Text = "Customer";
         Settle(window);
         Assert.All(grid.ItemsSource!.Cast<TranslationRow>(), r => Assert.Contains("ustomer", r.Key + r.SourceText));
-        rig.Languages.FilterLanguage = "hu";
+        rig.Languages.FilterLanguage = "fi";
         Settle(window);
         Assert.Equal(3 + 1, grid.Columns.Count);
         window.Close();

@@ -649,7 +649,8 @@ public partial class LanguagesViewModel : EditorViewModelBase
             LastFailed = 0;
             LastFailures = [];
             LastCancelled = false;
-            ResultSummary = $"Nothing to translate. {plan.UpToDate} up to date, {plan.Protected} skipped because reviewed or typed by hand.";
+            ResultSummary = $"Nothing to translate. {plan.UpToDate} up to date, {plan.Protected} skipped because reviewed or typed by hand"
+                + (plan.BuiltIn > 0 ? $", {plan.BuiltIn} covered by the built-in translation." : ".");
             _main.Status = ResultSummary;
             return;
         }
@@ -807,7 +808,12 @@ public partial class LanguagesViewModel : EditorViewModelBase
             foreach (var source in sources.Where(s => !string.Equals(s.Language, target, StringComparison.OrdinalIgnoreCase)))
             {
                 var existing = settings.Find(source.Key, target);
-                if (existing is null)
+                if (existing is null && TranslationPacks.Find(source.Key, target) is not null)
+                {
+                    // Covered by a fresh built-in translation: nothing is sent.
+                    plan.BuiltIn++;
+                }
+                else if (existing is null)
                 {
                     pending++;
                 }
@@ -1007,6 +1013,8 @@ public partial class LanguagesViewModel : EditorViewModelBase
         public int Protected { get; set; }
 
         public int UpToDate { get; set; }
+
+        public int BuiltIn { get; set; }
     }
 
     private sealed class Scratch(Project project, HashSet<TranslationEntry> known)

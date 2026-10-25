@@ -20,7 +20,7 @@ public class LanguagesTests
         public LocalizationSettings Settings => Main.Current.Localization;
     }
 
-    /// <summary>English project with two tables, languages de, hu and ar, automatic translation on with Google and a key present.</summary>
+    /// <summary>English project with two tables, languages de, fi and ar (none with a built-in pack, so every fixed text starts missing), automatic translation on with Google and a key present.</summary>
     public static Rig Setup(bool autoTranslate = true, TranslationProviderKind kind = TranslationProviderKind.Google)
     {
         var dialogs = new FakeDialogService { NextConfirm = true };
@@ -39,7 +39,7 @@ public class LanguagesTests
 
         var settings = main.Current.Localization;
         settings.Enabled = true;
-        settings.Languages.AddRange(["de", "hu", "ar"]);
+        settings.Languages.AddRange(["de", "fi", "ar"]);
         settings.AutoTranslate = autoTranslate;
         settings.TranslationProvider = kind;
         main.Languages.Reload();
@@ -57,13 +57,13 @@ public class LanguagesTests
     {
         var rig = Setup();
 
-        Assert.Equal(["en", "de", "hu", "ar"], rig.Languages.Languages.Select(l => l.Code));
+        Assert.Equal(["en", "de", "fi", "ar"], rig.Languages.Languages.Select(l => l.Code));
         Assert.True(rig.Languages.Languages[0].IsDefault);
         Assert.False(rig.Languages.Languages[0].CanRemove);
         var arabic = rig.Languages.Languages.Single(l => l.Code == "ar");
         Assert.True(arabic.IsRightToLeft);
         Assert.Equal("RTL", arabic.RightToLeftMarker);
-        Assert.Equal(string.Empty, rig.Languages.Languages.Single(l => l.Code == "hu").RightToLeftMarker);
+        Assert.Equal(string.Empty, rig.Languages.Languages.Single(l => l.Code == "fi").RightToLeftMarker);
         Assert.Equal("Arabic", arabic.EnglishName);
         Assert.True(LanguageCatalog.IsRightToLeft("ar-EG"));
         Assert.True(LanguageCatalog.IsRightToLeft("he"));
@@ -86,7 +86,7 @@ public class LanguagesTests
         Assert.False(rig.Languages.AddLanguageCode("not a code!"));
         Assert.True(rig.Languages.HasMessage);
         Assert.False(rig.Languages.AddLanguageCode("  "));
-        Assert.Equal(["de", "hu", "ar", "pt-BR"], rig.Settings.Languages);
+        Assert.Equal(["de", "fi", "ar", "pt-BR"], rig.Settings.Languages);
 
         Assert.True(rig.Languages.AddLanguageCode("zh-hans"));
         Assert.Contains("zh-Hans", rig.Settings.Languages);
@@ -115,19 +115,19 @@ public class LanguagesTests
     public void RemoveLanguageRefusesTheDefaultAndKeepsStoredTranslations()
     {
         var rig = Setup();
-        rig.Settings.SetManual("ui.add", "hu", "Hozzáadás");
+        rig.Settings.SetManual("ui.add", "fi", "Hozzáadás");
         rig.Languages.Reload();
 
         rig.Languages.RemoveLanguageCommand.Execute(rig.Languages.Languages[0]);
         Assert.Contains("default language cannot be removed", rig.Languages.Message);
         Assert.Equal("en", rig.Settings.DefaultLanguage);
 
-        rig.Languages.RemoveLanguageCommand.Execute(rig.Languages.Languages.Single(l => l.Code == "hu"));
-        Assert.DoesNotContain("hu", rig.Settings.Languages);
-        Assert.DoesNotContain("hu", rig.Languages.LanguageCodes);
+        rig.Languages.RemoveLanguageCommand.Execute(rig.Languages.Languages.Single(l => l.Code == "fi"));
+        Assert.DoesNotContain("fi", rig.Settings.Languages);
+        Assert.DoesNotContain("fi", rig.Languages.LanguageCodes);
         Assert.False(rig.Languages.HasMessage);
-        Assert.NotNull(rig.Settings.Find("ui.add", "hu"));
-        Assert.All(rig.Languages.Rows, r => Assert.Null(r.CellFor("hu")));
+        Assert.NotNull(rig.Settings.Find("ui.add", "fi"));
+        Assert.All(rig.Languages.Rows, r => Assert.Null(r.CellFor("fi")));
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class LanguagesTests
         rig.Languages.DefaultLanguage = "de";
 
         Assert.Equal("de", rig.Settings.DefaultLanguage);
-        Assert.Equal(["de", "hu", "ar", "en"], rig.Settings.AllLanguages);
+        Assert.Equal(["de", "fi", "ar", "en"], rig.Settings.AllLanguages);
         Assert.True(rig.Languages.Languages.Single(l => l.Code == "de").IsDefault);
         Assert.False(rig.Languages.Languages.Single(l => l.Code == "en").IsDefault);
 
@@ -224,7 +224,7 @@ public class LanguagesTests
         Assert.Equal("UI", Row(rig, "ui.add").Kind);
         Assert.Equal("Table", Row(rig, "table.Orders").Kind);
         Assert.Equal("Field", Row(rig, "field.Orders.Total").Kind);
-        Assert.Equal(["en", "de", "hu", "ar"], rig.Languages.VisibleLanguages);
+        Assert.Equal(["en", "de", "fi", "ar"], rig.Languages.VisibleLanguages);
         Assert.True(Row(rig, "ui.add").CellFor("en")!.IsSource);
     }
 
@@ -404,13 +404,13 @@ public class LanguagesTests
         rig.Languages.Search = string.Empty;
 
         // The filter language also decides which columns exist; the default language has no translatable cells.
-        rig.Languages.FilterLanguage = "hu";
-        Assert.Equal(["hu"], rig.Languages.VisibleLanguages);
+        rig.Languages.FilterLanguage = "fi";
+        Assert.Equal(["fi"], rig.Languages.VisibleLanguages);
         rig.Languages.OnlyMissing = true;
         Assert.Equal(all, rig.Languages.Rows.Count);
         rig.Languages.FilterLanguage = LanguagesViewModel.AllLanguagesLabel;
         Assert.Null(rig.Languages.ActiveFilterLanguage);
-        Assert.Equal(["en", "de", "hu", "ar"], rig.Languages.VisibleLanguages);
+        Assert.Equal(["en", "de", "fi", "ar"], rig.Languages.VisibleLanguages);
     }
 
     // ---- Translating ----
@@ -426,13 +426,13 @@ public class LanguagesTests
         Assert.Equal(1, rig.Dialogs.ConfirmCount);
         var text = rig.Dialogs.LastConfirmMessage!;
         Assert.Contains("Google", text);
-        Assert.Contains("de, hu, ar", text);
+        Assert.Contains("de, fi, ar", text);
         Assert.Contains($"Strings to send: {expected}", text);
         Assert.Equal(expected, rig.Provider.TextCount);
         Assert.Equal(expected, rig.Languages.LastTranslated);
         Assert.Equal(expected, rig.Settings.Entries.Count);
-        var entry = rig.Settings.Find("ui.add", "hu")!;
-        Assert.Equal("[hu] Add", entry.Text);
+        var entry = rig.Settings.Find("ui.add", "fi")!;
+        Assert.Equal("[fi] Add", entry.Text);
         Assert.Equal(TranslationSource.Google, entry.Source);
         Assert.False(entry.Reviewed);
         Assert.Equal(TranslationEntry.HashOf("Add"), entry.SourceHash);
@@ -521,14 +521,14 @@ public class LanguagesTests
         Assert.Equal("Sichern", rig.Settings.Find("ui.save", "de")!.Text);
         Assert.Contains("skipped 2", rig.Languages.ResultSummary);
         Assert.All(rig.Provider.Calls, c => Assert.Equal("de", c.To));
-        Assert.Null(rig.Settings.Find("ui.add", "hu"));
+        Assert.Null(rig.Settings.Find("ui.add", "fi"));
     }
 
     [Fact]
     public async Task OneLanguageFailingKeepsTheOthersAndReportsTheErrorMessage()
     {
         var rig = Setup();
-        rig.Provider.FailLanguages.Add("hu");
+        rig.Provider.FailLanguages.Add("fi");
         var perLanguage = KeyCount(rig);
 
         await rig.Languages.TranslateMissingCommand.ExecuteAsync(null);
@@ -536,12 +536,12 @@ public class LanguagesTests
         Assert.Equal(perLanguage * 2, rig.Languages.LastTranslated);
         Assert.Equal(perLanguage, rig.Languages.LastFailed);
         Assert.Single(rig.Languages.LastFailures);
-        Assert.Equal("hu: Fake service refused hu: quota exceeded.", rig.Languages.LastFailures[0]);
-        Assert.Contains("Fake service refused hu: quota exceeded.", rig.Languages.ResultSummary);
+        Assert.Equal("fi: Fake service refused fi: quota exceeded.", rig.Languages.LastFailures[0]);
+        Assert.Contains("Fake service refused fi: quota exceeded.", rig.Languages.ResultSummary);
         Assert.Contains($"failed {perLanguage}", rig.Languages.ResultSummary);
         Assert.NotNull(rig.Settings.Find("ui.add", "de"));
         Assert.NotNull(rig.Settings.Find("ui.add", "ar"));
-        Assert.Null(rig.Settings.Find("ui.add", "hu"));
+        Assert.Null(rig.Settings.Find("ui.add", "fi"));
         Assert.False(rig.Languages.LastCancelled);
         Assert.False(rig.Languages.IsTranslating);
     }
@@ -553,7 +553,7 @@ public class LanguagesTests
         var perLanguage = KeyCount(rig);
         rig.Provider.OnCall = language =>
         {
-            if (language == "hu")
+            if (language == "fi")
             {
                 rig.Languages.CancelTranslationCommand.Execute(null);
             }
@@ -563,9 +563,9 @@ public class LanguagesTests
 
         Assert.True(rig.Languages.LastCancelled);
         Assert.Equal(perLanguage, rig.Languages.LastTranslated);
-        Assert.Equal(["de", "hu"], rig.Provider.Calls.Select(c => c.To).Distinct());
+        Assert.Equal(["de", "fi"], rig.Provider.Calls.Select(c => c.To).Distinct());
         Assert.NotNull(rig.Settings.Find("ui.add", "de"));
-        Assert.Null(rig.Settings.Find("ui.add", "hu"));
+        Assert.Null(rig.Settings.Find("ui.add", "fi"));
         Assert.Null(rig.Settings.Find("ui.add", "ar"));
         Assert.StartsWith("Cancelled.", rig.Languages.ResultSummary);
         Assert.False(rig.Languages.IsTranslating);
@@ -609,7 +609,7 @@ public class LanguagesTests
         var source = Setup();
         var tricky = "Ja, \"bitte\"\nZeile zwei";
         Row(source, "ui.add").CellFor("de")!.Text = tricky;
-        Row(source, "table.Customers").CellFor("hu")!.Text = "Ügyfél";
+        Row(source, "table.Customers").CellFor("fi")!.Text = "Ügyfél";
         Row(source, "field.Customers.Email").CellFor("ar")!.Text = "البريد الإلكتروني";
         var path = folder.File("translations.csv");
 
@@ -620,7 +620,7 @@ public class LanguagesTests
         Assert.Equal(3, target.Languages.ImportFrom(path));
 
         Assert.Equal(tricky, target.Settings.Find("ui.add", "de")!.Text);
-        Assert.Equal("Ügyfél", target.Settings.Find("table.Customers", "hu")!.Text);
+        Assert.Equal("Ügyfél", target.Settings.Find("table.Customers", "fi")!.Text);
         Assert.Equal("البريد الإلكتروني", target.Settings.Find("field.Customers.Email", "ar")!.Text);
         var imported = target.Settings.Find("ui.add", "de")!;
         Assert.Equal(TranslationSource.Manual, imported.Source);
@@ -645,11 +645,11 @@ public class LanguagesTests
         Assert.Contains("Exported 1", rig.Languages.ResultSummary);
 
         var csv = folder.File("in.csv");
-        File.WriteAllText(csv, "key,language,text\r\nui.save,hu,Mentés\r\nui.nosuch,hu,x\r\nui.save,xx,y\r\nui.save,en,same\r\nbroken\r\n");
+        File.WriteAllText(csv, "key,language,text\r\nui.save,fi,Mentés\r\nui.nosuch,fi,x\r\nui.save,xx,y\r\nui.save,en,same\r\nbroken\r\n");
         rig.Dialogs.NextCsvToOpen = csv;
         await rig.Languages.ImportCsvCommand.ExecuteAsync(null);
 
-        Assert.Equal("Mentés", rig.Settings.Find("ui.save", "hu")!.Text);
+        Assert.Equal("Mentés", rig.Settings.Find("ui.save", "fi")!.Text);
         Assert.Null(rig.Settings.Find("ui.save", "en"));
         Assert.Contains("Imported 1", rig.Languages.ResultSummary);
         Assert.Contains("1 for unknown keys", rig.Languages.ResultSummary);

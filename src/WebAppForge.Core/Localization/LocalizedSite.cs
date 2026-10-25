@@ -46,6 +46,12 @@ internal static partial class LocalizedSite
                 {
                     map[source.Key] = entry.Text;
                 }
+                else if (!string.Equals(source.Language, language, StringComparison.OrdinalIgnoreCase)
+                         && TranslationPacks.Find(source.Key, language) is { } built)
+                {
+                    // A fixed UI string the project did not translate itself comes from the built-in pack.
+                    map[source.Key] = built;
+                }
                 else if (string.Equals(source.Language, language, StringComparison.OrdinalIgnoreCase))
                 {
                     // The source text is the text of the language it is written in.

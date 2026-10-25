@@ -296,5 +296,16 @@ public static class UiStrings
     public static string English(string id) =>
         ById.TryGetValue(id, out var s) ? s.English : throw new ArgumentException($"Unknown UI string id '{id}'.", nameof(id));
 
+    /// <summary>The English text of a UI string, or false for an unknown id.</summary>
+    public static bool TryEnglish(string id, out string english)
+    {
+        var found = ById.TryGetValue(id, out var s);
+        english = s?.English ?? string.Empty;
+        return found;
+    }
+
+    /// <summary>Every fixed UI string of every group.</summary>
+    public static IReadOnlyCollection<UiString> Everything => ById.Values;
+
     public static string KeyOf(string id) => KeyPrefix + id;
 }
