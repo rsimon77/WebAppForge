@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:WebAppForge.Desktop.Localization"
         xmlns:views="using:WebAppForge.Desktop.Views"
         x:Class="WebAppForge.Desktop.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
@@ -26,49 +27,49 @@
                     <TextBlock Text="WebAppForge" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
                 </StackPanel>
                 <Menu Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0">
-                    <MenuItem Header="File">
-                        <MenuItem Header="New" Command="{Binding NewProjectCommand}">
+                    <MenuItem Header="{l:Tr Common_File}">
+                        <MenuItem Header="{l:Tr Main_New}" Command="{Binding NewProjectCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconNew}" /></MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Open..." Command="{Binding OpenProjectCommand}">
+                        <MenuItem Header="{l:Tr Main_Open}" Command="{Binding OpenProjectCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconOpen}" /></MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Save" Command="{Binding SaveProjectCommand}">
+                        <MenuItem Header="{l:Tr Common_Save}" Command="{Binding SaveProjectCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSave}" /></MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Save As..." Command="{Binding SaveAsCommand}">
+                        <MenuItem Header="{l:Tr Main_SaveAs}" Command="{Binding SaveAsCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSaveAs}" /></MenuItem.Icon>
                         </MenuItem>
                         <Separator />
-                        <MenuItem Header="Exit" Command="{Binding ExitCommand}" InputGesture="Ctrl+Q">
+                        <MenuItem Header="{l:Tr Main_Exit}" Command="{Binding ExitCommand}" InputGesture="Ctrl+Q">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconExit}" /></MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="Edit">
-                        <MenuItem Header="Connect to database" Command="{Binding Database.ConnectCommand}">
+                    <MenuItem Header="{l:Tr Common_Edit}">
+                        <MenuItem Header="{l:Tr Main_ConnectToDatabase}" Command="{Binding Database.ConnectCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconConnect}" /></MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Show Tables tab" Command="{Binding ShowTablesTabCommand}">
+                        <MenuItem Header="{l:Tr Main_ShowTablesTab}" Command="{Binding ShowTablesTabCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconTable}" /></MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Show Fields tab" Command="{Binding ShowFieldsTabCommand}">
+                        <MenuItem Header="{l:Tr Main_ShowFieldsTab}" Command="{Binding ShowFieldsTabCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconTable}" /></MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="Tools">
-                        <MenuItem Header="Generate" Command="{Binding Generate.GenerateCommand}">
+                    <MenuItem Header="{l:Tr Main_Tools}">
+                        <MenuItem Header="{l:Tr Common_Generate}" Command="{Binding Generate.GenerateCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconGenerate}" /></MenuItem.Icon>
                         </MenuItem>
                         <Separator />
-                        <MenuItem Header="Options..." Command="{Binding ShowOptionsCommand}" InputGesture="Ctrl+,">
+                        <MenuItem Header="{l:Tr Main_Options}" Command="{Binding ShowOptionsCommand}" InputGesture="Ctrl+,">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconSettings}" /></MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Custom styles..." Command="{Binding ChooseCustomStylesCommand}">
+                        <MenuItem Header="{l:Tr Main_CustomStyles}" Command="{Binding ChooseCustomStylesCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconStyles}" /></MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="Help">
-                        <MenuItem Header="About WebAppForge" Command="{Binding AboutCommand}">
+                    <MenuItem Header="{l:Tr Main_Help}">
+                        <MenuItem Header="{l:Tr Main_AboutWebAppForge}" Command="{Binding AboutCommand}">
                             <MenuItem.Icon><Path Classes="icon" Data="{StaticResource IconAbout}" /></MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
@@ -77,7 +78,7 @@
                     <Border Background="{DynamicResource ControlFillBrush}" CornerRadius="6" Padding="2,0,10,0">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBox Text="{Binding ProjectName}" Width="140" FontWeight="SemiBold" BorderThickness="0" Background="Transparent"
-                                     ToolTip.Tip="Project name" AutomationProperties.Name="Project name" AutomationProperties.AutomationId="ProjectNameBox" />
+                                     ToolTip.Tip="{l:Tr Common_ProjectName}" AutomationProperties.Name="{l:Tr Common_ProjectName}" AutomationProperties.AutomationId="ProjectNameBox" />
                             <TextBlock Text="{Binding ProjectFolder}" Classes="muted" VerticalAlignment="Center" MaxWidth="170" TextTrimming="LeadingCharacterEllipsis"
                                        IsVisible="{Binding ProjectFolder, Converter={x:Static ObjectConverters.IsNotNull}}"
                                        ToolTip.Tip="{Binding ProjectFolder}" AutomationProperties.AutomationId="ProjectFolderText" />
@@ -98,8 +99,8 @@
                             <TextBlock Text="Ctrl K" FontSize="11" Classes="muted" />
                         </Border>
                         <AutoCompleteBox x:Name="SearchBox" FilterMode="Contains" MinimumPrefixLength="1" BorderThickness="0" Background="Transparent"
-                                         PlaceholderText="Search the project" VerticalAlignment="Center"
-                                         AutomationProperties.Name="Search" AutomationProperties.AutomationId="SearchBox">
+                                         PlaceholderText="{l:Tr Main_SearchTheProject}" VerticalAlignment="Center"
+                                         AutomationProperties.Name="{l:Tr Common_Search}" AutomationProperties.AutomationId="SearchBox">
                             <AutoCompleteBox.ItemTemplate>
                                 <DataTemplate>
                                     <DockPanel>
@@ -112,23 +113,23 @@
                     </DockPanel>
                 </Border>
                 <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                    <Button Classes="icon ghost" Command="{Binding NewProjectCommand}" ToolTip.Tip="New project" AutomationProperties.Name="New">
+                    <Button Classes="icon ghost" Command="{Binding NewProjectCommand}" ToolTip.Tip="{l:Tr Main_NewProject}" AutomationProperties.Name="{l:Tr Main_New}">
                         <Path Classes="icon" Data="{StaticResource IconNew}" />
                     </Button>
-                    <Button Classes="icon ghost" Command="{Binding OpenProjectCommand}" ToolTip.Tip="Open project (Ctrl+O)" AutomationProperties.Name="Open">
+                    <Button Classes="icon ghost" Command="{Binding OpenProjectCommand}" ToolTip.Tip="{l:Tr Main_OpenProjectCtrlO}" AutomationProperties.Name="{l:Tr Main_Open2}">
                         <Path Classes="icon" Data="{StaticResource IconOpen}" />
                     </Button>
-                    <Button Classes="icon ghost" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save (Ctrl+S)" AutomationProperties.Name="Save">
+                    <Button Classes="icon ghost" Command="{Binding SaveProjectCommand}" ToolTip.Tip="{l:Tr Main_SaveCtrlS}" AutomationProperties.Name="{l:Tr Common_Save}">
                         <Path Classes="icon" Data="{StaticResource IconSave}" />
                     </Button>
-                    <Button Classes="icon ghost" Command="{Binding ShowOptionsCommand}" ToolTip.Tip="Options (Ctrl+,)" AutomationProperties.Name="Options">
+                    <Button Classes="icon ghost" Command="{Binding ShowOptionsCommand}" ToolTip.Tip="{l:Tr Main_OptionsCtrl}" AutomationProperties.Name="{l:Tr Common_Options}">
                         <Path Classes="icon" Data="{StaticResource IconSettings}" />
                     </Button>
                     <Button Classes="primary" Command="{Binding Generate.GenerateCommand}" Margin="8,0,0,0"
                             AutomationProperties.AutomationId="AppBarGenerateButton">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <Path Data="{StaticResource IconGenerate}" Fill="White" Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Center" />
-                            <TextBlock Text="Generate" Foreground="White" />
+                            <TextBlock Text="{l:Tr Common_Generate}" Foreground="White" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -144,8 +145,8 @@
                 <!-- Non-blocking: shown after the idle timeout, hidden by the next input. -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="12,0,0,0"
                             IsVisible="{Binding IsSessionIdle}">
-                    <TextBlock Text="Session idle. Save now?" FontSize="12" VerticalAlignment="Center" />
-                    <Button Content="Save" Classes="primary" MinHeight="22" Padding="10,0" Command="{Binding SaveProjectCommand}" />
+                    <TextBlock Text="{l:Tr Main_SessionIdleSaveNow}" FontSize="12" VerticalAlignment="Center" />
+                    <Button Content="{l:Tr Common_Save}" Classes="primary" MinHeight="22" Padding="10,0" Command="{Binding SaveProjectCommand}" />
                 </StackPanel>
                 <TextBlock Text="{Binding Status}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
                            HorizontalAlignment="Right" ToolTip.Tip="{Binding Status}" />
@@ -153,43 +154,43 @@
         </Border>
 
         <TabControl Classes="nav" SelectedIndex="{Binding ActiveTabIndex, Mode=TwoWay}" AutomationProperties.AutomationId="SectionNav">
-            <TabItem Header="Project" Tag="1 · SETUP">
+            <TabItem Header="{l:Tr Tab_Project}" AutomationProperties.AutomationId="Tab_Project" Tag="{l:Tr Stage_Setup}">
                 <views:ProjectSettingsView />
             </TabItem>
-            <TabItem Header="Database">
+            <TabItem Header="{l:Tr Tab_Database}" AutomationProperties.AutomationId="Tab_Database">
                 <views:DatabaseView />
             </TabItem>
-            <TabItem Header="Tables" Tag="2 · DATA">
+            <TabItem Header="{l:Tr Tab_Tables}" AutomationProperties.AutomationId="Tab_Tables" Tag="{l:Tr Stage_Data}">
                 <views:TablesView />
             </TabItem>
-            <TabItem Header="Fields">
+            <TabItem Header="{l:Tr Tab_Fields}" AutomationProperties.AutomationId="Tab_Fields">
                 <views:FieldsView />
             </TabItem>
-            <TabItem Header="Relations">
+            <TabItem Header="{l:Tr Tab_Relations}" AutomationProperties.AutomationId="Tab_Relations">
                 <views:RelationsView />
             </TabItem>
-            <TabItem Header="Home page" Tag="3 · SITE">
+            <TabItem Header="{l:Tr Tab_HomePage}" AutomationProperties.AutomationId="Tab_HomePage" Tag="{l:Tr Stage_Site}">
                 <views:AspNetView />
             </TabItem>
-            <TabItem Header="Pages">
+            <TabItem Header="{l:Tr Tab_Pages}" AutomationProperties.AutomationId="Tab_Pages">
                 <views:PageDesignerView />
             </TabItem>
-            <TabItem Header="Reports">
+            <TabItem Header="{l:Tr Tab_Reports}" AutomationProperties.AutomationId="Tab_Reports">
                 <views:ReportsView />
             </TabItem>
-            <TabItem Header="Security">
+            <TabItem Header="{l:Tr Tab_Security}" AutomationProperties.AutomationId="Tab_Security">
                 <views:SecurityView />
             </TabItem>
-            <TabItem Header="Audit trail">
+            <TabItem Header="{l:Tr Tab_AuditTrail}" AutomationProperties.AutomationId="Tab_AuditTrail">
                 <views:AuditView />
             </TabItem>
-            <TabItem Header="Import/Export">
+            <TabItem Header="{l:Tr Tab_ImportExport}" AutomationProperties.AutomationId="Tab_ImportExport">
                 <views:ImportExportView />
             </TabItem>
-            <TabItem Header="Languages">
+            <TabItem Header="{l:Tr Tab_Languages}" AutomationProperties.AutomationId="Tab_Languages">
                 <views:LanguagesView />
             </TabItem>
-            <TabItem Header="Generate" Tag="4 · BUILD">
+            <TabItem Header="{l:Tr Tab_Generate}" AutomationProperties.AutomationId="Tab_Generate" Tag="{l:Tr Stage_Build}">
                 <views:GenerateView />
             </TabItem>
         </TabControl>

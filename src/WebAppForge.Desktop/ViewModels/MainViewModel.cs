@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using WebAppForge.Core.Model;
+using WebAppForge.Desktop.Localization;
 using WebAppForge.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -86,6 +88,11 @@ public partial class MainViewModel : ViewModelBase
 
         ApplyProject(new Project(), null, "New project. Save it to choose a project folder.");
         var appearanceMessage = _appearance?.Apply(Settings);
+        Localizer.Instance.CultureChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(Breadcrumb));
+            OnPropertyChanged(nameof(SaveState));
+        };
         if (appearanceMessage is not null)
         {
             Status = appearanceMessage;
@@ -160,8 +167,8 @@ public partial class MainViewModel : ViewModelBase
             var tab = TabNames[Math.Clamp(ActiveTabIndex, 0, TabNames.Count - 1)];
             var parts = new List<string>
             {
-                string.IsNullOrWhiteSpace(ProjectName) ? "Untitled project" : ProjectName,
-                tab,
+                string.IsNullOrWhiteSpace(ProjectName) ? Localizer.Instance["Main_UntitledProject"] : ProjectName,
+                TabTitle(tab),
             };
 
             if ((tab == "Tables" || tab == "Fields" || tab == "Pages" || tab == "Relations") && Tables.SelectedTable is { } table)
@@ -193,6 +200,9 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    /// <summary>The shown name of a section (an entry of <see cref="TabNames"/>) in the UI language, from the "Tab_" key in Strings.resx.</summary>
+    public static string TabTitle(string tab) => Localizer.Instance["Tab_" + new string([.. CultureInfo.InvariantCulture.TextInfo.ToTitleCase(tab).Where(char.IsLetterOrDigit)])];
+
     partial void OnProjectPathChanged(string? value)
     {
         OnPropertyChanged(nameof(ProjectFolder));
@@ -217,7 +227,7 @@ public partial class MainViewModel : ViewModelBase
 
     /// <summary>Shows the idle notice once the timeout has passed without input. The window calls this on a timer.</summary>
     /// <summary>"Saved", "Unsaved changes" or "Not saved yet", shown next to the project name.</summary>
-    public string SaveState => ProjectPath is null ? "Not saved yet" : _dirtyShown ? "Unsaved changes" : "Saved";
+    public string SaveState => Localizer.Instance[ProjectPath is null ? "Main_NotSavedYet" : _dirtyShown ? "Main_UnsavedChanges" : "Main_Saved"];
 
     public bool HasUnsavedChanges => _dirtyShown;
 
@@ -244,19 +254,19 @@ public partial class MainViewModel : ViewModelBase
         var entries = new List<SearchEntry>();
         foreach (var tab in TabNames)
         {
-            entries.Add(new SearchEntry(tab, "Section", () => ActiveTabIndex = TabNames.ToList().IndexOf(tab)));
+            entries.Add(new SearchEntry(TabTitle(tab), Localizer.Instance["Main_SearchKindSection"], () => ActiveTabIndex = TabNames.ToList().IndexOf(tab)));
         }
 
         foreach (var table in Current.Tables)
         {
-            entries.Add(new SearchEntry(table.Name, "Table", () =>
+            entries.Add(new SearchEntry(table.Name, Localizer.Instance["Main_SearchKindTable"], () =>
             {
                 ActiveTabIndex = TabNames.ToList().IndexOf("Tables");
                 Tables.SelectedTable = table;
             }));
             foreach (var field in table.Fields)
             {
-                entries.Add(new SearchEntry(table.Name + "." + field.Name, "Field", () =>
+                entries.Add(new SearchEntry(table.Name + "." + field.Name, Localizer.Instance["Main_SearchKindField"], () =>
                 {
                     ActiveTabIndex = TabNames.ToList().IndexOf("Fields");
                     Tables.SelectedTable = table;
@@ -267,7 +277,7 @@ public partial class MainViewModel : ViewModelBase
 
         foreach (var report in Current.Reports)
         {
-            entries.Add(new SearchEntry(report.Name, "Report", () =>
+            entries.Add(new SearchEntry(report.Name, Localizer.Instance["Main_SearchKindReport"], () =>
             {
                 ActiveTabIndex = TabNames.ToList().IndexOf("Reports");
                 Reports.SelectedRow = Reports.Reports.FirstOrDefault(r => ReferenceEquals(r.Report, report));

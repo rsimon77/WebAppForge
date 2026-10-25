@@ -1,17 +1,18 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:WebAppForge.Desktop.Localization"
         x:Class="WebAppForge.Desktop.Views.UnsavedChangesWindow"
-        Title="Unsaved changes"
+        Title="{l:Tr UnsavedChanges_UnsavedChanges}"
         Width="440" SizeToContent="Height"
         CanResize="False" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner">
     <StackPanel Margin="20" Spacing="16">
         <TextBlock TextWrapping="Wrap"
-                   Text="The open project has unsaved changes. Save them before you continue?" />
+                   Text="{l:Tr UnsavedChanges_TheOpenProjectHasUnsavedChanges}" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-            <Button Content="Save" IsDefault="True" Click="OnSaveClick" />
-            <Button Content="Discard" Click="OnDiscardClick" />
-            <Button Content="Cancel" IsCancel="True" Click="OnCancelClick" />
+            <Button Content="{l:Tr Common_Save}" IsDefault="True" Click="OnSaveClick" />
+            <Button Content="{l:Tr UnsavedChanges_Discard}" Click="OnDiscardClick" />
+            <Button Content="{l:Tr Common_Cancel}" IsCancel="True" Click="OnCancelClick" />
         </StackPanel>
     </StackPanel>
 </Window>

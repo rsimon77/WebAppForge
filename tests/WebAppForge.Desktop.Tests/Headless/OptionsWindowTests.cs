@@ -41,7 +41,7 @@ public class OptionsWindowTests
         Assert.Equal("Cancel", ById<Button>(window, "CancelButton").Content);
         Assert.Equal("Apply", ById<Button>(window, "ApplyButton").Content);
         Assert.True(ok.IsEnabled);
-        Assert.Equal("General", ((OptionsViewModel)window.DataContext!).SelectedCategory.Title);
+        Assert.Equal("General", ((OptionsViewModel)window.DataContext!).SelectedCategory.Title.Value);
         window.Close();
     }
 

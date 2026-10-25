@@ -6,14 +6,15 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using WebAppForge.Desktop.Localization;
 using WebAppForge.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace WebAppForge.Desktop.ViewModels;
 
-/// <summary>One entry in the category list on the left of the Options dialog.</summary>
-public sealed record OptionsCategory(string Id, string Title)
+/// <summary>One entry in the category list on the left of the Options dialog. The title follows the UI language.</summary>
+public sealed record OptionsCategory(string Id, LocalizedText Title)
 {
     public const string General = "General";
     public const string Appearance = "Appearance";
@@ -22,6 +23,12 @@ public sealed record OptionsCategory(string Id, string Title)
     public const string Translation = "Translation";
     public const string Network = "Network";
     public const string Advanced = "Advanced";
+}
+
+/// <summary>One entry of the UI language list: a culture name, or null for the operating system's language.</summary>
+public sealed record UiLanguageChoice(string? Name, string Display)
+{
+    public override string ToString() => Display;
 }
 
 /// <summary>
@@ -47,6 +54,7 @@ public sealed partial class OptionsViewModel : ViewModelBase
     [ObservableProperty] private string _sessionTimeoutText = "";
 
     // Appearance
+    [ObservableProperty] private UiLanguageChoice? _uiLanguage;
     [ObservableProperty] private string _themeName = ThemePalettes.Default.Name;
     [ObservableProperty] private AppearanceMode _appearance;
     [ObservableProperty] private string _uiFontSizeText = "";
@@ -99,23 +107,34 @@ public sealed partial class OptionsViewModel : ViewModelBase
         _environment = environment ?? new OptionsEnvironment();
         _baseline = settings.Normalized();
 
+        var tr = Localizer.Instance;
         Categories =
         [
-            new(OptionsCategory.General, "General"),
-            new(OptionsCategory.Appearance, "Appearance"),
-            new(OptionsCategory.Generate, "Generate"),
-            new(OptionsCategory.Tools, "Tools and paths"),
-            new(OptionsCategory.Translation, "Translation and AI"),
-            new(OptionsCategory.Network, "Network"),
-            new(OptionsCategory.Advanced, "Advanced"),
+            new(OptionsCategory.General, tr.Text("Options_General")),
+            new(OptionsCategory.Appearance, tr.Text("Options_Appearance")),
+            new(OptionsCategory.Generate, tr.Text("Common_Generate")),
+            new(OptionsCategory.Tools, tr.Text("Options_ToolsAndPaths")),
+            new(OptionsCategory.Translation, tr.Text("Options_TranslationAndAI")),
+            new(OptionsCategory.Network, tr.Text("Options_Network")),
+            new(OptionsCategory.Advanced, tr.Text("Options_Advanced")),
         ];
         _selectedCategory = Categories[0];
+
+        // The system entry names the language it stands for; the others show their own name ("Magyar", not "Hungarian").
+        UiLanguages =
+        [
+            new(null, tr.Format("Options_SystemLanguage", CultureInfo.InstalledUICulture.NativeName)),
+            .. Localizer.AvailableCultures().Select(c => new UiLanguageChoice(c.Name, Capitalize(c.NativeName))),
+        ];
 
         Load(_baseline);
         RefreshKeyStatus();
     }
 
     public IReadOnlyList<OptionsCategory> Categories { get; }
+
+    /// <summary>The system language, then English and every language the app ships texts for.</summary>
+    public IReadOnlyList<UiLanguageChoice> UiLanguages { get; }
 
     public IReadOnlyList<string> ThemeNames { get; } = ThemePalettes.All.Select(p => p.Name).ToList();
 
@@ -253,6 +272,7 @@ public sealed partial class OptionsViewModel : ViewModelBase
         s.AutosaveMinutes = ParseOr(AutosaveMinutesText, s.AutosaveMinutes);
         s.SessionTimeoutMinutes = ParseOr(SessionTimeoutText, s.SessionTimeoutMinutes);
 
+        s.UiLanguage = UiLanguage?.Name;
         s.ThemeName = ThemeName;
         s.Appearance = Appearance;
         s.UiFontSize = ParseOr(UiFontSizeText, s.UiFontSize);
@@ -419,6 +439,9 @@ public sealed partial class OptionsViewModel : ViewModelBase
     private string KeyStatus(string variable)
         => string.IsNullOrEmpty(_environment.GetVariable(variable)) ? $"{variable} is not set." : $"{variable} is set.";
 
+    private static string Capitalize(string name)
+        => name.Length == 0 ? name : char.ToUpper(name[0], CultureInfo.InvariantCulture) + name[1..];
+
     private static int ParseOr(string text, int fallback)
         => int.TryParse(text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) ? value : fallback;
 
@@ -452,6 +475,8 @@ public sealed partial class OptionsViewModel : ViewModelBase
 
     private void LoadAppearance(AppSettings s)
     {
+        // A language the app no longer ships (or a hand-edited name) shows as the system language.
+        UiLanguage = UiLanguages.FirstOrDefault(l => string.Equals(l.Name, s.UiLanguage, StringComparison.OrdinalIgnoreCase)) ?? UiLanguages[0];
         ThemeName = s.ThemeName;
         Appearance = s.Appearance;
         UiFontSizeText = s.UiFontSize.ToString(CultureInfo.InvariantCulture);

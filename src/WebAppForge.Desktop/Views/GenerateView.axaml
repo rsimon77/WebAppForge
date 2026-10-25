@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:WebAppForge.Desktop.Localization"
              xmlns:vm="using:WebAppForge.Desktop.ViewModels"
              x:Class="WebAppForge.Desktop.Views.GenerateView">
     <UserControl.Resources>
@@ -53,15 +54,15 @@
 
         <!-- Output folder, commands, site link, summary and tool status. -->
         <StackPanel Grid.Row="0" Spacing="6">
-            <TextBlock Text="Output folder (relative to the project folder, or absolute)" FontWeight="SemiBold" />
+            <TextBlock Text="{l:Tr Generate_OutputFolderRelativeToTheProject}" FontWeight="SemiBold" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" MaxWidth="760" HorizontalAlignment="Left">
                 <TextBox Grid.Column="0" Text="{Binding Generate.OutputFolder}" Width="560"
                          AutomationProperties.AutomationId="GenerateOutputFolderBox" />
-                <Button Grid.Column="1" Content="Browse..." Command="{Binding Generate.BrowseCommand}" />
+                <Button Grid.Column="1" Content="{l:Tr Common_Browse}" Command="{Binding Generate.BrowseCommand}" />
             </Grid>
 
             <WrapPanel>
-                <Button Content="Generate" Classes="primary" Command="{Binding Generate.GenerateCommand}" Margin="0,0,8,4"
+                <Button Content="{l:Tr Common_Generate}" Classes="primary" Command="{Binding Generate.GenerateCommand}" Margin="0,0,8,4"
                         AutomationProperties.AutomationId="GenerateButton">
                     <Button.IsEnabled>
                         <MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -70,24 +71,24 @@
                         </MultiBinding>
                     </Button.IsEnabled>
                 </Button>
-                <Button Content="Build only" Command="{Binding Generate.BuildOnlyCommand}" IsEnabled="{Binding Generate.IsIdle}" Margin="0,0,8,4"
+                <Button Content="{l:Tr Generate_BuildOnly}" Command="{Binding Generate.BuildOnlyCommand}" IsEnabled="{Binding Generate.IsIdle}" Margin="0,0,8,4"
                         AutomationProperties.AutomationId="BuildOnlyButton" />
-                <Button Content="Publish only" Command="{Binding Generate.PublishOnlyCommand}" IsEnabled="{Binding Generate.IsIdle}" Margin="0,0,8,4"
+                <Button Content="{l:Tr Generate_PublishOnly}" Command="{Binding Generate.PublishOnlyCommand}" IsEnabled="{Binding Generate.IsIdle}" Margin="0,0,8,4"
                         AutomationProperties.AutomationId="PublishOnlyButton" />
-                <Button Content="Cancel" Command="{Binding Generate.CancelCommand}" IsEnabled="{Binding Generate.IsBusy}" Margin="0,0,24,4"
+                <Button Content="{l:Tr Common_Cancel}" Command="{Binding Generate.CancelCommand}" IsEnabled="{Binding Generate.IsBusy}" Margin="0,0,24,4"
                         AutomationProperties.AutomationId="CancelBuildButton" />
-                <Button Content="Run site" Command="{Binding Generate.RunSiteCommand}" Margin="0,0,8,4"
+                <Button Content="{l:Tr Generate_RunSite}" Command="{Binding Generate.RunSiteCommand}" Margin="0,0,8,4"
                         AutomationProperties.AutomationId="RunSiteButton" />
-                <Button Content="Stop" Command="{Binding Generate.StopSiteCommand}" IsEnabled="{Binding Generate.IsSiteRunning}" Margin="0,0,8,4"
+                <Button Content="{l:Tr Generate_Stop}" Command="{Binding Generate.StopSiteCommand}" IsEnabled="{Binding Generate.IsSiteRunning}" Margin="0,0,8,4"
                         AutomationProperties.AutomationId="StopSiteButton" />
-                <Button Content="Open in browser" Command="{Binding Generate.OpenInBrowserCommand}" IsEnabled="{Binding Generate.IsSiteRunning}" Margin="0,0,8,4"
+                <Button Content="{l:Tr Generate_OpenInBrowser}" Command="{Binding Generate.OpenInBrowserCommand}" IsEnabled="{Binding Generate.IsSiteRunning}" Margin="0,0,8,4"
                         AutomationProperties.AutomationId="OpenInBrowserButton" />
-                <Button Content="Open output folder" Command="{Binding Generate.OpenOutputFolderCommand}" Margin="0,0,8,4"
+                <Button Content="{l:Tr Generate_OpenOutputFolder}" Command="{Binding Generate.OpenOutputFolderCommand}" Margin="0,0,8,4"
                         AutomationProperties.AutomationId="OpenOutputFolderButton" />
             </WrapPanel>
 
             <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Generate.IsSiteRunning}">
-                <TextBlock Text="Running at" VerticalAlignment="Center" />
+                <TextBlock Text="{l:Tr Generate_RunningAt}" VerticalAlignment="Center" />
                 <Button Classes="link" Command="{Binding Generate.OpenInBrowserCommand}" AutomationProperties.AutomationId="SiteLinkButton">
                     <TextBlock Text="{Binding Generate.SiteUrl}" />
                 </Button>
@@ -97,7 +98,7 @@
                 <TextBlock Text="{Binding Generate.BuildSummary}" VerticalAlignment="Center" TextWrapping="Wrap"
                            AutomationProperties.AutomationId="BuildSummaryText" />
                 <Button Classes="link" Command="{Binding Generate.ShowBuildSettingsCommand}" AutomationProperties.AutomationId="ShowBuildSettingsLink">
-                    <TextBlock Text="Change in the Project tab" />
+                    <TextBlock Text="{l:Tr Generate_ChangeInTheProjectTab}" />
                 </Button>
             </StackPanel>
 
@@ -108,7 +109,7 @@
             </WrapPanel>
             <Button IsVisible="{Binding Generate.ShowOptionsHint}" Classes="link" Command="{Binding Generate.OpenOptionsCommand}"
                     HorizontalAlignment="Left" AutomationProperties.AutomationId="OpenOptionsLink">
-                <TextBlock Text="Open Options" />
+                <TextBlock Text="{l:Tr Generate_OpenOptions}" />
             </Button>
             <TextBlock IsVisible="{Binding Generate.HasDockerWarning}" Classes="warning" TextWrapping="Wrap" Text="{Binding Generate.DockerWarning}"
                        AutomationProperties.AutomationId="DockerWarningText" />
@@ -156,10 +157,10 @@
         <!-- Live output and diagnostics. -->
         <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto,160" RowSpacing="4">
             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="Output" FontWeight="SemiBold" VerticalAlignment="Center" />
-                <CheckBox Content="Auto-scroll" IsChecked="{Binding Generate.AutoScroll}" AutomationProperties.AutomationId="AutoScrollCheck" />
-                <Button Content="Clear" Command="{Binding Generate.ClearOutputCommand}" AutomationProperties.AutomationId="ClearOutputButton" />
-                <Button Content="Copy all" Command="{Binding Generate.CopyAllCommand}" AutomationProperties.AutomationId="CopyAllButton" />
+                <TextBlock Text="{l:Tr Common_Output}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <CheckBox Content="{l:Tr Generate_AutoScroll}" IsChecked="{Binding Generate.AutoScroll}" AutomationProperties.AutomationId="AutoScrollCheck" />
+                <Button Content="{l:Tr Common_Clear}" Command="{Binding Generate.ClearOutputCommand}" AutomationProperties.AutomationId="ClearOutputButton" />
+                <Button Content="{l:Tr Generate_CopyAll}" Command="{Binding Generate.CopyAllCommand}" AutomationProperties.AutomationId="CopyAllButton" />
                 <TextBlock Text="{Binding Generate.LastResult}" Classes="hint" VerticalAlignment="Center" />
             </StackPanel>
 
@@ -174,21 +175,21 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <TextBlock Grid.Row="2" Text="Diagnostics (double-click a row to copy path:line)" FontWeight="SemiBold" />
+            <TextBlock Grid.Row="2" Text="{l:Tr Generate_DiagnosticsDoubleClickARowTo}" FontWeight="SemiBold" />
             <DataGrid HorizontalScrollBarVisibility="Auto" Grid.Row="3" x:Name="DiagnosticsGrid" ItemsSource="{Binding Generate.Diagnostics}" AutoGenerateColumns="False"
                       IsReadOnly="True" SelectionMode="Single" GridLinesVisibility="All" CanUserResizeColumns="True"
                       AutomationProperties.AutomationId="DiagnosticsGrid">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="80" />
-                    <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="90" />
-                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" MinWidth="160" />
-                    <DataGridTextColumn Header="File" Binding="{Binding File}" Width="260" />
-                    <DataGridTextColumn Header="Line" Binding="{Binding Line}" Width="60" />
+                    <DataGridTextColumn Header="{l:Tr Generate_Severity}" Binding="{Binding Severity}" Width="80" />
+                    <DataGridTextColumn Header="{l:Tr Generate_Code}" Binding="{Binding Code}" Width="90" />
+                    <DataGridTextColumn Header="{l:Tr Generate_Message}" Binding="{Binding Message}" Width="*" MinWidth="160" />
+                    <DataGridTextColumn Header="{l:Tr Common_File}" Binding="{Binding File}" Width="260" />
+                    <DataGridTextColumn Header="{l:Tr Generate_Line}" Binding="{Binding Line}" Width="60" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
 
         <TextBlock Grid.Row="3" TextWrapping="Wrap" Opacity="0.7"
-                   Text="Writes the ASP.NET Core project for every table marked Generate, then builds, publishes or packs it as the Project tab says. Save the project before generating." />
+                   Text="{l:Tr Generate_WritesTheASPNETCoreProject}" />
     </Grid>
 </UserControl>

@@ -70,7 +70,10 @@ internal sealed class DesktopSession : IDisposable
         int? processId = null;
         try
         {
-            var process = Process.Start(new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(exe)! })
+            // English whatever the machine's language or the saved setting, so the tests can find controls by their English names.
+            var start = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(exe)! };
+            start.Environment["WEBAPPFORGE_UI_LANGUAGE"] = "en";
+            var process = Process.Start(start)
                 ?? throw new InvalidOperationException($"Could not start {exe}.");
             processId = process.Id;
             var app = Application.Attach(process);
@@ -91,10 +94,11 @@ internal sealed class DesktopSession : IDisposable
         }
     }
 
-    /// <summary>Selects a tab of the main window by its header text.</summary>
+    /// <summary>Selects a tab of the main window by its English name, through its automation id (Tab_ and the name without spaces or punctuation).</summary>
     public void SelectTab(string name)
     {
-        var tab = Require(Find(ControlType.TabItem, name), $"The '{name}' tab was not found.");
+        var id = "Tab_" + new string([.. System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(name).Where(char.IsLetterOrDigit)]);
+        var tab = Require(Window.FindFirstDescendant(cf => cf.ByAutomationId(id)), $"The '{name}' tab ({id}) was not found.");
         tab.AsTabItem().Select();
     }
 
