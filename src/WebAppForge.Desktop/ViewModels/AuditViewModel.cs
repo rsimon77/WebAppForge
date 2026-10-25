@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using WebAppForge.Core.Model;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -130,7 +131,7 @@ public partial class AuditViewModel : ViewModelBase
                 return;
             }
 
-            InputMessage = "The lowest level for the log page must be zero or a positive whole number. The last valid value was kept.";
+            InputMessage = Localizer.Instance["Audit_TheLowestLevelForTheLog"];
             _main.Status = InputMessage;
         }
     }
@@ -182,7 +183,7 @@ public partial class AuditViewModel : ViewModelBase
 
         if (project.Audit.LogTable.Trim().Length == 0)
         {
-            return "The audit trail needs the name of its log table.";
+            return Localizer.Instance["Audit_TheAuditTrailNeedsTheName"];
         }
 
         foreach (var table in project.Tables.Where(t => t.Generate && t.Audit.Enabled))
@@ -191,7 +192,7 @@ public partial class AuditViewModel : ViewModelBase
             {
                 if (!table.Fields.Any(f => string.Equals(f.Name, field.Trim(), StringComparison.OrdinalIgnoreCase)))
                 {
-                    return $"Table '{table.Name}' excludes the field '{field}' from the audit trail, but it has no such field.";
+                    return Localizer.Instance.Format("Audit_TableExcludesTheFieldFromThe", table.Name, field);
                 }
             }
         }

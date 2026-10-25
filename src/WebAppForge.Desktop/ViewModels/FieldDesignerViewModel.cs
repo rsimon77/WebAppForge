@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WebAppForge.Core.Model;
 using CommunityToolkit.Mvvm.Input;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -62,8 +63,8 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
     public bool HasField => Field is not null;
 
     public string NoFieldText => Tables.SelectedTable is null
-        ? "Pick a table, then a field, to design it."
-        : "Pick a field in the list to design it.";
+        ? Localizer.Instance["FieldDesigner_PickATableThenAField"]
+        : Localizer.Instance["FieldDesigner_PickAFieldInTheList"];
 
     /// <summary>Re-reads the list and the panel from the open project.</summary>
     public void Reload()
@@ -186,7 +187,7 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
 
         OnPropertyChanged(nameof(CanMoveUp));
         OnPropertyChanged(nameof(CanMoveDown));
-        _main.Status = $"Moved {field.Name} to position {to + 1} of {table.Fields.Count}.";
+        _main.Status = Localizer.Instance.Format("FieldDesigner_MovedToPositionOf", field.Name, to + 1, table.Fields.Count);
     }
 
     /// <summary>Stores explicit key positions (1, 2, ...) for a composite key that relies on field order.</summary>
@@ -227,22 +228,22 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
             var flags = new List<string>();
             if (f.IsPrimaryKey)
             {
-                flags.Add(f.KeyPosition > 0 ? $"Primary key (position {f.KeyPosition})" : "Primary key");
+                flags.Add(f.KeyPosition > 0 ? Localizer.Instance.Format("FieldDesigner_PrimaryKeyPosition", f.KeyPosition) : Localizer.Instance["FieldDesigner_PrimaryKey"]);
             }
 
             if (f.IsAutoIncrement)
             {
-                flags.Add("Auto increment");
+                flags.Add(Localizer.Instance["FieldDesigner_AutoIncrement"]);
             }
 
             if (f.HasDefault)
             {
-                flags.Add("Has default");
+                flags.Add(Localizer.Instance["FieldDesigner_HasDefault"]);
             }
 
             if (f.IsSecret)
             {
-                flags.Add("Secret");
+                flags.Add(Localizer.Instance["FieldDesigner_Secret"]);
             }
 
             return flags.Count == 0 ? "None" : string.Join(", ", flags);
@@ -440,7 +441,7 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
     public bool PreviewIsInput => !PreviewIsCheck && !PreviewIsChoice && !PreviewIsArea && !PreviewIsHidden;
 
     /// <summary>What the form shows instead of an input for hidden and read-only fields.</summary>
-    public string PreviewHiddenText => EffectiveControl == EditControl.Hidden ? "Not shown in the form" : "Shown as text, not editable";
+    public string PreviewHiddenText => EffectiveControl == EditControl.Hidden ? Localizer.Instance["FieldDesigner_NotShownInTheForm"] : Localizer.Instance["FieldDesigner_ShownAsTextNotEditable"];
 
     public bool PreviewHasHelp => HelpText.Length > 0;
 
@@ -510,8 +511,8 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
             .ToList();
 
         OptionsMessage = empty > 0
-            ? "Every option needs a value."
-            : duplicates.Count > 0 ? $"Option values must be unique: {string.Join(", ", duplicates)}." : string.Empty;
+            ? Localizer.Instance["FieldDesigner_EveryOptionNeedsAValue"]
+            : duplicates.Count > 0 ? Localizer.Instance.Format("FieldDesigner_OptionValuesMustBeUnique", string.Join(", ", duplicates)) : string.Empty;
     }
 
     private void SyncOptions()
@@ -711,10 +712,10 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
         {
             var text = value ?? string.Empty;
             var ok = TryWholeNumber(text, 0, 100000, out var length);
-            string? error = ok ? null : RangeMessage("Minimum length", 0, 100000);
+            string? error = ok ? null : RangeMessage(Localizer.Instance["FieldDesigner_MinimumLength"], 0, 100000);
             if (ok && Field is { } f && f.Ui.MaxLength > 0 && length > f.Ui.MaxLength)
             {
-                error = "Minimum length cannot be larger than the maximum length. The last valid value was kept.";
+                error = Localizer.Instance["FieldDesigner_MinimumLengthCannotBeLargerThan"];
             }
 
             Accept(nameof(MinLengthText), text, error, () => SetUi(length, u => u.MinLength, (u, v) => u.MinLength = v, nameof(MinLengthText)));
@@ -728,10 +729,10 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
         {
             var text = value ?? string.Empty;
             var ok = TryWholeNumber(text, 0, 100000, out var length);
-            string? error = ok ? null : RangeMessage("Maximum length", 0, 100000);
+            string? error = ok ? null : RangeMessage(Localizer.Instance["FieldDesigner_MaximumLength"], 0, 100000);
             if (ok && Field is { } f && length > 0 && length < f.Ui.MinLength)
             {
-                error = "Maximum length cannot be smaller than the minimum length. The last valid value was kept.";
+                error = Localizer.Instance["FieldDesigner_MaximumLengthCannotBeSmallerThan"];
             }
 
             Accept(nameof(MaxLengthText), text, error, () => SetUi(length, u => u.MaxLength, (u, v) => u.MaxLength = v, nameof(MaxLengthText)));
@@ -776,14 +777,14 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
             case FieldType.Integer:
                 if (!long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
                 {
-                    kind = "a whole number";
+                    kind = Localizer.Instance["FieldDesigner_AWholeNumber"];
                 }
 
                 break;
             case FieldType.Decimal:
                 if (!decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
                 {
-                    kind = "a number";
+                    kind = Localizer.Instance["FieldDesigner_ANumber"];
                 }
 
                 break;
@@ -793,7 +794,7 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
                 {
                     if (!decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
                     {
-                        kind = "a number";
+                        kind = Localizer.Instance["FieldDesigner_ANumber"];
                     }
                 }
                 else if (!DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
@@ -806,13 +807,13 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
 
         if (kind is not null)
         {
-            return $"{label} must be {kind}. The last valid value was kept.";
+            return Localizer.Instance.Format("FieldDesigner_MustBeTheLastValidValue", label, kind);
         }
 
         var numeric = field.Type is FieldType.Integer or FieldType.Decimal;
         if (isStep && decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var step) && step <= 0)
         {
-            return "Step must be greater than 0. The last valid value was kept.";
+            return Localizer.Instance["FieldDesigner_StepMustBeGreaterThan0"];
         }
 
         if (numeric && !isStep && decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number))
@@ -820,12 +821,12 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
             var ui = field.Ui;
             if (label == "Minimum" && decimal.TryParse(ui.Max, NumberStyles.Float, CultureInfo.InvariantCulture, out var max) && number > max)
             {
-                return "Minimum cannot be larger than the maximum. The last valid value was kept.";
+                return Localizer.Instance["FieldDesigner_MinimumCannotBeLargerThanThe"];
             }
 
             if (label == "Maximum" && decimal.TryParse(ui.Min, NumberStyles.Float, CultureInfo.InvariantCulture, out var min) && number < min)
             {
-                return "Maximum cannot be smaller than the minimum. The last valid value was kept.";
+                return Localizer.Instance["FieldDesigner_MaximumCannotBeSmallerThanThe"];
             }
         }
 
@@ -839,7 +840,7 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
         {
             var text = value ?? string.Empty;
             var problem = RegexTester.Validate(text);
-            var error = problem is null ? null : $"The pattern is not a valid regular expression ({problem}) The last valid pattern was kept.";
+            var error = problem is null ? null : Localizer.Instance.Format("FieldDesigner_ThePatternIsNotAValid", problem);
             Accept(nameof(Pattern), text, error, () => SetUi(text, u => u.Pattern, (u, v) => u.Pattern = v, nameof(Pattern)));
             OnPropertyChanged(nameof(PatternTest));
         }
@@ -960,7 +961,7 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
         {
             var text = (value ?? string.Empty).Trim();
             Accept(nameof(Width), text,
-                text.Length == 0 || CssLength.IsMatch(text) ? null : "Width must be a CSS length such as 120px, 20% or auto. The last valid value was kept.",
+                text.Length == 0 || CssLength.IsMatch(text) ? null : Localizer.Instance["FieldDesigner_WidthMustBeACSSLength"],
                 () => SetUi(text, u => u.Width, (u, v) => u.Width = v, nameof(Width)));
         }
     }
@@ -995,9 +996,9 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
         }
 
         var confirmed = await _main.Dialogs.ConfirmAsync(
-            "Reset field",
-            $"Reset every design setting of {field.Name} to its default? Its caption, type and key settings are not changed.",
-            "Reset");
+            Localizer.Instance["FieldDesigner_ResetField"],
+            Localizer.Instance.Format("FieldDesigner_ResetEveryDesignSettingOfTo", field.Name),
+            Localizer.Instance["Common_Reset"]);
         if (!confirmed)
         {
             return;
@@ -1005,7 +1006,7 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
 
         DeepCopy.Into(new FieldUi(), field.Ui);
         OnFieldChanged();
-        _main.Status = $"Reset the design settings of {field.Name}.";
+        _main.Status = Localizer.Instance.Format("FieldDesigner_ResetTheDesignSettingsOf", field.Name);
     }
 
     /// <summary>The fields (as "Table.Field") of the project that have the type of the selected field, except the field itself.</summary>
@@ -1033,13 +1034,13 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
         var targets = CopyTargets();
         if (targets.Count == 0)
         {
-            _main.Status = $"There is no other {field.Type} field to copy the settings of {field.Name} to.";
+            _main.Status = Localizer.Instance.Format("FieldDesigner_ThereIsNoOtherFieldTo", field.Type, field.Name);
             return;
         }
 
         var chosen = await _main.Dialogs.ChooseManyAsync(
-            "Copy settings",
-            $"Copy the design settings of {field.Name} to these {field.Type} fields:",
+            Localizer.Instance["FieldDesigner_CopySettings"],
+            Localizer.Instance.Format("FieldDesigner_CopyTheDesignSettingsOfTo", field.Name, field.Type),
             targets.Select(t => t.Label).ToList());
         if (chosen is null || chosen.Count == 0)
         {
@@ -1053,7 +1054,7 @@ public partial class FieldDesignerViewModel : EditorViewModelBase
             copied++;
         }
 
-        _main.Status = $"Copied the design settings of {field.Name} to {copied} field(s).";
+        _main.Status = Localizer.Instance.Format("FieldDesigner_CopiedTheDesignSettingsOfTo", field.Name, copied);
     }
 
     // ---- plumbing ----

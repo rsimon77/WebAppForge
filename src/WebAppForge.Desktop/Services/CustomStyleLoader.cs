@@ -2,6 +2,7 @@ using System.IO;
 using System.Xml.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.Services;
 
@@ -18,20 +19,20 @@ public static class CustomStyleLoader
     {
         var text = File.ReadAllText(path);
         var root = XDocument.Parse(text).Root
-            ?? throw new InvalidDataException("The file is empty.");
+            ?? throw new InvalidDataException(Localizer.Instance["CustomStyleLoader_TheFileIsEmpty"]);
 
         if (root.Name.LocalName != nameof(ResourceDictionary))
         {
-            throw new InvalidDataException("The root element must be ResourceDictionary.");
+            throw new InvalidDataException(Localizer.Instance["CustomStyleLoader_TheRootElementMustBeResourceDictionary"]);
         }
 
         if (root.Attribute(XamlNamespace + "Class") is not null)
         {
-            throw new InvalidDataException("A file with x:Class is code, not resources. Remove x:Class.");
+            throw new InvalidDataException(Localizer.Instance["CustomStyleLoader_AFileWithXClassIs"]);
         }
 
         var loaded = AvaloniaRuntimeXamlLoader.Parse(text, typeof(CustomStyleLoader).Assembly);
         return loaded as ResourceDictionary
-            ?? throw new InvalidDataException("The root element must be ResourceDictionary.");
+            ?? throw new InvalidDataException(Localizer.Instance["CustomStyleLoader_TheRootElementMustBeResourceDictionary"]);
     }
 }

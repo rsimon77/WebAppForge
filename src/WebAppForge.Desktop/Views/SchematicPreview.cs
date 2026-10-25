@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Controls.Primitives;
 using WebAppForge.Core.Model;
 using WebAppForge.Desktop.ViewModels;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.Views;
 
@@ -44,14 +45,14 @@ public sealed class SchematicPreview : UserControl
     {
         if (Schematic is not { } page)
         {
-            Content = new TextBlock { Text = "Pick a table to see a preview.", Opacity = 0.7 };
+            Content = new TextBlock { Text = Localizer.Instance["SchematicPreview_PickATableToSeeA"], Opacity = 0.7 };
             return;
         }
 
         var body = new StackPanel { Spacing = 8, Margin = new Thickness(12) };
         if (page.HasHeaderHtml)
         {
-            body.Children.Add(Placeholder("Header HTML"));
+            body.Children.Add(Placeholder(Localizer.Instance["SchematicPreview_HeaderHTML"]));
         }
 
         body.Children.Add(new TextBlock { Text = page.Heading, FontSize = 20, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
@@ -78,7 +79,7 @@ public sealed class SchematicPreview : UserControl
                 body.Children.Add(new TextBlock { Text = "<  1  2  3  >", HorizontalAlignment = HorizontalAlignment.Right, Opacity = 0.8 });
             }
 
-            body.Children.Add(new TextBlock { Text = $"Empty list: {page.EmptyText}", Opacity = 0.6, FontSize = 11, TextWrapping = TextWrapping.Wrap });
+            body.Children.Add(new TextBlock { Text = Localizer.Instance.Format("SchematicPreview_EmptyList", page.EmptyText), Opacity = 0.6, FontSize = 11, TextWrapping = TextWrapping.Wrap });
         }
         else
         {
@@ -98,7 +99,7 @@ public sealed class SchematicPreview : UserControl
 
         if (page.HasFooterHtml)
         {
-            body.Children.Add(Placeholder("Footer HTML"));
+            body.Children.Add(Placeholder(Localizer.Instance["PageDesigner_FooterHTML"]));
         }
 
         var frame = new Border
@@ -114,9 +115,9 @@ public sealed class SchematicPreview : UserControl
         {
             Text = page.Container switch
             {
-                PageContainer.Modal => "Opens in a modal dialog over the list",
-                PageContainer.Offcanvas => "Opens in an offcanvas panel beside the list",
-                _ => "Opens as a full page",
+                PageContainer.Modal => Localizer.Instance["SchematicPreview_OpensInAModalDialogOver"],
+                PageContainer.Offcanvas => Localizer.Instance["SchematicPreview_OpensInAnOffcanvasPanelBeside"],
+                _ => Localizer.Instance["SchematicPreview_OpensAsAFullPage"],
             },
             FontSize = 11,
             Opacity = 0.6,
@@ -308,7 +309,7 @@ public sealed class SchematicPreview : UserControl
             }
 
             content.Children.Add(current.Fields.Count == 0
-                ? new TextBlock { Text = "No fields on this page.", Opacity = 0.6, FontSize = 11 }
+                ? new TextBlock { Text = Localizer.Instance["SchematicPreview_NoFieldsOnThisPage"], Opacity = 0.6, FontSize = 11 }
                 : fields(current.Fields));
             foreach (var grid in current.Grids)
             {
@@ -327,7 +328,7 @@ public sealed class SchematicPreview : UserControl
             var heading = mode switch
             {
                 MultiPageMode.Accordion => $"v  {PageTitle(current)}",
-                MultiPageMode.Wizard => $"Step {i + 1} of {multi.Pages.Count}: {PageTitle(current)}",
+                MultiPageMode.Wizard => Localizer.Instance.Format("SchematicPreview_StepOf", i + 1, multi.Pages.Count, PageTitle(current)),
                 _ => PageTitle(current),
             };
             var block = new Border { BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4) };
@@ -470,7 +471,7 @@ public sealed class SchematicPreview : UserControl
         Flush();
         if (pageFields.Count == 0)
         {
-            sections.Children.Add(new TextBlock { Text = "No fields are shown on this form.", Opacity = 0.6 });
+            sections.Children.Add(new TextBlock { Text = Localizer.Instance["SchematicPreview_NoFieldsAreShownOnThis"], Opacity = 0.6 });
         }
 
         return sections;

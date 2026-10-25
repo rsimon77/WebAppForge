@@ -8,6 +8,7 @@ using WebAppForge.Core.Generation;
 using WebAppForge.Core.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -22,9 +23,11 @@ public sealed class ReportRow : ObservableObject
     {
         get
         {
-            var name = Report.Name.Trim().Length == 0 ? "(no name)" : Report.Name;
-            var source = Report.Kind == ReportKind.Dashboard ? $"{Report.Items.Count} report(s)" : $"of {(Report.SourceTable.Length == 0 ? "?" : Report.SourceTable)}";
-            return $"{name} ({Report.Kind} {source}){(Report.Generate ? string.Empty : " - not generated")}";
+            var name = Report.Name.Trim().Length == 0 ? Localizer.Instance["Reports_NoName"] : Report.Name;
+            var source = Report.Kind == ReportKind.Dashboard
+                ? Localizer.Instance.Format("Reports_ItemCount", Report.Items.Count)
+                : Localizer.Instance.Format("Reports_OfTable", Report.SourceTable.Length == 0 ? "?" : Report.SourceTable);
+            return $"{name} ({Report.Kind} {source}){(Report.Generate ? string.Empty : Localizer.Instance["Reports_NotGeneratedSuffix"])}";
         }
     }
 
@@ -238,45 +241,45 @@ public partial class ReportsViewModel : EditorViewModelBase
 
     internal static IReadOnlyList<RelationChoice<ReportKind>> Kinds { get; } =
     [
-        new(ReportKind.Summary, "Summary"),
-        new(ReportKind.Crosstab, "Crosstab"),
-        new(ReportKind.Chart, "Chart"),
-        new(ReportKind.Calendar, "Calendar"),
-        new(ReportKind.Dashboard, "Dashboard"),
+        new(ReportKind.Summary, Localizer.Instance["Reports_KindSummary"]),
+        new(ReportKind.Crosstab, Localizer.Instance["Reports_KindCrosstab"]),
+        new(ReportKind.Chart, Localizer.Instance["Reports_KindChart"]),
+        new(ReportKind.Calendar, Localizer.Instance["Reports_KindCalendar"]),
+        new(ReportKind.Dashboard, Localizer.Instance["Reports_KindDashboard"]),
     ];
 
     internal static IReadOnlyList<RelationChoice<DateInterval>> Intervals { get; } =
     [
-        new(DateInterval.None, "Value"),
-        new(DateInterval.Year, "Year"),
-        new(DateInterval.Quarter, "Quarter"),
-        new(DateInterval.Month, "Month"),
-        new(DateInterval.Day, "Day"),
+        new(DateInterval.None, Localizer.Instance["Common_Value"]),
+        new(DateInterval.Year, Localizer.Instance["Reports_IntervalYear"]),
+        new(DateInterval.Quarter, Localizer.Instance["Reports_IntervalQuarter"]),
+        new(DateInterval.Month, Localizer.Instance["Reports_IntervalMonth"]),
+        new(DateInterval.Day, Localizer.Instance["Reports_IntervalDay"]),
     ];
 
     internal static IReadOnlyList<RelationChoice<AggregateFunction>> Functions { get; } =
     [
-        new(AggregateFunction.Count, "Count"),
-        new(AggregateFunction.Sum, "Sum"),
-        new(AggregateFunction.Average, "Average"),
-        new(AggregateFunction.Min, "Min"),
-        new(AggregateFunction.Max, "Max"),
+        new(AggregateFunction.Count, Localizer.Instance["Reports_FunctionCount"]),
+        new(AggregateFunction.Sum, Localizer.Instance["Reports_FunctionSum"]),
+        new(AggregateFunction.Average, Localizer.Instance["Reports_FunctionAverage"]),
+        new(AggregateFunction.Min, Localizer.Instance["Reports_FunctionMin"]),
+        new(AggregateFunction.Max, Localizer.Instance["Reports_FunctionMax"]),
     ];
 
     internal static IReadOnlyList<RelationChoice<ChartType>> ChartTypes { get; } =
     [
-        new(WebAppForge.Core.Model.ChartType.Bar, "Bar"),
-        new(WebAppForge.Core.Model.ChartType.HorizontalBar, "Horizontal bar"),
-        new(WebAppForge.Core.Model.ChartType.Line, "Line"),
-        new(WebAppForge.Core.Model.ChartType.Area, "Area"),
-        new(WebAppForge.Core.Model.ChartType.Pie, "Pie"),
-        new(WebAppForge.Core.Model.ChartType.Doughnut, "Doughnut"),
+        new(WebAppForge.Core.Model.ChartType.Bar, Localizer.Instance["Reports_ChartBar"]),
+        new(WebAppForge.Core.Model.ChartType.HorizontalBar, Localizer.Instance["Reports_HorizontalBar"]),
+        new(WebAppForge.Core.Model.ChartType.Line, Localizer.Instance["Reports_ChartLine"]),
+        new(WebAppForge.Core.Model.ChartType.Area, Localizer.Instance["Reports_ChartArea"]),
+        new(WebAppForge.Core.Model.ChartType.Pie, Localizer.Instance["Reports_ChartPie"]),
+        new(WebAppForge.Core.Model.ChartType.Doughnut, Localizer.Instance["Reports_ChartDoughnut"]),
     ];
 
     internal static IReadOnlyList<RelationChoice<ChartOrder>> ChartOrders { get; } =
     [
-        new(WebAppForge.Core.Model.ChartOrder.Category, "By category"),
-        new(WebAppForge.Core.Model.ChartOrder.ValueDescending, "By value, largest first"),
+        new(WebAppForge.Core.Model.ChartOrder.Category, Localizer.Instance["Reports_ByCategory"]),
+        new(WebAppForge.Core.Model.ChartOrder.ValueDescending, Localizer.Instance["Reports_ByValueLargestFirst"]),
     ];
 
     public IReadOnlyList<RelationChoice<ReportKind>> KindChoices => Kinds;
@@ -318,7 +321,7 @@ public partial class ReportsViewModel : EditorViewModelBase
     /// <summary>The problems of every generated report. The generator refuses a project with any of them.</summary>
     public ObservableCollection<string> Problems { get; } = [];
 
-    public string ProblemSummary => Problems.Count == 0 ? "No problems found." : $"{Problems.Count} problem(s). Generate stops at the first one.";
+    public string ProblemSummary => Problems.Count == 0 ? Localizer.Instance["Relations_NoProblemsFound"] : Localizer.Instance.Format("Reports_ProblemSGenerateStopsAtThe", Problems.Count);
 
     public ReportRow? SelectedRow
     {
@@ -372,9 +375,9 @@ public partial class ReportsViewModel : EditorViewModelBase
 
     public bool HasSource => Report is not null && !IsDashboard;
 
-    public string RowFieldLabel => IsChart ? "Category field" : "Row field";
+    public string RowFieldLabel => IsChart ? Localizer.Instance["Reports_CategoryField"] : Localizer.Instance["Reports_RowField"];
 
-    public string ColumnFieldLabel => IsChart ? "Series field" : "Column field";
+    public string ColumnFieldLabel => IsChart ? Localizer.Instance["Reports_SeriesField"] : Localizer.Instance["Reports_ColumnField"];
 
     // ---- common settings ------------------------------------------------------------------------
 
@@ -390,9 +393,9 @@ public partial class ReportsViewModel : EditorViewModelBase
 
             var name = value.Trim();
             var error = Identifier.Route(name).Length == 0
-                ? "A report name needs at least one letter or digit. The last valid name was kept."
+                ? Localizer.Instance["Reports_AReportNameNeedsAtLeast"]
                 : _main.Current.Reports.Any(r => !ReferenceEquals(r, Report) && Identifier.Route(r.Name) == Identifier.Route(name))
-                    ? $"Another report already uses the URL /reports/{Identifier.Route(name)}. The last valid name was kept."
+                    ? Localizer.Instance.Format("Reports_AnotherReportAlreadyUsesTheURL", Identifier.Route(name))
                     : null;
             var old = Report.Name;
             if (Accept(nameof(Name), value, error, () => Report.Name = name))
@@ -482,7 +485,7 @@ public partial class ReportsViewModel : EditorViewModelBase
             }
 
             var ok = TryWholeNumber(value, 0, 1_000_000, out var level);
-            Accept(nameof(MinLevel), value ?? string.Empty, ok ? null : RangeMessage("The user level", 0, 1_000_000), () => Report.MinLevel = level);
+            Accept(nameof(MinLevel), value ?? string.Empty, ok ? null : RangeMessage(Localizer.Instance["Reports_TheUserLevel"], 0, 1_000_000), () => Report.MinLevel = level);
         }
     }
 
@@ -600,7 +603,7 @@ public partial class ReportsViewModel : EditorViewModelBase
             }
 
             var ok = TryWholeNumber(value, 1, 500, out var count);
-            Accept(nameof(MaxColumns), value ?? string.Empty, ok ? null : RangeMessage("The most columns", 1, 500), () => Report.MaxColumns = count);
+            Accept(nameof(MaxColumns), value ?? string.Empty, ok ? null : RangeMessage(Localizer.Instance["Reports_TheMostColumns"], 1, 500), () => Report.MaxColumns = count);
         }
     }
 
@@ -629,7 +632,7 @@ public partial class ReportsViewModel : EditorViewModelBase
             }
 
             var ok = TryWholeNumber(value, 0, 1000, out var count);
-            Accept(nameof(TopCount), value ?? string.Empty, ok ? null : RangeMessage("The number of categories", 0, 1000), () => Report.TopCount = count);
+            Accept(nameof(TopCount), value ?? string.Empty, ok ? null : RangeMessage(Localizer.Instance["Reports_TheNumberOfCategories"], 0, 1000), () => Report.TopCount = count);
         }
     }
 
@@ -676,7 +679,7 @@ public partial class ReportsViewModel : EditorViewModelBase
     /// <summary>Longest preview bar, in pixels.</summary>
     public const double MaxBarWidth = 160;
 
-    private string _previewMessage = "Preview runs the selected report on the connected database.";
+    private string _previewMessage = Localizer.Instance["Reports_PreviewRunsTheSelectedReportOn"];
     private bool _isPreviewing;
 
     public ObservableCollection<string> PreviewHeaders { get; } = [];
@@ -710,7 +713,7 @@ public partial class ReportsViewModel : EditorViewModelBase
         var (connectionString, problem) = _main.Database.Resolve();
         if (!_main.Current.Database.IsServer && string.IsNullOrWhiteSpace(_main.Current.Database.Path))
         {
-            problem = "Connect a database on the Database section first.";
+            problem = Localizer.Instance["Reports_ConnectADatabaseOnTheDatabase"];
         }
         ClearPreview();
         if (problem is not null)
@@ -720,7 +723,7 @@ public partial class ReportsViewModel : EditorViewModelBase
         }
 
         IsPreviewing = true;
-        PreviewMessage = "Running the report...";
+        PreviewMessage = Localizer.Instance["Reports_RunningTheReport"];
         try
         {
             var project = _main.Current;
@@ -779,7 +782,7 @@ public partial class ReportsViewModel : EditorViewModelBase
         Reports.Add(row);
         SelectedRow = row;
         Changed();
-        _main.Status = $"Added report {report.Name}.";
+        _main.Status = Localizer.Instance.Format("Reports_AddedReport", report.Name);
     }
 
     [RelayCommand]
@@ -795,7 +798,7 @@ public partial class ReportsViewModel : EditorViewModelBase
         Reports.Remove(row);
         SelectedRow = Reports.Count == 0 ? null : Reports[Math.Min(index, Reports.Count - 1)];
         Changed();
-        _main.Status = $"Removed report {row.Report.Name}.";
+        _main.Status = Localizer.Instance.Format("Reports_RemovedReport", row.Report.Name);
     }
 
     [RelayCommand]
@@ -1011,7 +1014,7 @@ public partial class ReportsViewModel : EditorViewModelBase
         ForgetRawText();
         Message = string.Empty;
         ClearPreview();
-        PreviewMessage = "Preview runs the selected report on the connected database.";
+        PreviewMessage = Localizer.Instance["Reports_PreviewRunsTheSelectedReportOn"];
         Groups.Clear();
         Aggregates.Clear();
         Items.Clear();
@@ -1171,7 +1174,7 @@ public partial class ReportsViewModel : EditorViewModelBase
         RefreshProblems();
         if (PreviewRows.Count > 0)
         {
-            PreviewMessage = "The settings changed. Preview again to see the result.";
+            PreviewMessage = Localizer.Instance["Reports_TheSettingsChangedPreviewAgainTo"];
         }
     }
 

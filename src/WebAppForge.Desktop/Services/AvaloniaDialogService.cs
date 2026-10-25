@@ -7,33 +7,34 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using WebAppForge.Desktop.ViewModels;
 using WebAppForge.Desktop.Views;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.Services;
 
 /// <summary>Implements the pickers with Avalonia's StorageProvider (Windows file and folder dialogs).</summary>
 public sealed class AvaloniaDialogService(Window owner) : IDialogService
 {
-    private static readonly FilePickerFileType ProjectFiles = new("WebAppForge project")
+    private static FilePickerFileType ProjectFiles => new(Localizer.Instance["AvaloniaDialog_WebAppForgeProject"])
     {
         Patterns = ["*.xml"],
     };
 
-    private static readonly FilePickerFileType SqliteFiles = new("SQLite database")
+    private static FilePickerFileType SqliteFiles => new(Localizer.Instance["AvaloniaDialog_SQLiteDatabase"])
     {
         Patterns = ["*.db", "*.sqlite", "*.sqlite3", "*.db3"],
     };
 
-    private static readonly FilePickerFileType XamlFiles = new("Avalonia resource dictionary")
+    private static FilePickerFileType XamlFiles => new(Localizer.Instance["AvaloniaDialog_AvaloniaResourceDictionary"])
     {
         Patterns = ["*.axaml", "*.xaml"],
     };
 
-    private static readonly FilePickerFileType ImageFiles = new("Image")
+    private static FilePickerFileType ImageFiles => new(Localizer.Instance["AvaloniaDialog_Image"])
     {
         Patterns = ["*.ico", "*.png", "*.svg", "*.jpg", "*.jpeg", "*.gif", "*.webp"],
     };
 
-    private static readonly FilePickerFileType CsvFiles = new("CSV file")
+    private static FilePickerFileType CsvFiles => new(Localizer.Instance["AvaloniaDialog_CSVFile"])
     {
         Patterns = ["*.csv"],
     };
@@ -42,7 +43,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Import translations",
+            Title = Localizer.Instance["AvaloniaDialog_ImportTranslations"],
             AllowMultiple = false,
             SuggestedStartLocation = await TryGetFolderAsync(startFolder),
             FileTypeFilter = [CsvFiles, FilePickerFileTypes.All],
@@ -55,7 +56,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Export translations",
+            Title = Localizer.Instance["AvaloniaDialog_ExportTranslations"],
             SuggestedFileName = suggestedFileName,
             DefaultExtension = "csv",
             FileTypeChoices = [CsvFiles],
@@ -94,7 +95,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Choose image",
+            Title = Localizer.Instance["AvaloniaDialog_ChooseImage"],
             AllowMultiple = false,
             SuggestedStartLocation = await TryGetFolderAsync(startFolder),
             FileTypeFilter = [ImageFiles, FilePickerFileTypes.All],
@@ -107,7 +108,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Choose executable",
+            Title = Localizer.Instance["AvaloniaDialog_ChooseExecutable"],
             AllowMultiple = false,
             SuggestedStartLocation = await TryGetFolderAsync(startFolder is null ? null : Path.GetDirectoryName(startFolder)),
             FileTypeFilter = [FilePickerFileTypes.All],
@@ -120,7 +121,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Choose custom styles",
+            Title = Localizer.Instance["AvaloniaDialog_ChooseCustomStyles"],
             AllowMultiple = false,
             SuggestedStartLocation = await TryGetFolderAsync(startFolder is null ? null : Path.GetDirectoryName(startFolder)),
             FileTypeFilter = [XamlFiles, FilePickerFileTypes.All],
@@ -133,7 +134,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Open project",
+            Title = Localizer.Instance["AvaloniaDialog_OpenProject"],
             AllowMultiple = false,
             FileTypeFilter = [ProjectFiles, FilePickerFileTypes.All],
         });
@@ -145,7 +146,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Save project as",
+            Title = Localizer.Instance["AvaloniaDialog_SaveProjectAs"],
             SuggestedFileName = suggestedFileName,
             DefaultExtension = "xml",
             FileTypeChoices = [ProjectFiles],
@@ -158,7 +159,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Choose SQLite database",
+            Title = Localizer.Instance["AvaloniaDialog_ChooseSQLiteDatabase"],
             AllowMultiple = false,
             SuggestedStartLocation = await TryGetFolderAsync(startFolder),
             FileTypeFilter = [SqliteFiles, FilePickerFileTypes.All],
@@ -171,7 +172,7 @@ public sealed class AvaloniaDialogService(Window owner) : IDialogService
     {
         var folders = await owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Choose output folder",
+            Title = Localizer.Instance["AvaloniaDialog_ChooseOutputFolder"],
             AllowMultiple = false,
             SuggestedStartLocation = await TryGetFolderAsync(startFolder),
         });

@@ -125,7 +125,7 @@ public sealed class AvaloniaAppearance(Application application) : IAppearance
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            return (null, $"Custom styles were not loaded from {Path.GetFileName(path)}: {ex.Message}");
+            return (null, Localizer.Instance.Format("AvaloniaAppearance_CustomStylesWereNotLoadedFrom", Path.GetFileName(path), ex.Message));
         }
     }
 

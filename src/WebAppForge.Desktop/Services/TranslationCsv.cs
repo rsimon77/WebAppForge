@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.Services;
 
@@ -47,7 +48,7 @@ public static class TranslationCsv
 
             if (row.Count < 3)
             {
-                issues.Add($"Row {i + 1} has {row.Count} column(s); expected key, language, text.");
+                issues.Add(Localizer.Instance.Format("TranslationCsv_RowHasColumnSExpectedKey", i + 1, row.Count));
                 continue;
             }
 

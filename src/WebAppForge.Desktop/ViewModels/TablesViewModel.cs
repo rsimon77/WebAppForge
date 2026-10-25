@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using WebAppForge.Core.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -51,8 +52,8 @@ public partial class TablesViewModel : ViewModelBase
     }
 
     public string FieldsHeader => SelectedTable is null
-        ? "Select a table on the Tables tab to edit its fields."
-        : $"Fields of {SelectedTable.Name}";
+        ? Localizer.Instance["Tables_SelectATableOnTheTables"]
+        : Localizer.Instance.Format("Tables_FieldsOf", SelectedTable.Name);
 
     /// <summary>Rebuilds the grid from the open project, keeping the selection when the table still exists.</summary>
     public void Reload()
@@ -96,7 +97,7 @@ public partial class TablesViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(table);
         if (!PageSizeChoices.Contains(size))
         {
-            _main.Status = "Page size must be 10, 20, 50 or 100. The last valid value was kept.";
+            _main.Status = Localizer.Instance["Tables_PageSizeMustBe1020"];
             return false;
         }
 
@@ -112,14 +113,14 @@ public partial class TablesViewModel : ViewModelBase
     public bool SetViewLevel(TableInfo table, string? text)
     {
         ArgumentNullException.ThrowIfNull(table);
-        return ApplyLevel(text, "View level", n => table.ViewMinLevel = n);
+        return ApplyLevel(text, Localizer.Instance["Tables_ViewLevel"], n => table.ViewMinLevel = n);
     }
 
     /// <summary>Same as <see cref="SetViewLevel"/> for the edit level.</summary>
     public bool SetEditLevel(TableInfo table, string? text)
     {
         ArgumentNullException.ThrowIfNull(table);
-        return ApplyLevel(text, "Edit level", n => table.EditMinLevel = n);
+        return ApplyLevel(text, Localizer.Instance["Tables_EditLevel"], n => table.EditMinLevel = n);
     }
 
     /// <summary>True for a whole number 0 or more. Level 0 means any signed-in user.</summary>
@@ -136,7 +137,7 @@ public partial class TablesViewModel : ViewModelBase
             return true;
         }
 
-        _main.Status = $"{label} must be a whole number, 0 or more. The last valid value was kept.";
+        _main.Status = Localizer.Instance.Format("Tables_MustBeAWholeNumber0", label);
         return false;
     }
 

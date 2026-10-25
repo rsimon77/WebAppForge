@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using WebAppForge.Core.Build;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.Services;
 
@@ -49,12 +50,12 @@ public sealed class ToolDetector
         var path = configured ? configuredPath!.Trim().Trim('"') : ResolveOnPath(tool);
         if (path is null)
         {
-            return new ToolDetection(tool, false, null, null, $"{tool} was not found on PATH.");
+            return new ToolDetection(tool, false, null, null, Localizer.Instance.Format("ToolDetector_WasNotFoundOnPATH", tool));
         }
 
         if (configured && !_fileExists(path))
         {
-            return new ToolDetection(tool, false, path, null, $"The file {path} does not exist.");
+            return new ToolDetection(tool, false, path, null, Localizer.Instance.Format("ToolDetector_TheFileDoesNotExist", path));
         }
 
         var result = await _probe(path, CancellationToken.None);

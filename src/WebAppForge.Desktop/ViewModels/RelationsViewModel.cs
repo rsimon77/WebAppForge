@@ -9,6 +9,7 @@ using WebAppForge.Core.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FieldInfo = WebAppForge.Core.Model.FieldInfo;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -61,7 +62,7 @@ public sealed class DetailLinkRow : ObservableObject
 
     /// <summary>"Orders (Id = CustomerId)".</summary>
     public string Text => string.IsNullOrWhiteSpace(Link.DetailTable)
-        ? "(no detail table)"
+        ? Localizer.Instance["Relations_NoDetailTable"]
         : Link.Links.Count == 0 ? Link.DetailTable : $"{Link.DetailTable} ({RelationValidator.PairsText(Link)})";
 
     internal void Refresh() => OnPropertyChanged(nameof(Text));
@@ -116,7 +117,7 @@ public sealed class KeyPairRow : ObservableObject
     public string DetailType => _owner.TypeOfDetailField(Model.DetailField);
 
     /// <summary>"Types differ" when both fields exist and have different types, otherwise empty.</summary>
-    public string TypeNote => MasterType != "?" && DetailType != "?" && MasterType != DetailType ? "Types differ" : string.Empty;
+    public string TypeNote => MasterType != "?" && DetailType != "?" && MasterType != DetailType ? Localizer.Instance["Relations_TypesDiffer"] : string.Empty;
 
     internal void RaiseAll()
     {
@@ -169,7 +170,7 @@ public sealed record OverviewRow(TableInfo Master, DetailLink Link, string Text)
 public partial class RelationsViewModel : EditorViewModelBase
 {
     /// <summary>The form page picker entry for an empty <see cref="DetailLink.FormPage"/>.</summary>
-    public const string BelowFormLabel = "(below the form)";
+    public static string BelowFormLabel => Localizer.Instance["Relations_BelowTheForm"];
 
     private static readonly StringComparer Names = StringComparer.OrdinalIgnoreCase;
 
@@ -186,22 +187,22 @@ public partial class RelationsViewModel : EditorViewModelBase
         _main = main;
         DeleteRuleOptions =
         [
-            new DeleteRuleOption(DeleteRule.Restrict, "Restrict", "Refuse to delete a master record while it has detail records, and say so on the page."),
-            new DeleteRuleOption(DeleteRule.Cascade, "Cascade", "Delete the detail records together with the master record, in one transaction."),
-            new DeleteRuleOption(DeleteRule.SetNull, "Set null", "Keep the detail records and clear their link fields (the fields must allow null)."),
-            new DeleteRuleOption(DeleteRule.None, "None", "Do nothing; the database's own foreign key rules, if any, apply."),
+            new DeleteRuleOption(DeleteRule.Restrict, Localizer.Instance["Relations_RuleRestrict"], Localizer.Instance["Relations_RefuseToDeleteAMasterRecord"]),
+            new DeleteRuleOption(DeleteRule.Cascade, Localizer.Instance["Relations_RuleCascade"], Localizer.Instance["Relations_DeleteTheDetailRecordsTogetherWith"]),
+            new DeleteRuleOption(DeleteRule.SetNull, Localizer.Instance["Relations_SetNull"], Localizer.Instance["Relations_KeepTheDetailRecordsAndClear"]),
+            new DeleteRuleOption(DeleteRule.None, "None", Localizer.Instance["Relations_DoNothingTheDatabaseSOwn"]),
         ];
         UpdateChoices =
         [
             new RelationChoice<UpdateRule>(UpdateRule.None, "None"),
-            new RelationChoice<UpdateRule>(UpdateRule.Cascade, "Cascade"),
+            new RelationChoice<UpdateRule>(UpdateRule.Cascade, Localizer.Instance["Relations_RuleCascade"]),
         ];
         PreviewChoices =
         [
             new RelationChoice<DetailPreview>(DetailPreview.None, "None"),
-            new RelationChoice<DetailPreview>(DetailPreview.ExpandableRow, "Expandable row"),
-            new RelationChoice<DetailPreview>(DetailPreview.Modal, "Modal"),
-            new RelationChoice<DetailPreview>(DetailPreview.Offcanvas, "Offcanvas"),
+            new RelationChoice<DetailPreview>(DetailPreview.ExpandableRow, Localizer.Instance["Relations_ExpandableRow"]),
+            new RelationChoice<DetailPreview>(DetailPreview.Modal, Localizer.Instance["Relations_PreviewModal"]),
+            new RelationChoice<DetailPreview>(DetailPreview.Offcanvas, Localizer.Instance["Relations_PreviewOffcanvas"]),
         ];
 
         _main.Tables.PropertyChanged += OnTablesChanged;
@@ -264,8 +265,8 @@ public partial class RelationsViewModel : EditorViewModelBase
             var errors = Issues.Count(i => i.IsError);
             var warnings = Issues.Count - errors;
             return Issues.Count == 0
-                ? "No problems found."
-                : $"{errors} error(s) (they disable Generate), {warnings} warning(s).";
+                ? Localizer.Instance["Relations_NoProblemsFound"]
+                : Localizer.Instance.Format("Relations_ErrorSTheyDisableGenerateWarning", errors, warnings);
         }
     }
 
@@ -328,7 +329,7 @@ public partial class RelationsViewModel : EditorViewModelBase
 
     /// <summary>Explains that a table that is not generated ignores its links.</summary>
     public string MasterNote => Table is { Generate: false }
-        ? "This table is not generated (Generate is off), so its links are ignored."
+        ? Localizer.Instance["Relations_ThisTableIsNotGeneratedGenerate"]
         : string.Empty;
 
     // ---- loading ----
@@ -604,7 +605,7 @@ public partial class RelationsViewModel : EditorViewModelBase
 
     /// <summary>Why "Set null" is disabled, or empty.</summary>
     public string SetNullNote => RequiredLinkField() is { } name
-        ? $"Set null is not available: the link field '{name}' of '{Link!.DetailTable}' is required."
+        ? Localizer.Instance.Format("Relations_SetNullIsNotAvailableThe", name, Link!.DetailTable)
         : string.Empty;
 
     public DeleteRule OnDelete
@@ -619,7 +620,7 @@ public partial class RelationsViewModel : EditorViewModelBase
 
             if (value == DeleteRule.SetNull && !CanSetNull)
             {
-                Message = $"{SetNullNote} The last rule was kept.";
+                Message = Localizer.Instance.Format("Relations_TheLastRuleWasKept", SetNullNote);
                 OnPropertyChanged(nameof(OnDelete));
                 OnPropertyChanged(nameof(OnDeleteOption));
                 return;
@@ -676,7 +677,7 @@ public partial class RelationsViewModel : EditorViewModelBase
 
     /// <summary>The warning shown with "Cascade" on update.</summary>
     public string UpdateNote => OnUpdate == UpdateRule.Cascade && Link is not null
-        ? "Cascade on update only matters for editable, non-key link fields. A key field cannot change, so nothing would be updated for it."
+        ? Localizer.Instance["Relations_CascadeOnUpdateOnlyMattersFor"]
         : string.Empty;
 
     // ---- grid options ----
@@ -688,7 +689,7 @@ public partial class RelationsViewModel : EditorViewModelBase
         {
             var text = value ?? string.Empty;
             var ok = TryWholeNumber(text, RelationValidator.MinPageSize, RelationValidator.MaxPageSize, out var size);
-            Accept(nameof(PageSizeText), text, ok ? null : RangeMessage("Page size", RelationValidator.MinPageSize, RelationValidator.MaxPageSize),
+            Accept(nameof(PageSizeText), text, ok ? null : RangeMessage(Localizer.Instance["Relations_PageSize"], RelationValidator.MinPageSize, RelationValidator.MaxPageSize),
                 () =>
                 {
                     if (Link is { } link)
@@ -907,7 +908,7 @@ public partial class RelationsViewModel : EditorViewModelBase
         var next = detail.Fields.FirstOrDefault(f => Columns.All(c => !Names.Equals(c.Field, f.Name)));
         if (next is null)
         {
-            Message = detail.Fields.Count == 0 ? "The detail table has no fields." : "Every field is already a column.";
+            Message = detail.Fields.Count == 0 ? Localizer.Instance["Relations_TheDetailTableHasNoFields"] : Localizer.Instance["PageDesigner_EveryFieldIsAlreadyAColumn"];
             return;
         }
 
@@ -972,7 +973,7 @@ public partial class RelationsViewModel : EditorViewModelBase
         var suggestions = RelationSuggester.Suggest(_main.Current.Tables);
         if (suggestions.Count == 0)
         {
-            Announce("No foreign keys were found. Connect to a database whose tables declare foreign keys on the Database tab, then try again.");
+            Announce(Localizer.Instance["Relations_NoForeignKeysWereFoundConnect"]);
             return;
         }
 
@@ -980,13 +981,13 @@ public partial class RelationsViewModel : EditorViewModelBase
         var existing = suggestions.Where(s => s.Exists).Select(s => s.Label).ToList();
         if (existing.Count == labels.Count)
         {
-            Announce("Every foreign key already has a master/detail link.");
+            Announce(Localizer.Instance["Relations_EveryForeignKeyAlreadyHasA"]);
             return;
         }
 
         var chosen = await _main.Dialogs.ChooseManyAsync(
-            "Suggest from foreign keys",
-            "Tick the master/detail links to add. Links that already exist are disabled.",
+            Localizer.Instance["Relations_SuggestFromForeignKeys"],
+            Localizer.Instance["Relations_TickTheMasterDetailLinksTo"],
             labels,
             existing);
         if (chosen is null)
@@ -1004,7 +1005,7 @@ public partial class RelationsViewModel : EditorViewModelBase
 
         if (added.Count == 0)
         {
-            Announce("No link was added.");
+            Announce(Localizer.Instance["Relations_NoLinkWasAdded"]);
             return;
         }
 
@@ -1014,7 +1015,7 @@ public partial class RelationsViewModel : EditorViewModelBase
             SelectedLink = Links.FirstOrDefault(r => ReferenceEquals(r.Link, last));
         }
 
-        Announce($"Added {added.Count} master/detail link(s) from foreign keys.");
+        Announce(Localizer.Instance.Format("Relations_AddedMasterDetailLinkSFrom", added.Count));
     }
 
     private void Announce(string text)

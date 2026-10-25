@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -62,7 +63,7 @@ public abstract class EditorViewModelBase : ViewModelBase
         => int.TryParse(text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value) && value >= min && value <= max;
 
     protected static string RangeMessage(string label, int min, int max)
-        => $"{label} must be a whole number from {min} to {max}. The last valid value was kept.";
+        => Localizer.Instance.Format("EditorViewModelBase_MustBeAWholeNumberFrom", label, min, max);
 
     /// <summary>Writes <paramref name="value"/> through <paramref name="store"/> when it differs from <paramref name="current"/>.</summary>
     protected bool Put<T>(T current, T value, Action<T> store, [CallerMemberName] string? name = null)

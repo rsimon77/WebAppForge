@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using WebAppForge.Core.Model;
 using FieldInfo = WebAppForge.Core.Model.FieldInfo;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -153,23 +154,23 @@ public static class RegexTester
     {
         if (string.IsNullOrEmpty(pattern))
         {
-            return new RegexTestResult(RegexTestOutcome.NoPattern, "Enter a pattern to test it.");
+            return new RegexTestResult(RegexTestOutcome.NoPattern, Localizer.Instance["CustomizationTools_EnterAPatternToTestIt"]);
         }
 
         try
         {
             var regex = new Regex(Anchored(pattern), RegexOptions.None, timeout ?? DefaultTimeout);
             return regex.IsMatch(sample ?? string.Empty)
-                ? new RegexTestResult(RegexTestOutcome.Match, "Matches")
-                : new RegexTestResult(RegexTestOutcome.NoMatch, "Does not match");
+                ? new RegexTestResult(RegexTestOutcome.Match, Localizer.Instance["CustomizationTools_Matches"])
+                : new RegexTestResult(RegexTestOutcome.NoMatch, Localizer.Instance["CustomizationTools_DoesNotMatch"]);
         }
         catch (RegexMatchTimeoutException)
         {
-            return new RegexTestResult(RegexTestOutcome.TimedOut, "The test took longer than 1 second and was stopped. Simplify the pattern.");
+            return new RegexTestResult(RegexTestOutcome.TimedOut, Localizer.Instance["CustomizationTools_TheTestTookLongerThan1"]);
         }
         catch (ArgumentException ex)
         {
-            return new RegexTestResult(RegexTestOutcome.InvalidPattern, $"Invalid pattern: {ex.Message}");
+            return new RegexTestResult(RegexTestOutcome.InvalidPattern, Localizer.Instance.Format("CustomizationTools_InvalidPattern", ex.Message));
         }
     }
 
@@ -179,7 +180,7 @@ public static class RegexTester
 /// <summary>The sample shown under the Display settings of a field, in en-US so it reads the same on every machine.</summary>
 public static class FormatPreviewer
 {
-    public const string InvalidFormat = "Invalid format string";
+    public static string InvalidFormat => Localizer.Instance["CustomizationTools_InvalidFormatString"];
 
     private static readonly CultureInfo Culture = CultureInfo.GetCultureInfo("en-US");
     private static readonly DateTime SampleDate = new(2026, 3, 14, 15, 45, 30);
@@ -229,7 +230,7 @@ public static class FormatPreviewer
                     return "user@example.com";
                 case ViewFormat.Badge:
                     return ui.BadgeRules.Count == 0
-                        ? "No badge rules yet"
+                        ? Localizer.Instance["CustomizationTools_NoBadgeRulesYet"]
                         : $"[{ui.BadgeRules[0].Style}] {(string.IsNullOrEmpty(ui.BadgeRules[0].Text) ? ui.BadgeRules[0].Value : ui.BadgeRules[0].Text)}";
                 default:
                     return "Sample text";

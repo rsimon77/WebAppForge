@@ -8,6 +8,7 @@ using WebAppForge.Core.Schema;
 using WebAppForge.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -69,15 +70,15 @@ public partial class DatabaseViewModel : ViewModelBase
 
     public string ConnectionHint => Provider switch
     {
-        DatabaseProviders.AzureSql => "Active Directory Default signs in with your Azure CLI or Visual Studio account here and with the managed identity in Azure, so no password is stored. In production, Active Directory Managed Identity connects faster.",
-        DatabaseProviders.MySql => "Tables of the database named in the connection string are read. MySQL 8 and MariaDB 10.6 or later.",
-        _ => "Tables of every schema are read; tables outside dbo are named schema.table. SQL Server 2016 or later.",
+        DatabaseProviders.AzureSql => Localizer.Instance["Database_ActiveDirectoryDefaultSignsInWith"],
+        DatabaseProviders.MySql => Localizer.Instance["Database_TablesOfTheDatabaseNamedIn"],
+        _ => Localizer.Instance["Database_TablesOfEverySchemaAreRead"],
     };
 
     /// <summary>A warning when the connection string holds a password that would be saved in plain text, else null.</summary>
     public string? PasswordWarning =>
         IsServer && ConnectionStringVariable.Trim().Length == 0 && HasPassword(ConnectionString)
-            ? "This connection string has a password. It is saved in the project file and in the generated appsettings.json as plain text. Put it in an environment variable instead, or use Windows or Entra ID sign-in."
+            ? Localizer.Instance["Database_ThisConnectionStringHasAPassword"]
             : null;
 
     /// <summary>Whether the environment variable is set in the editor's environment, else null when no variable is named.</summary>
@@ -92,8 +93,8 @@ public partial class DatabaseViewModel : ViewModelBase
             }
 
             return Environment.GetEnvironmentVariable(name) is { Length: > 0 }
-                ? $"{name} is set here. The generated site reads it too, unless ConnectionStrings:Default is configured."
-                : $"{name} is not set in the editor's environment. Set it and restart the editor, or Connect cannot reach the database.";
+                ? Localizer.Instance.Format("Database_IsSetHereTheGeneratedSite", name)
+                : Localizer.Instance.Format("Database_IsNotSetInTheEditor", name);
         }
     }
 
@@ -172,23 +173,23 @@ public partial class DatabaseViewModel : ViewModelBase
             }
 
             return (null, variable.Length > 0
-                ? $"The environment variable {variable} is not set in the editor's environment."
-                : "Enter the connection string on the Database section first.");
+                ? Localizer.Instance.Format("Database_TheEnvironmentVariableIsNotSet", variable)
+                : Localizer.Instance["Database_EnterTheConnectionStringOnThe"]);
         }
 
         if (string.IsNullOrWhiteSpace(database.Path))
         {
-            return (null, "Enter the SQLite file path or use Browse first.");
+            return (null, Localizer.Instance["Database_EnterTheSQLiteFilePathOr"]);
         }
 
         if (!Path.IsPathRooted(database.Path) && _main.ProjectFolder is null)
         {
-            return (null, "Save the project first. Relative database paths are resolved against the project folder.");
+            return (null, Localizer.Instance["Database_SaveTheProjectFirstRelativeDatabase"]);
         }
 
         // SQLite creates an empty file when opened, so check for it first to avoid silently making a new database.
         var fullPath = ProjectPaths.Resolve(_main.ProjectFolder, database.Path);
-        return File.Exists(fullPath) ? (database.ResolveConnectionString(_main.ProjectFolder ?? string.Empty), null) : (null, $"Database file not found: {fullPath}");
+        return File.Exists(fullPath) ? (database.ResolveConnectionString(_main.ProjectFolder ?? string.Empty), null) : (null, Localizer.Instance.Format("Database_DatabaseFileNotFound", fullPath));
     }
 
     [RelayCommand]
@@ -214,9 +215,9 @@ public partial class DatabaseViewModel : ViewModelBase
         }
 
         var provider = Provider;
-        _main.Status = $"Connecting to {SelectedProvider.Name}...";
+        _main.Status = Localizer.Instance.Format("Database_ConnectingTo", SelectedProvider.Name);
         var error = await Task.Run(() => DatabaseConnections.TestAsync(provider, connectionString));
-        _main.Status = error is null ? $"Connected to {SelectedProvider.Name}." : $"Connection failed: {error}";
+        _main.Status = error is null ? Localizer.Instance.Format("Database_ConnectedTo", SelectedProvider.Name) : Localizer.Instance.Format("Database_ConnectionFailed", error);
     }
 
     [RelayCommand]
@@ -238,17 +239,17 @@ public partial class DatabaseViewModel : ViewModelBase
             _main.Tables.Reload();
             _main.Security.Refresh();
 
-            var message = $"Connected: {result.Total} table(s), {result.Added} new";
+            var message = Localizer.Instance.Format("Database_ConnectedTableSNew", result.Total, result.Added);
             if (result.Removed.Count > 0)
             {
-                message += $", removed {result.Removed.Count} no longer in the database ({string.Join(", ", result.Removed)})";
+                message += Localizer.Instance.Format("Database_RemovedTables", result.Removed.Count, string.Join(", ", result.Removed));
             }
 
             _main.Status = message + ".";
         }
         catch (Exception ex)
         {
-            _main.Status = $"Connect failed: {ex.Message}";
+            _main.Status = Localizer.Instance.Format("Database_ConnectFailed", ex.Message);
         }
     }
 }

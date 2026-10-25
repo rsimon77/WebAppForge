@@ -1,3 +1,4 @@
+using WebAppForge.Desktop.Localization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -80,7 +81,7 @@ public static class RelationSuggester
                 var label = $"{master.Name} -> {detail.Name} ({string.Join(", ", pairs.Select(p => $"{master.Name}.{p.MasterField} = {detail.Name}.{p.DetailField}"))})";
                 if (onDelete != DeleteRule.Restrict)
                 {
-                    label += $", on delete {onDelete}";
+                    label += Localizer.Instance.Format("RelationSuggester_OnDelete", onDelete);
                 }
 
                 var unique = label;

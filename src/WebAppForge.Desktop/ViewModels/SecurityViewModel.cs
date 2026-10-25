@@ -10,6 +10,7 @@ using WebAppForge.Core.Schema;
 using WebAppForge.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -156,7 +157,7 @@ public partial class SecurityViewModel : ViewModelBase
         {
             if (SetProperty(ref _minPasswordLengthText, value ?? string.Empty))
             {
-                ApplyCount(_minPasswordLengthText, "Minimum password length", n => Identity.MinPasswordLength = n);
+                ApplyCount(_minPasswordLengthText, Localizer.Instance["Security_MinimumPasswordLength"], n => Identity.MinPasswordLength = n);
             }
         }
     }
@@ -169,7 +170,7 @@ public partial class SecurityViewModel : ViewModelBase
         {
             if (SetProperty(ref _adminLevelText, value ?? string.Empty))
             {
-                ApplyCount(_adminLevelText, "Administrator level", n => Identity.AdminLevel = n);
+                ApplyCount(_adminLevelText, Localizer.Instance["Security_AdministratorLevel"], n => Identity.AdminLevel = n);
             }
         }
     }
@@ -190,7 +191,7 @@ public partial class SecurityViewModel : ViewModelBase
                 }
                 else
                 {
-                    InputMessage = "Level of new users must be a whole number of 0 or more. The last valid value was kept.";
+                    InputMessage = Localizer.Instance["Security_LevelOfNewUsersMustBe"];
                     _main.Status = InputMessage;
                 }
             }
@@ -348,7 +349,7 @@ public partial class SecurityViewModel : ViewModelBase
         {
             if (SetProperty(ref _maxFailedAttemptsText, value ?? string.Empty))
             {
-                ApplyCount(_maxFailedAttemptsText, "Max failed attempts", n => Model.MaxFailedAttempts = n);
+                ApplyCount(_maxFailedAttemptsText, Localizer.Instance["Security_MaxFailedAttempts"], n => Model.MaxFailedAttempts = n);
             }
         }
     }
@@ -361,7 +362,7 @@ public partial class SecurityViewModel : ViewModelBase
         {
             if (SetProperty(ref _failedAttemptsWindowText, value ?? string.Empty))
             {
-                ApplyCount(_failedAttemptsWindowText, "Failed attempts window (minutes)", n => Model.FailedAttemptsWindowMinutes = n);
+                ApplyCount(_failedAttemptsWindowText, Localizer.Instance["Security_FailedAttemptsWindowMinutes"], n => Model.FailedAttemptsWindowMinutes = n);
             }
         }
     }
@@ -426,27 +427,27 @@ public partial class SecurityViewModel : ViewModelBase
 
         if (string.IsNullOrWhiteSpace(security.UserTable))
         {
-            return "Choose the user table. Login is enabled but no table is set.";
+            return Localizer.Instance["Security_ChooseTheUserTableLoginIs"];
         }
 
         var users = FindGeneratedTable(tables, security.UserTable);
         if (users is null)
         {
-            return $"Security is enabled but the user table '{security.UserTable}' is not one of the generated tables.";
+            return Localizer.Instance.Format("Security_SecurityIsEnabledButTheUser", security.UserTable);
         }
 
         if (!HasField(users, security.UserNameField))
         {
             return string.IsNullOrWhiteSpace(security.UserNameField)
-                ? "Choose the user name field. Login is enabled but no field is set."
-                : $"Security is enabled but table '{users.Name}' has no user name field '{security.UserNameField}'.";
+                ? Localizer.Instance["Security_ChooseTheUserNameFieldLogin"]
+                : Localizer.Instance.Format("Security_SecurityIsEnabledButTableHas", users.Name, security.UserNameField);
         }
 
         if (!HasField(users, security.PasswordField))
         {
             return string.IsNullOrWhiteSpace(security.PasswordField)
-                ? "Choose the password field. Login is enabled but no field is set."
-                : $"Security is enabled but table '{users.Name}' has no password field '{security.PasswordField}'.";
+                ? Localizer.Instance["Security_ChooseThePasswordFieldLoginIs"]
+                : Localizer.Instance.Format("Security_SecurityIsEnabledButTableHas2", users.Name, security.PasswordField);
         }
 
         if (!string.IsNullOrEmpty(security.UserLevelField))
@@ -454,12 +455,12 @@ public partial class SecurityViewModel : ViewModelBase
             var level = users.Fields.FirstOrDefault(f => string.Equals(f.Name, security.UserLevelField, StringComparison.OrdinalIgnoreCase));
             if (level is null)
             {
-                return $"User level security is enabled but table '{users.Name}' has no user level field '{security.UserLevelField}'.";
+                return Localizer.Instance.Format("Security_UserLevelSecurityIsEnabledBut", users.Name, security.UserLevelField);
             }
 
             if (level.Type != FieldType.Integer)
             {
-                return $"The user level field '{level.Name}' in table '{users.Name}' must be an integer column, but it is {level.Type}.";
+                return Localizer.Instance.Format("Security_TheUserLevelFieldInTable", level.Name, users.Name, level.Type);
             }
         }
 
@@ -492,12 +493,12 @@ public partial class SecurityViewModel : ViewModelBase
         var owner = table.Fields.FirstOrDefault(f => string.Equals(f.Name, table.OwnerField, StringComparison.OrdinalIgnoreCase));
         if (owner is null)
         {
-            return $"User ID security is enabled for table '{table.Name}' but it has no owner field '{table.OwnerField}'.";
+            return Localizer.Instance.Format("Security_UserIDSecurityIsEnabledFor", table.Name, table.OwnerField);
         }
 
         return owner.Type == FieldType.Text
             ? null
-            : $"The owner field '{owner.Name}' in table '{table.Name}' must be a text column to hold the user name, but it is {owner.Type}.";
+            : Localizer.Instance.Format("Security_TheOwnerFieldInTableMust", owner.Name, table.Name, owner.Type);
     }
 
     /// <summary>"(none)" followed by the Integer fields of <paramref name="users"/>. Null means no user table is chosen.</summary>
@@ -578,14 +579,14 @@ public partial class SecurityViewModel : ViewModelBase
         var prefix = Identity.TablePrefix;
         if (!IdentitySchema.IsValidPrefix(prefix))
         {
-            Report($"'{prefix}' is not a valid identity table prefix: use 1 to 30 letters, digits and underscores, starting with a letter.");
+            Report(Localizer.Instance.Format("Security_IsNotAValidIdentityTable", prefix));
             return;
         }
 
         var (connectionString, problem) = _main.Database.Resolve();
         if (connectionString is null)
         {
-            Report(problem ?? "Connect the database first.");
+            Report(problem ?? Localizer.Instance["Security_ConnectTheDatabaseFirst"]);
             return;
         }
 
@@ -596,17 +597,17 @@ public partial class SecurityViewModel : ViewModelBase
             var missing = await _main.IdentityTables.MissingTablesAsync(provider, connectionString, prefix);
             if (missing.Count == 0)
             {
-                Report($"All {IdentitySchema.TableNames(prefix).Count} identity tables exist in the database.");
+                Report(Localizer.Instance.Format("Security_AllIdentityTablesExistInThe", IdentitySchema.TableNames(prefix).Count));
                 return;
             }
 
             var confirmed = await _main.Dialogs.ConfirmAsync(
-                "Create identity tables",
-                $"These tables are missing from the project database and will be created:{Environment.NewLine}{string.Join(Environment.NewLine, missing)}",
-                "Create tables");
+                Localizer.Instance["Security_CreateIdentityTables"],
+                Localizer.Instance.Format("Security_TheseTablesAreMissingFromThe", Environment.NewLine, string.Join(Environment.NewLine, missing)),
+                Localizer.Instance["Security_CreateTables"]);
             if (!confirmed)
             {
-                Report($"Missing identity tables: {string.Join(", ", missing)}. Nothing was created.");
+                Report(Localizer.Instance.Format("Security_MissingIdentityTables", string.Join(", ", missing)));
                 return;
             }
 
@@ -621,11 +622,11 @@ public partial class SecurityViewModel : ViewModelBase
 
             _main.Tables.Reload();
             Refresh();
-            Report($"Created {created.Count} identity table(s): {string.Join(", ", created)}.");
+            Report(Localizer.Instance.Format("Security_CreatedIdentityTables", created.Count, string.Join(", ", created)));
         }
         catch (Exception ex)
         {
-            Report($"The identity tables could not be created: {ex.Message}");
+            Report(Localizer.Instance.Format("Security_TheIdentityTablesCouldNotBe", ex.Message));
         }
         finally
         {
@@ -661,7 +662,7 @@ public partial class SecurityViewModel : ViewModelBase
             return;
         }
 
-        InputMessage = $"{label} must be a positive whole number. The last valid value was kept.";
+        InputMessage = Localizer.Instance.Format("Security_MustBeAPositiveWholeNumber", label);
         _main.Status = InputMessage;
     }
 

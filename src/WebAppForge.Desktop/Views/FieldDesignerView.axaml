@@ -127,6 +127,11 @@
                                     <StackPanel Orientation="Horizontal" />
                                 </ItemsPanelTemplate>
                             </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={x:Static l:TrConverter.Instance}, ConverterParameter=FieldDesigner_Section}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
                         </ListBox>
 
                         <Expander Header="{l:Tr FieldDesigner_Basic}" IsExpanded="True" HorizontalAlignment="Stretch" IsVisible="{Binding ShowGeneral}">

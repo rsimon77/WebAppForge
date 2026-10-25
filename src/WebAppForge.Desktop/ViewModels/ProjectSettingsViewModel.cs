@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using WebAppForge.Core.Model;
 using WebAppForge.Desktop.Services;
 using CommunityToolkit.Mvvm.Input;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -96,7 +97,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                Message = "The project name cannot be empty. The last valid value was kept.";
+                Message = Localizer.Instance["ProjectSettings_TheProjectNameCannotBeEmpty"];
                 return;
             }
 
@@ -142,7 +143,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         {
             var text = value ?? string.Empty;
             Accept(nameof(Version), text,
-                VersionPattern.IsMatch(text.Trim()) ? null : "Version must look like 1.0.0 (numbers separated by dots). The last valid version was kept.",
+                VersionPattern.IsMatch(text.Trim()) ? null : Localizer.Instance["ProjectSettings_VersionMustLookLike10"],
                 () => Meta.Version = text.Trim());
         }
     }
@@ -152,9 +153,9 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
     public async Task RegenerateProjectIdAsync()
     {
         var confirmed = await _main.Dialogs.ConfirmAsync(
-            "Regenerate project id",
-            "The project id identifies this project in generated code. A new id makes sites generated earlier look like they came from a different project. Create a new id?",
-            "Regenerate");
+            Localizer.Instance["ProjectSettings_RegenerateProjectId"],
+            Localizer.Instance["ProjectSettings_TheProjectIdIdentifiesThisProject"],
+            Localizer.Instance["ProjectSettings_RegenerateButton"]);
         if (!confirmed)
         {
             return;
@@ -163,7 +164,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         Project.ProjectId = Guid.NewGuid();
         OnPropertyChanged(nameof(ProjectId));
         Changed();
-        _main.Status = "Created a new project id.";
+        _main.Status = Localizer.Instance["ProjectSettings_CreatedANewProjectId"];
     }
 
     // ---- Output ----
@@ -175,7 +176,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                Message = "The output folder cannot be empty. The last valid value was kept.";
+                Message = Localizer.Instance["ProjectSettings_TheOutputFolderCannotBeEmpty"];
                 OnPropertyChanged();
                 return;
             }
@@ -192,7 +193,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         {
             var text = (value ?? string.Empty).Trim();
             Accept(nameof(RootNamespace), text,
-                text.Length == 0 || NamespacePattern.IsMatch(text) ? null : "The namespace must be letters, digits and underscores separated by dots, and cannot start with a digit. The last valid value was kept.",
+                text.Length == 0 || NamespacePattern.IsMatch(text) ? null : Localizer.Instance["ProjectSettings_TheNamespaceMustBeLettersDigits"],
                 () => Meta.RootNamespace = text);
         }
     }
@@ -204,7 +205,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         {
             var text = (value ?? string.Empty).Trim();
             Accept(nameof(AssemblyName), text,
-                text.Length == 0 || AssemblyPattern.IsMatch(text) ? null : "The assembly name can use letters, digits, dots, dashes and underscores and cannot start with a digit. The last valid value was kept.",
+                text.Length == 0 || AssemblyPattern.IsMatch(text) ? null : Localizer.Instance["ProjectSettings_TheAssemblyNameCanUseLetters"],
                 () => Meta.AssemblyName = text);
         }
     }
@@ -308,13 +309,13 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
     public string HttpPortText
     {
         get => Shown(nameof(HttpPortText), Meta.HttpPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        set => SetPort(nameof(HttpPortText), "HTTP port", value, Meta.HttpsPort, port => Meta.HttpPort = port);
+        set => SetPort(nameof(HttpPortText), Localizer.Instance["ProjectSettings_HTTPPort"], value, Meta.HttpsPort, port => Meta.HttpPort = port);
     }
 
     public string HttpsPortText
     {
         get => Shown(nameof(HttpsPortText), Meta.HttpsPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        set => SetPort(nameof(HttpsPortText), "HTTPS port", value, Meta.HttpPort, port => Meta.HttpsPort = port);
+        set => SetPort(nameof(HttpsPortText), Localizer.Instance["ProjectSettings_HTTPSPort"], value, Meta.HttpPort, port => Meta.HttpsPort = port);
     }
 
     private void SetPort(string name, string label, string? text, int otherPort, Action<int> store)
@@ -328,7 +329,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         }
         else if (port == otherPort)
         {
-            error = "The HTTP and HTTPS ports must be different. The last valid value was kept.";
+            error = Localizer.Instance["ProjectSettings_TheHTTPAndHTTPSPortsMust"];
         }
 
         Accept(name, raw, error, () => store(port));
@@ -397,8 +398,8 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
     /// <summary>Where a server project's connection string comes from; the string itself is not shown, it may hold a password.</summary>
     public string ServerConnection =>
         !string.IsNullOrWhiteSpace(_main.Database.ConnectionStringVariable)
-            ? $"Environment variable {_main.Database.ConnectionStringVariable.Trim()}"
-            : string.IsNullOrWhiteSpace(_main.Database.ConnectionString) ? "Not set" : "Connection string in the project";
+            ? Localizer.Instance.Format("ProjectSettings_EnvironmentVariable", _main.Database.ConnectionStringVariable.Trim())
+            : string.IsNullOrWhiteSpace(_main.Database.ConnectionString) ? Localizer.Instance["ProjectSettings_NotSet"] : Localizer.Instance["ProjectSettings_ConnectionStringInTheProject"];
 
     public string DatabasePath
     {
@@ -433,7 +434,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         {
             var text = (value ?? string.Empty).Trim();
             Accept(nameof(PublishFolder), text,
-                text.Length > 0 ? null : "The publish folder cannot be empty. The last valid value was kept.",
+                text.Length > 0 ? null : Localizer.Instance["ProjectSettings_ThePublishFolderCannotBeEmpty"],
                 () => Build.PublishFolder = text);
         }
     }
@@ -469,27 +470,27 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         {
             var raw = value ?? string.Empty;
             var ok = TryWholeNumber(raw, 1, 65535, out var port);
-            Accept(nameof(DockerExposePortText), raw, ok ? null : RangeMessage("The exposed port", 1, 65535), () => Build.DockerExposePort = port);
+            Accept(nameof(DockerExposePortText), raw, ok ? null : RangeMessage(Localizer.Instance["ProjectSettings_TheExposedPort"], 1, 65535), () => Build.DockerExposePort = port);
         }
     }
 
     public string DockerBaseSdkImage
     {
         get => Shown(nameof(DockerBaseSdkImage), Build.DockerBaseSdkImage);
-        set => SetImage(nameof(DockerBaseSdkImage), "SDK image", value, v => Build.DockerBaseSdkImage = v);
+        set => SetImage(nameof(DockerBaseSdkImage), Localizer.Instance["ProjectSettings_SDKImage"], value, v => Build.DockerBaseSdkImage = v);
     }
 
     public string DockerBaseRuntimeImage
     {
         get => Shown(nameof(DockerBaseRuntimeImage), Build.DockerBaseRuntimeImage);
-        set => SetImage(nameof(DockerBaseRuntimeImage), "Runtime image", value, v => Build.DockerBaseRuntimeImage = v);
+        set => SetImage(nameof(DockerBaseRuntimeImage), Localizer.Instance["ProjectSettings_RuntimeImage"], value, v => Build.DockerBaseRuntimeImage = v);
     }
 
     private void SetImage(string name, string label, string? value, Action<string> store)
     {
         var text = (value ?? string.Empty).Trim();
         Accept(name, text,
-            text.Length > 0 && !text.Contains(' ') ? null : $"{label} must be an image name without spaces. The last valid value was kept.",
+            text.Length > 0 && !text.Contains(' ') ? null : Localizer.Instance.Format("ProjectSettings_MustBeAnImageNameWithout", label),
             () => store(text));
     }
 
@@ -525,15 +526,15 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
     {
         var security = Project.Security;
         SecuritySummary = !security.Enabled
-            ? "Sign-in is off. Every page is open to anyone who can reach the site."
-            : $"Sign-in is on. Users are in {(string.IsNullOrEmpty(security.UserTable) ? "(no table chosen)" : security.UserTable)}"
-              + (string.IsNullOrEmpty(security.UserLevelField) ? "." : $", with user levels from {security.UserLevelField}.")
-              + (security.AllowRegistration ? " New users can register." : string.Empty);
+            ? Localizer.Instance["ProjectSettings_SignInIsOffEveryPage"]
+            : Localizer.Instance.Format("ProjectSettings_SignInIsOnUsersAreIn", string.IsNullOrEmpty(security.UserTable) ? Localizer.Instance["ProjectSettings_NoTableChosen"] : security.UserTable)
+              + (string.IsNullOrEmpty(security.UserLevelField) ? "." : Localizer.Instance.Format("ProjectSettings_WithUserLevelsFrom", security.UserLevelField))
+              + (security.AllowRegistration ? Localizer.Instance["ProjectSettings_NewUsersCanRegister"] : string.Empty);
 
         var localization = Project.Localization;
         LocalizationSummary = !localization.Enabled
-            ? "Multi-language support is off."
-            : $"Multi-language support is on: {string.Join(", ", localization.AllLanguages)} (default {localization.DefaultLanguage}).";
+            ? Localizer.Instance["ProjectSettings_MultiLanguageSupportIsOff"]
+            : Localizer.Instance.Format("ProjectSettings_MultiLanguageSupportIsOn", string.Join(", ", localization.AllLanguages), localization.DefaultLanguage);
     }
 
     [RelayCommand]
@@ -545,7 +546,7 @@ public partial class ProjectSettingsViewModel : EditorViewModelBase
         var index = MainViewModel.TabNames.ToList().IndexOf("Languages");
         if (index < 0)
         {
-            _main.Status = "There is no Languages tab in this version of the editor.";
+            _main.Status = Localizer.Instance["ProjectSettings_ThereIsNoLanguagesTabIn"];
             return;
         }
 

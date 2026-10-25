@@ -12,6 +12,7 @@ using WebAppForge.Core.Model;
 using WebAppForge.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -98,11 +99,11 @@ public partial class GenerateViewModel : ViewModelBase
         _main = main;
         Stages =
         [
-            new StageItem(BuildStage.Generate, "Generate"),
-            new StageItem(BuildStage.DockerFiles, "Docker files"),
-            new StageItem(BuildStage.Build, "Build"),
-            new StageItem(BuildStage.Publish, "Publish"),
-            new StageItem(BuildStage.DockerImage, "Docker image"),
+            new StageItem(BuildStage.Generate, Localizer.Instance["Tab_Generate"]),
+            new StageItem(BuildStage.DockerFiles, Localizer.Instance["Generate_DockerFiles"]),
+            new StageItem(BuildStage.Build, Localizer.Instance["Generate_StageBuild"]),
+            new StageItem(BuildStage.Publish, Localizer.Instance["Generate_StagePublish"]),
+            new StageItem(BuildStage.DockerImage, Localizer.Instance["Generate_DockerImage"]),
         ];
         _main.PropertyChanged += OnMainChanged;
     }
@@ -122,7 +123,7 @@ public partial class GenerateViewModel : ViewModelBase
     /// <summary>A warning when the Docker image stage is on but the Docker CLI is missing.</summary>
     public string DockerWarning
         => _main.Current.Build.BuildDockerImage && !DockerFound
-            ? "The Docker image stage is on, but the Docker CLI was not found. Install Docker or set its path in Tools > Options."
+            ? Localizer.Instance["Generate_TheDockerImageStageIsOn"]
             : string.Empty;
 
     public void LoadFrom(Project project)
@@ -153,27 +154,27 @@ public partial class GenerateViewModel : ViewModelBase
         var steps = new List<string>();
         if (build.GenerateDockerfile || build.GenerateCompose || build.BuildDockerImage)
         {
-            steps.Add("Docker files");
+            steps.Add(Localizer.Instance["Generate_DockerFiles"]);
         }
 
         if (build.BuildAfterGenerate)
         {
-            steps.Add($"Build ({build.Configuration})");
+            steps.Add(Localizer.Instance.Format("Generate_Build", build.Configuration));
         }
 
         if (build.Publish)
         {
-            steps.Add($"Publish to {build.PublishFolder}");
+            steps.Add(Localizer.Instance.Format("Generate_PublishTo", build.PublishFolder));
         }
 
         if (build.BuildDockerImage)
         {
-            steps.Add($"Docker image {build.EffectiveImageName(_main.Current.Name)}");
+            steps.Add(Localizer.Instance.Format("Generate_DockerImage2", build.EffectiveImageName(_main.Current.Name)));
         }
 
         BuildSummary = steps.Count == 0
-            ? "Generate only. Build, publish and Docker options are in the Project tab."
-            : "Generate, then " + string.Join(", ", steps) + ".";
+            ? Localizer.Instance["Generate_GenerateOnlyBuildPublishAndDocker"]
+            : Localizer.Instance.Format("Generate_GenerateThen", string.Join(", ", steps));
         OnPropertyChanged(nameof(DockerWarning));
         OnPropertyChanged(nameof(HasDockerWarning));
     }
@@ -194,10 +195,10 @@ public partial class GenerateViewModel : ViewModelBase
         found = path is not null;
         if (!string.IsNullOrWhiteSpace(configured))
         {
-            return found ? $"{label}: found ({path})" : $"{label}: the path set in Options was not found ({configured})";
+            return found ? $"{label}: found ({path})" : Localizer.Instance.Format("Generate_ThePathSetInOptionsWas", label, configured);
         }
 
-        return found ? $"{label}: found ({path})" : $"{label}: not found on PATH";
+        return found ? $"{label}: found ({path})" : Localizer.Instance.Format("Generate_NotFoundOnPATH", label);
     }
 
     private string? FindTool(string tool, string? configured) => _main.OptionsEnvironment.Detector.Find(tool, configured);
@@ -236,27 +237,27 @@ public partial class GenerateViewModel : ViewModelBase
         var folder = _main.ProjectFolder;
         if (folder is null)
         {
-            Block("Save the project first. Output and database paths are resolved against the project folder.");
+            Block(Localizer.Instance["Generate_SaveTheProjectFirstOutputAnd"]);
             return;
         }
 
         _main.Security.Refresh();
         if (!_main.Security.CanGenerate)
         {
-            Block($"Generation blocked: {_main.Security.ValidationMessage}");
+            Block(Localizer.Instance.Format("Generate_GenerationBlocked", _main.Security.ValidationMessage));
             return;
         }
 
         var project = _main.Current;
         if (!DatabaseProviders.IsKnown(project.Database.Provider))
         {
-            Block($"Not supported: {Core.Generation.ProjectGenerator.UnsupportedProviderMessage(project.Database.Provider)}");
+            Block(Localizer.Instance.Format("Generate_NotSupported", Core.Generation.ProjectGenerator.UnsupportedProviderMessage(project.Database.Provider)));
             return;
         }
 
         if (project.Database.IsServer && project.Database.ConnectionString.Trim().Length == 0 && project.Database.ConnectionStringVariable.Trim().Length == 0)
         {
-            Block("Generation blocked: enter the connection string or its environment variable on the Database section.");
+            Block(Localizer.Instance["Generate_GenerationBlockedEnterTheConnectionString"]);
             return;
         }
 
@@ -268,7 +269,7 @@ public partial class GenerateViewModel : ViewModelBase
             stage.Message = string.Empty;
         }
 
-        AddInfo($"Generate: {outputDirectory}");
+        AddInfo(Localizer.Instance.Format("Generate_Generate", outputDirectory));
         var stages = new InlineProgress<StageProgress>(p => _post(() => ApplyStage(p)));
         var output = new InlineProgress<BuildOutputLine>(Enqueue);
         GenerateAndBuildResult? result = null;
@@ -279,11 +280,11 @@ public partial class GenerateViewModel : ViewModelBase
         }
         catch (OperationCanceledException)
         {
-            failure = "Cancelled.";
+            failure = Localizer.Instance["Generate_Cancelled"];
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            failure = $"Generation failed: {ex.Message}";
+            failure = Localizer.Instance.Format("Generate_GenerationFailed", ex.Message);
         }
         finally
         {
@@ -307,25 +308,25 @@ public partial class GenerateViewModel : ViewModelBase
         ShowOptionsHint = false;
         if (result!.Succeeded)
         {
-            var status = $"Generated {result.GeneratedFiles.Count} file(s) into {outputDirectory}.";
+            var status = Localizer.Instance.Format("Generate_GeneratedFileSInto", result.GeneratedFiles.Count, outputDirectory);
             if (result.DockerFiles.Count > 0)
             {
-                status += $" Wrote {result.DockerFiles.Count} Docker file(s).";
+                status += Localizer.Instance.Format("Generate_WroteDockerFileS", result.DockerFiles.Count);
             }
 
             if (result.Build is { } build)
             {
-                status += $" Built with {build.Warnings} warning(s) in {build.Duration.TotalSeconds:0.#} s.";
+                status += Localizer.Instance.Format("Generate_BuiltWithWarningSInS", build.Warnings, build.Duration.TotalSeconds);
             }
 
             if (result.Publish is { } publish)
             {
-                status += $" Published to {publish.PublishPath}.";
+                status += Localizer.Instance.Format("Generate_PublishedTo", publish.PublishPath);
             }
 
             if (result.DockerImage is not null)
             {
-                status += $" Built Docker image {project.Build.EffectiveImageName(project.Name)}.";
+                status += Localizer.Instance.Format("Generate_BuiltDockerImage", project.Build.EffectiveImageName(project.Name));
             }
 
             LastResult = status;
@@ -342,9 +343,9 @@ public partial class GenerateViewModel : ViewModelBase
         var title = Stages.First(s => s.Stage == failedStage).Title;
         var cancelled = Stages.Any(s => s.State == StageState.Cancelled) || _cancelRequested;
         failure = cancelled
-            ? $"Cancelled during {title}."
+            ? Localizer.Instance.Format("Generate_CancelledDuring", title)
             : failedStage == BuildStage.Generate
-                ? $"Generation failed: {result.Message}"
+                ? Localizer.Instance.Format("Generate_GenerationFailed", result.Message)
                 : $"{title} failed: {result.Message}";
         LastResult = failure;
         _main.Status = failure;
@@ -392,7 +393,7 @@ public partial class GenerateViewModel : ViewModelBase
         }
         catch (OperationCanceledException)
         {
-            result = BuildResult.Failure($"{title} was cancelled.", cancelled: true);
+            result = BuildResult.Failure(Localizer.Instance.Format("Generate_WasCancelled", title), cancelled: true);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -411,15 +412,15 @@ public partial class GenerateViewModel : ViewModelBase
             item2.State = StageState.Ok;
             item2.Message = stage == BuildStage.Publish ? result.PublishPath ?? string.Empty : $"{result.Warnings} warning(s)";
             status = stage == BuildStage.Build
-                ? $"Build succeeded with {result.Warnings} warning(s) in {result.Duration.TotalSeconds:0.#} s."
-                : $"Published to {result.PublishPath}.";
+                ? Localizer.Instance.Format("Generate_BuildSucceededWithWarningSIn", result.Warnings, result.Duration.TotalSeconds)
+                : Localizer.Instance.Format("Generate_PublishedTo2", result.PublishPath);
         }
         else
         {
             item2.State = result.Cancelled ? StageState.Cancelled : StageState.Failed;
             item2.Message = result.Message;
             status = result.Cancelled
-                ? $"Cancelled during {title}."
+                ? Localizer.Instance.Format("Generate_CancelledDuring", title)
                 : result.Errors > 0 ? $"{title} failed: {result.Errors} error(s). {result.Message}".TrimEnd() : $"{title} failed: {result.Message}";
         }
 
@@ -451,14 +452,14 @@ public partial class GenerateViewModel : ViewModelBase
         var folder = _main.ProjectFolder;
         if (folder is null)
         {
-            Block("Save the project first. Output and database paths are resolved against the project folder.");
+            Block(Localizer.Instance["Generate_SaveTheProjectFirstOutputAnd"]);
             return null;
         }
 
         var outputDirectory = ProjectPaths.Resolve(folder, OutputFolder);
         if (!Directory.Exists(outputDirectory) || Directory.GetFiles(outputDirectory, "*.csproj").Length == 0)
         {
-            Block($"There is no generated site in {outputDirectory}. Use Generate first.");
+            Block(Localizer.Instance.Format("Generate_ThereIsNoGeneratedSiteIn", outputDirectory));
             return null;
         }
 
@@ -483,7 +484,7 @@ public partial class GenerateViewModel : ViewModelBase
     {
         if (IsSiteRunning)
         {
-            AddInfo("Stopping the running site before building.");
+            AddInfo(Localizer.Instance["Generate_StoppingTheRunningSiteBeforeBuilding"]);
             StopSite();
         }
 
@@ -650,7 +651,7 @@ public partial class GenerateViewModel : ViewModelBase
         }
 
         await _main.Dialogs.SetClipboardTextAsync(text);
-        _main.Status = "Copied the console output to the clipboard.";
+        _main.Status = Localizer.Instance["Generate_CopiedTheConsoleOutputToThe"];
     }
 
     /// <summary>Copies "path:line" of a diagnostic to the clipboard. The grid calls this on double-click.</summary>
@@ -663,7 +664,7 @@ public partial class GenerateViewModel : ViewModelBase
         }
 
         await _main.Dialogs.SetClipboardTextAsync(row.Location);
-        _main.Status = $"Copied {row.Location} to the clipboard.";
+        _main.Status = Localizer.Instance.Format("Generate_CopiedToTheClipboard", row.Location);
     }
 
     // ---- Run site ----
@@ -679,7 +680,7 @@ public partial class GenerateViewModel : ViewModelBase
 
         if (IsBusy)
         {
-            Block("Wait for the current build to finish before running the site.");
+            Block(Localizer.Instance["Generate_WaitForTheCurrentBuildTo"]);
             return;
         }
 
@@ -691,7 +692,7 @@ public partial class GenerateViewModel : ViewModelBase
 
         if (!Directory.Exists(Path.Combine(siteFolder, "bin")))
         {
-            Block("The site has not been built yet. Use Build only (or turn on Build in the Project tab) first.");
+            Block(Localizer.Instance["Generate_TheSiteHasNotBeenBuilt"]);
             return;
         }
 
@@ -699,7 +700,7 @@ public partial class GenerateViewModel : ViewModelBase
         if (dotnet is null)
         {
             ShowOptionsHint = true;
-            Block("The dotnet CLI was not found. Install the .NET SDK or set its path in Tools > Options.");
+            Block(Localizer.Instance["Generate_TheDotnetCLIWasNotFound"]);
             return;
         }
 
@@ -714,7 +715,7 @@ public partial class GenerateViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is System.Net.Sockets.SocketException or InvalidOperationException)
         {
-            Block($"No free port was found: {ex.Message}");
+            Block(Localizer.Instance.Format("Generate_NoFreePortWasFound", ex.Message));
             return;
         }
 
@@ -723,7 +724,7 @@ public partial class GenerateViewModel : ViewModelBase
         var launch = new SiteLaunch(dotnet, ["run", "--no-build", "--urls", url], siteFolder);
         IsSiteRunning = true;
         SiteUrl = url;
-        AddInfo($"Run site: dotnet run --no-build --urls {url}");
+        AddInfo(Localizer.Instance.Format("Generate_RunSiteDotnetRunNoBuild", url));
         ISiteHandle handle;
         try
         {
@@ -736,14 +737,14 @@ public partial class GenerateViewModel : ViewModelBase
         {
             IsSiteRunning = false;
             SiteUrl = string.Empty;
-            Block($"The site could not be started: {ex.Message}");
+            Block(Localizer.Instance.Format("Generate_TheSiteCouldNotBeStarted", ex.Message));
             return;
         }
 
         if (IsSiteRunning && generation == _siteGeneration)
         {
             _site = handle;
-            _main.Status = $"The site is running at {url}.";
+            _main.Status = Localizer.Instance.Format("Generate_TheSiteIsRunningAt", url);
         }
     }
 
@@ -770,8 +771,8 @@ public partial class GenerateViewModel : ViewModelBase
 
         IsSiteRunning = false;
         SiteUrl = string.Empty;
-        AddInfo("The site was stopped.");
-        _main.Status = "The site was stopped.";
+        AddInfo(Localizer.Instance["Generate_TheSiteWasStopped"]);
+        _main.Status = Localizer.Instance["Generate_TheSiteWasStopped"];
     }
 
     private void OnSiteExited(int generation, int exitCode)
@@ -784,8 +785,8 @@ public partial class GenerateViewModel : ViewModelBase
         _site = null;
         IsSiteRunning = false;
         SiteUrl = string.Empty;
-        AddInfo($"The site stopped on its own (exit code {exitCode}).");
-        _main.Status = $"The site stopped (exit code {exitCode}).";
+        AddInfo(Localizer.Instance.Format("Generate_TheSiteStoppedOnItsOwn", exitCode));
+        _main.Status = Localizer.Instance.Format("Generate_TheSiteStoppedExitCode", exitCode);
     }
 
     [RelayCommand]
@@ -794,14 +795,14 @@ public partial class GenerateViewModel : ViewModelBase
         var folder = _main.ProjectFolder;
         if (folder is null)
         {
-            Block("Save the project first. Output and database paths are resolved against the project folder.");
+            Block(Localizer.Instance["Generate_SaveTheProjectFirstOutputAnd"]);
             return;
         }
 
         var outputDirectory = ProjectPaths.Resolve(folder, OutputFolder);
         if (!Directory.Exists(outputDirectory))
         {
-            Block($"The output folder {outputDirectory} does not exist yet. Use Generate first.");
+            Block(Localizer.Instance.Format("Generate_TheOutputFolderDoesNotExist", outputDirectory));
             return;
         }
 
@@ -816,7 +817,7 @@ public partial class GenerateViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or IOException)
         {
-            var text = $"The folder could not be opened: {ex.Message}";
+            var text = Localizer.Instance.Format("Generate_TheFolderCouldNotBeOpened", ex.Message);
             _main.Status = appendToStatus ? _main.Status + " " + text : text;
         }
     }
@@ -826,7 +827,7 @@ public partial class GenerateViewModel : ViewModelBase
     {
         if (!IsSiteRunning)
         {
-            Block("The site is not running. Use Run site first.");
+            Block(Localizer.Instance["Generate_TheSiteIsNotRunningUse"]);
             return;
         }
 
@@ -836,7 +837,7 @@ public partial class GenerateViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or IOException)
         {
-            _main.Status = $"The browser could not be opened: {ex.Message}";
+            _main.Status = Localizer.Instance.Format("Generate_TheBrowserCouldNotBeOpened", ex.Message);
         }
     }
 }

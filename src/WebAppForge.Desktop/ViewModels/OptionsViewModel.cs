@@ -168,15 +168,15 @@ public sealed partial class OptionsViewModel : ViewModelBase
 
     // Validation messages: null when the entry is fine.
 
-    public string? RecentFilesLengthError => IntError(RecentFilesLengthText, "Recent files", AppSettings.MinRecentFilesLength, AppSettings.MaxRecentFilesLength);
+    public string? RecentFilesLengthError => IntError(RecentFilesLengthText, Localizer.Instance["Options_RecentFiles"], AppSettings.MinRecentFilesLength, AppSettings.MaxRecentFilesLength);
 
-    public string? AutosaveMinutesError => IntError(AutosaveMinutesText, "Autosave interval", AppSettings.MinAutosaveMinutes, AppSettings.MaxAutosaveMinutes, "minutes, 0 = off");
+    public string? AutosaveMinutesError => IntError(AutosaveMinutesText, Localizer.Instance["Options_AutosaveInterval"], AppSettings.MinAutosaveMinutes, AppSettings.MaxAutosaveMinutes, Localizer.Instance["Options_UnitMinutesOff"]);
 
-    public string? SessionTimeoutError => IntError(SessionTimeoutText, "Session idle timeout", AppSettings.MinTimeoutMinutes, AppSettings.MaxTimeoutMinutes, "minutes");
+    public string? SessionTimeoutError => IntError(SessionTimeoutText, Localizer.Instance["Options_SessionIdleTimeout"], AppSettings.MinTimeoutMinutes, AppSettings.MaxTimeoutMinutes, Localizer.Instance["Options_UnitMinutes"]);
 
-    public string? UiFontSizeError => IntError(UiFontSizeText, "UI font size", AppSettings.MinUiFontSize, AppSettings.MaxUiFontSize);
+    public string? UiFontSizeError => IntError(UiFontSizeText, Localizer.Instance["Options_UIFontSize"], AppSettings.MinUiFontSize, AppSettings.MaxUiFontSize);
 
-    public string? RequestTimeoutError => IntError(RequestTimeoutText, "Request timeout", AppSettings.MinRequestTimeoutSeconds, AppSettings.MaxRequestTimeoutSeconds, "seconds");
+    public string? RequestTimeoutError => IntError(RequestTimeoutText, Localizer.Instance["Options_RequestTimeout"], AppSettings.MinRequestTimeoutSeconds, AppSettings.MaxRequestTimeoutSeconds, Localizer.Instance["Options_UnitSeconds"]);
 
     public string? OutputFolderPatternError
     {
@@ -184,11 +184,11 @@ public sealed partial class OptionsViewModel : ViewModelBase
         {
             if (string.IsNullOrWhiteSpace(OutputFolderPattern))
             {
-                return "Enter an output folder pattern.";
+                return Localizer.Instance["Options_EnterAnOutputFolderPattern"];
             }
 
             return OutputFolderPattern.IndexOfAny(Path.GetInvalidPathChars()) >= 0 || OutputFolderPattern.IndexOfAny(['*', '?', '<', '>', '|', '"']) >= 0
-                ? "The pattern contains characters that are not allowed in a path."
+                ? Localizer.Instance["Options_ThePatternContainsCharactersThatAre"]
                 : null;
         }
     }
@@ -199,10 +199,10 @@ public sealed partial class OptionsViewModel : ViewModelBase
         {
             if (string.IsNullOrWhiteSpace(ClaudeModelId))
             {
-                return "Enter a Claude model id.";
+                return Localizer.Instance["Options_EnterAClaudeModelId"];
             }
 
-            return ModelIdPattern.IsMatch(ClaudeModelId.Trim()) ? null : "The model id may contain letters, digits and . _ : / - only.";
+            return ModelIdPattern.IsMatch(ClaudeModelId.Trim()) ? null : Localizer.Instance["Options_TheModelIdMayContainLetters"];
         }
     }
 
@@ -219,7 +219,7 @@ public sealed partial class OptionsViewModel : ViewModelBase
                    && ProxySchemes.Contains(uri.Scheme, StringComparer.OrdinalIgnoreCase)
                    && !string.IsNullOrEmpty(uri.Host)
                 ? null
-                : "Enter a proxy URL such as http://proxy.example.com:8080 (http, https or socks5).";
+                : Localizer.Instance["Options_EnterAProxyURLSuchAs"];
         }
     }
 
@@ -305,14 +305,14 @@ public sealed partial class OptionsViewModel : ViewModelBase
     {
         if (HasErrors)
         {
-            Message = "Fix the highlighted entries first.";
+            Message = Localizer.Instance["Options_FixTheHighlightedEntriesFirst"];
             return false;
         }
 
         var settings = ToSettings();
         _apply(settings);
         _baseline = settings;
-        Message = "Applied.";
+        Message = Localizer.Instance["Options_Applied"];
         return true;
     }
 
@@ -348,7 +348,7 @@ public sealed partial class OptionsViewModel : ViewModelBase
                 break;
         }
 
-        Message = "Defaults restored on this page. Click Apply or OK to keep them.";
+        Message = Localizer.Instance["Options_DefaultsRestoredOnThisPageClick"];
     }
 
     [RelayCommand]
@@ -359,9 +359,9 @@ public sealed partial class OptionsViewModel : ViewModelBase
     private async Task ResetAllAsync()
     {
         var confirmed = await _dialogs.ConfirmAsync(
-            "Reset all settings",
-            "Reset every option on every page to its default value? The recent files list and the last project are cleared too.",
-            "Reset all");
+            Localizer.Instance["Options_ResetAllSettingsTitle"],
+            Localizer.Instance["Options_ResetEveryOptionOnEveryPage"],
+            Localizer.Instance["Options_ResetAll"]);
         if (!confirmed)
         {
             return;
@@ -370,7 +370,7 @@ public sealed partial class OptionsViewModel : ViewModelBase
         _baseline = new AppSettings();
         Load(_baseline);
         _apply(_baseline.Clone());
-        Message = "All settings were reset to their defaults.";
+        Message = Localizer.Instance["Options_AllSettingsWereResetToTheir"];
     }
 
     [RelayCommand]
@@ -429,7 +429,7 @@ public sealed partial class OptionsViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or InvalidOperationException)
         {
-            Message = $"Could not open the settings folder: {ex.Message}";
+            Message = Localizer.Instance.Format("Options_CouldNotOpenTheSettingsFolder", ex.Message);
         }
     }
 
@@ -437,7 +437,7 @@ public sealed partial class OptionsViewModel : ViewModelBase
         => await _dialogs.PickExecutableAsync(string.IsNullOrWhiteSpace(current) ? null : current);
 
     private string KeyStatus(string variable)
-        => string.IsNullOrEmpty(_environment.GetVariable(variable)) ? $"{variable} is not set." : $"{variable} is set.";
+        => string.IsNullOrEmpty(_environment.GetVariable(variable)) ? Localizer.Instance.Format("Options_IsNotSet", variable) : Localizer.Instance.Format("Options_IsSet", variable);
 
     private static string Capitalize(string name)
         => name.Length == 0 ? name : char.ToUpper(name[0], CultureInfo.InvariantCulture) + name[1..];
@@ -450,7 +450,7 @@ public sealed partial class OptionsViewModel : ViewModelBase
         var suffix = unit is null ? string.Empty : $" ({unit})";
         return int.TryParse(text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value >= min && value <= max
             ? null
-            : $"{name} must be a whole number from {min} to {max}{suffix}.";
+            : Localizer.Instance.Format("Options_MustBeAWholeNumberFrom", name, min, max, suffix);
     }
 
     private void Load(AppSettings s)

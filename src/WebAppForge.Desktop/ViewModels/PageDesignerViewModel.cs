@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using WebAppForge.Core.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -273,7 +274,7 @@ public partial class PageDesignerViewModel : EditorViewModelBase
             }
 
             Accept(nameof(Icon), text,
-                IconName.IsMatch(text) ? null : "An icon name uses lower case letters, digits and dashes, for example people or card-list. The last valid icon was kept.",
+                IconName.IsMatch(text) ? null : Localizer.Instance["PageDesigner_AnIconNameUsesLowerCase"],
                 () => SetTable(text, u => u.Icon, (u, v) => u.Icon = v, nameof(Icon)));
         }
     }
@@ -297,7 +298,7 @@ public partial class PageDesignerViewModel : EditorViewModelBase
         {
             var text = value ?? string.Empty;
             var ok = TryWholeNumber(text, 0, 9999, out var order);
-            Accept(nameof(MenuOrderText), text, ok ? null : RangeMessage("Menu order", 0, 9999),
+            Accept(nameof(MenuOrderText), text, ok ? null : RangeMessage(Localizer.Instance["PageDesigner_MenuOrder"], 0, 9999),
                 () => SetTable(order, u => u.MenuOrder, (u, v) => u.MenuOrder = v, nameof(MenuOrderText)));
         }
     }
@@ -522,12 +523,12 @@ public partial class PageDesignerViewModel : EditorViewModelBase
         {
             if (!int.TryParse(part, NumberStyles.Integer, CultureInfo.InvariantCulture, out var size) || size < 1 || size > 1000)
             {
-                return ([], $"Page sizes must be whole numbers from 1 to 1000 separated by commas ('{part}' is not). The last valid list was kept.");
+                return ([], Localizer.Instance.Format("PageDesigner_PageSizesMustBeWholeNumbers", part));
             }
 
             if (sizes.Contains(size))
             {
-                return ([], $"Page size {size} is listed twice. The last valid list was kept.");
+                return ([], Localizer.Instance.Format("PageDesigner_PageSizeIsListedTwiceThe", size));
             }
 
             sizes.Add(size);
@@ -616,7 +617,7 @@ public partial class PageDesignerViewModel : EditorViewModelBase
         var next = table.Fields.FirstOrDefault(f => Columns.All(c => !string.Equals(c.Field, f.Name, StringComparison.OrdinalIgnoreCase)));
         if (next is null)
         {
-            Message = table.Fields.Count == 0 ? "This table has no fields." : "Every field is already a column.";
+            Message = table.Fields.Count == 0 ? Localizer.Instance["PageDesigner_ThisTableHasNoFields"] : Localizer.Instance["PageDesigner_EveryFieldIsAlreadyAColumn"];
             return;
         }
 
@@ -701,9 +702,9 @@ public partial class PageDesignerViewModel : EditorViewModelBase
         }
 
         var confirmed = await _main.Dialogs.ConfirmAsync(
-            "Reset page design",
-            $"Reset the {_selectedPage} page design of {Table!.Name} to its defaults?",
-            "Reset");
+            Localizer.Instance["PageDesigner_ResetPageDesign"],
+            Localizer.Instance.Format("PageDesigner_ResetThePageDesignOfTo", _selectedPage, Table!.Name),
+            Localizer.Instance["Common_Reset"]);
         if (!confirmed)
         {
             return;
@@ -711,7 +712,7 @@ public partial class PageDesignerViewModel : EditorViewModelBase
 
         DeepCopy.Into(new PageDesign(), design);
         OnTableChanged();
-        _main.Status = $"Reset the {_selectedPage} page design of {Table.Name}.";
+        _main.Status = Localizer.Instance.Format("PageDesigner_ResetThePageDesignOf", _selectedPage, Table.Name);
     }
 
     /// <summary>Every page design of the project as "Table / Page", except the selected one.</summary>
@@ -757,8 +758,8 @@ public partial class PageDesignerViewModel : EditorViewModelBase
 
         OnTableChanged();
         _main.Status = changed == 1
-            ? "Copied the searching, filtering and sorting options to 1 other list."
-            : $"Copied the searching, filtering and sorting options to {changed} other lists.";
+            ? Localizer.Instance["PageDesigner_CopiedTheSearchingFilteringAndSorting"]
+            : Localizer.Instance.Format("PageDesigner_CopiedTheSearchingFilteringAndSorting2", changed);
     }
 
     /// <summary>Copies another page design (of this table or another one) over the selected page design.</summary>
@@ -772,8 +773,8 @@ public partial class PageDesignerViewModel : EditorViewModelBase
 
         var sources = CopySources();
         var choice = await _main.Dialogs.ChooseOneAsync(
-            "Copy page design",
-            $"Replace the {_selectedPage} page design of {Table!.Name} with a copy of:",
+            Localizer.Instance["PageDesigner_CopyPageDesign"],
+            Localizer.Instance.Format("PageDesigner_ReplaceThePageDesignOfWith", _selectedPage, Table!.Name),
             sources.Select(s => s.Label).ToList());
         if (choice is null)
         {
@@ -788,7 +789,7 @@ public partial class PageDesignerViewModel : EditorViewModelBase
 
         DeepCopy.Into(PageRules.DesignOf(source.Table, source.Kind), design);
         OnTableChanged();
-        _main.Status = $"Copied the {source.Kind} page design of {source.Table.Name} to the {_selectedPage} page of {Table.Name}.";
+        _main.Status = Localizer.Instance.Format("PageDesigner_CopiedThePageDesignOfTo", source.Kind, source.Table.Name, _selectedPage, Table.Name);
     }
 
     // ---- plumbing ----

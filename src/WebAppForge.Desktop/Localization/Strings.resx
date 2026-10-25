@@ -46,11 +46,68 @@
   <data name="Audit_RecordAnAuditTrailWhoInserted" xml:space="preserve">
     <value>Record an audit trail (who inserted, changed or deleted which record, and when)</value>
   </data>
+  <data name="Audit_TableExcludesTheFieldFromThe" xml:space="preserve">
+    <value>Table '{0}' excludes the field '{1}' from the audit trail, but it has no such field.</value>
+  </data>
+  <data name="Audit_TheAuditTrailNeedsTheName" xml:space="preserve">
+    <value>The audit trail needs the name of its log table.</value>
+  </data>
+  <data name="Audit_TheLowestLevelForTheLog" xml:space="preserve">
+    <value>The lowest level for the log page must be zero or a positive whole number. The last valid value was kept.</value>
+  </data>
   <data name="Audit_Updates" xml:space="preserve">
     <value>Updates</value>
   </data>
   <data name="Audit_ValuesKeptInAnEntry" xml:space="preserve">
     <value>Values kept in an entry</value>
+  </data>
+  <data name="AvaloniaAppearance_CustomStylesWereNotLoadedFrom" xml:space="preserve">
+    <value>Custom styles were not loaded from {0}: {1}</value>
+  </data>
+  <data name="AvaloniaDialog_AvaloniaResourceDictionary" xml:space="preserve">
+    <value>Avalonia resource dictionary</value>
+  </data>
+  <data name="AvaloniaDialog_ChooseCustomStyles" xml:space="preserve">
+    <value>Choose custom styles</value>
+  </data>
+  <data name="AvaloniaDialog_ChooseExecutable" xml:space="preserve">
+    <value>Choose executable</value>
+  </data>
+  <data name="AvaloniaDialog_ChooseImage" xml:space="preserve">
+    <value>Choose image</value>
+  </data>
+  <data name="AvaloniaDialog_ChooseOutputFolder" xml:space="preserve">
+    <value>Choose output folder</value>
+  </data>
+  <data name="AvaloniaDialog_ChooseSQLiteDatabase" xml:space="preserve">
+    <value>Choose SQLite database</value>
+  </data>
+  <data name="AvaloniaDialog_CSVFile" xml:space="preserve">
+    <value>CSV file</value>
+  </data>
+  <data name="AvaloniaDialog_ExportTranslations" xml:space="preserve">
+    <value>Export translations</value>
+  </data>
+  <data name="AvaloniaDialog_Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="AvaloniaDialog_ImportTranslations" xml:space="preserve">
+    <value>Import translations</value>
+  </data>
+  <data name="AvaloniaDialog_OpenProject" xml:space="preserve">
+    <value>Open project</value>
+  </data>
+  <data name="AvaloniaDialog_SaveProjectAs" xml:space="preserve">
+    <value>Save project as</value>
+  </data>
+  <data name="AvaloniaDialog_SQLiteDatabase" xml:space="preserve">
+    <value>SQLite database</value>
+  </data>
+  <data name="AvaloniaDialog_WebAppForgeProject" xml:space="preserve">
+    <value>WebAppForge project</value>
+  </data>
+  <data name="BuildServices_OnlyHttpAndHttpsAddressesCan" xml:space="preserve">
+    <value>Only http and https addresses can be opened.</value>
   </data>
   <data name="Choice_Choose" xml:space="preserve">
     <value>Choose</value>
@@ -169,6 +226,9 @@
   <data name="Common_Reports" xml:space="preserve">
     <value>Reports</value>
   </data>
+  <data name="Common_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
   <data name="Common_Save" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -202,14 +262,65 @@
   <data name="Confirm_Confirm" xml:space="preserve">
     <value>Confirm</value>
   </data>
+  <data name="CustomizationTools_DoesNotMatch" xml:space="preserve">
+    <value>Does not match</value>
+  </data>
+  <data name="CustomizationTools_EnterAPatternToTestIt" xml:space="preserve">
+    <value>Enter a pattern to test it.</value>
+  </data>
+  <data name="CustomizationTools_InvalidFormatString" xml:space="preserve">
+    <value>Invalid format string</value>
+  </data>
+  <data name="CustomizationTools_InvalidPattern" xml:space="preserve">
+    <value>Invalid pattern: {0}</value>
+  </data>
+  <data name="CustomizationTools_Matches" xml:space="preserve">
+    <value>Matches</value>
+  </data>
+  <data name="CustomizationTools_NoBadgeRulesYet" xml:space="preserve">
+    <value>No badge rules yet</value>
+  </data>
+  <data name="CustomizationTools_TheTestTookLongerThan1" xml:space="preserve">
+    <value>The test took longer than 1 second and was stopped. Simplify the pattern.</value>
+  </data>
+  <data name="CustomStyleLoader_AFileWithXClassIs" xml:space="preserve">
+    <value>A file with x:Class is code, not resources. Remove x:Class.</value>
+  </data>
+  <data name="CustomStyleLoader_TheFileIsEmpty" xml:space="preserve">
+    <value>The file is empty.</value>
+  </data>
+  <data name="CustomStyleLoader_TheRootElementMustBeResourceDictionary" xml:space="preserve">
+    <value>The root element must be ResourceDictionary.</value>
+  </data>
+  <data name="Database_ActiveDirectoryDefaultSignsInWith" xml:space="preserve">
+    <value>Active Directory Default signs in with your Azure CLI or Visual Studio account here and with the managed identity in Azure, so no password is stored. In production, Active Directory Managed Identity connects faster.</value>
+  </data>
   <data name="Database_Connect" xml:space="preserve">
     <value>Connect</value>
+  </data>
+  <data name="Database_ConnectedTableSNew" xml:space="preserve">
+    <value>Connected: {0} table(s), {1} new</value>
+  </data>
+  <data name="Database_ConnectedTo" xml:space="preserve">
+    <value>Connected to {0}.</value>
+  </data>
+  <data name="Database_ConnectFailed" xml:space="preserve">
+    <value>Connect failed: {0}</value>
+  </data>
+  <data name="Database_ConnectingTo" xml:space="preserve">
+    <value>Connecting to {0}...</value>
+  </data>
+  <data name="Database_ConnectionFailed" xml:space="preserve">
+    <value>Connection failed: {0}</value>
   </data>
   <data name="Database_ConnectionString" xml:space="preserve">
     <value>Connection string</value>
   </data>
   <data name="Database_ConnectReadsTheTablesAndColumns" xml:space="preserve">
     <value>Connect reads the tables and columns. Tables already in the project keep their settings; new tables are added and tables missing from the database are removed.</value>
+  </data>
+  <data name="Database_DatabaseFileNotFound" xml:space="preserve">
+    <value>Database file not found: {0}</value>
   </data>
   <data name="Database_EGDataAppDb" xml:space="preserve">
     <value>e.g. data/app.db</value>
@@ -220,17 +331,50 @@
   <data name="Database_Engine" xml:space="preserve">
     <value>Engine</value>
   </data>
+  <data name="Database_EnterTheConnectionStringOnThe" xml:space="preserve">
+    <value>Enter the connection string on the Database section first.</value>
+  </data>
+  <data name="Database_EnterTheSQLiteFilePathOr" xml:space="preserve">
+    <value>Enter the SQLite file path or use Browse first.</value>
+  </data>
+  <data name="Database_IsNotSetInTheEditor" xml:space="preserve">
+    <value>{0} is not set in the editor's environment. Set it and restart the editor, or Connect cannot reach the database.</value>
+  </data>
+  <data name="Database_IsSetHereTheGeneratedSite" xml:space="preserve">
+    <value>{0} is set here. The generated site reads it too, unless ConnectionStrings:Default is configured.</value>
+  </data>
   <data name="Database_OrReadItFromThisEnvironment" xml:space="preserve">
     <value>Or read it from this environment variable</value>
+  </data>
+  <data name="Database_RemovedTables" xml:space="preserve">
+    <value>, removed {0} no longer in the database ({1})</value>
+  </data>
+  <data name="Database_SaveTheProjectFirstRelativeDatabase" xml:space="preserve">
+    <value>Save the project first. Relative database paths are resolved against the project folder.</value>
   </data>
   <data name="Database_SQLiteFileRelativeToTheProject" xml:space="preserve">
     <value>SQLite file (relative to the project folder, forward slashes)</value>
   </data>
+  <data name="Database_TablesOfEverySchemaAreRead" xml:space="preserve">
+    <value>Tables of every schema are read; tables outside dbo are named schema.table. SQL Server 2016 or later.</value>
+  </data>
+  <data name="Database_TablesOfTheDatabaseNamedIn" xml:space="preserve">
+    <value>Tables of the database named in the connection string are read. MySQL 8 and MariaDB 10.6 or later.</value>
+  </data>
   <data name="Database_TestConnection" xml:space="preserve">
     <value>Test connection</value>
   </data>
+  <data name="Database_TheEnvironmentVariableIsNotSet" xml:space="preserve">
+    <value>The environment variable {0} is not set in the editor's environment.</value>
+  </data>
+  <data name="Database_ThisConnectionStringHasAPassword" xml:space="preserve">
+    <value>This connection string has a password. It is saved in the project file and in the generated appsettings.json as plain text. Put it in an environment variable instead, or use Windows or Entra ID sign-in.</value>
+  </data>
   <data name="Database_WithAVariableTheConnectionString" xml:space="preserve">
     <value>With a variable the connection string is kept out of the project file and appsettings.json; the generated site reads the same variable.</value>
+  </data>
+  <data name="EditorViewModelBase_MustBeAWholeNumberFrom" xml:space="preserve">
+    <value>{0} must be a whole number from {1} to {2}. The last valid value was kept.</value>
   </data>
   <data name="FieldDesigner_AddOption" xml:space="preserve">
     <value>Add option</value>
@@ -238,11 +382,20 @@
   <data name="FieldDesigner_Align" xml:space="preserve">
     <value>Align</value>
   </data>
+  <data name="FieldDesigner_ANumber" xml:space="preserve">
+    <value>a number</value>
+  </data>
   <data name="FieldDesigner_Auto" xml:space="preserve">
     <value>Auto</value>
   </data>
   <data name="FieldDesigner_AutoFocus" xml:space="preserve">
     <value>Auto focus</value>
+  </data>
+  <data name="FieldDesigner_AutoIncrement" xml:space="preserve">
+    <value>Auto increment</value>
+  </data>
+  <data name="FieldDesigner_AWholeNumber" xml:space="preserve">
+    <value>a whole number</value>
   </data>
   <data name="FieldDesigner_BadgeRulesUsedByTheBadge" xml:space="preserve">
     <value>Badge rules (used by the Badge format)</value>
@@ -256,8 +409,17 @@
   <data name="FieldDesigner_Control" xml:space="preserve">
     <value>Control</value>
   </data>
+  <data name="FieldDesigner_CopiedTheDesignSettingsOfTo" xml:space="preserve">
+    <value>Copied the design settings of {0} to {1} field(s).</value>
+  </data>
+  <data name="FieldDesigner_CopySettings" xml:space="preserve">
+    <value>Copy settings</value>
+  </data>
   <data name="FieldDesigner_CopySettingsTo" xml:space="preserve">
     <value>Copy settings to...</value>
+  </data>
+  <data name="FieldDesigner_CopyTheDesignSettingsOfTo" xml:space="preserve">
+    <value>Copy the design settings of {0} to these {1} fields:</value>
   </data>
   <data name="FieldDesigner_DatesStoredAsNumberColumnsUsed" xml:space="preserve">
     <value>Dates stored as (number columns, used by reports)</value>
@@ -273,6 +435,9 @@
   </data>
   <data name="FieldDesigner_EditControl" xml:space="preserve">
     <value>Edit control</value>
+  </data>
+  <data name="FieldDesigner_EveryOptionNeedsAValue" xml:space="preserve">
+    <value>Every option needs a value.</value>
   </data>
   <data name="FieldDesigner_FalseText" xml:space="preserve">
     <value>False text</value>
@@ -292,6 +457,9 @@
   <data name="FieldDesigner_GroupHeadingAboveRelatedFields" xml:space="preserve">
     <value>Group (heading above related fields)</value>
   </data>
+  <data name="FieldDesigner_HasDefault" xml:space="preserve">
+    <value>Has default</value>
+  </data>
   <data name="FieldDesigner_HelpText" xml:space="preserve">
     <value>Help text</value>
   </data>
@@ -310,14 +478,44 @@
   <data name="FieldDesigner_Max" xml:space="preserve">
     <value>Max</value>
   </data>
+  <data name="FieldDesigner_MaximumCannotBeSmallerThanThe" xml:space="preserve">
+    <value>Maximum cannot be smaller than the minimum. The last valid value was kept.</value>
+  </data>
+  <data name="FieldDesigner_MaximumLength" xml:space="preserve">
+    <value>Maximum length</value>
+  </data>
+  <data name="FieldDesigner_MaximumLengthCannotBeSmallerThan" xml:space="preserve">
+    <value>Maximum length cannot be smaller than the minimum length. The last valid value was kept.</value>
+  </data>
   <data name="FieldDesigner_MaxLength0None" xml:space="preserve">
     <value>Max length (0: none)</value>
   </data>
   <data name="FieldDesigner_Min" xml:space="preserve">
     <value>Min</value>
   </data>
+  <data name="FieldDesigner_MinimumCannotBeLargerThanThe" xml:space="preserve">
+    <value>Minimum cannot be larger than the maximum. The last valid value was kept.</value>
+  </data>
+  <data name="FieldDesigner_MinimumLength" xml:space="preserve">
+    <value>Minimum length</value>
+  </data>
+  <data name="FieldDesigner_MinimumLengthCannotBeLargerThan" xml:space="preserve">
+    <value>Minimum length cannot be larger than the maximum length. The last valid value was kept.</value>
+  </data>
   <data name="FieldDesigner_MinLength" xml:space="preserve">
     <value>Min length</value>
+  </data>
+  <data name="FieldDesigner_MovedToPositionOf" xml:space="preserve">
+    <value>Moved {0} to position {1} of {2}.</value>
+  </data>
+  <data name="FieldDesigner_MustBeTheLastValidValue" xml:space="preserve">
+    <value>{0} must be {1}. The last valid value was kept.</value>
+  </data>
+  <data name="FieldDesigner_NotShownInTheForm" xml:space="preserve">
+    <value>Not shown in the form</value>
+  </data>
+  <data name="FieldDesigner_OptionValuesMustBeUnique" xml:space="preserve">
+    <value>Option values must be unique: {0}.</value>
   </data>
   <data name="FieldDesigner_OrderField" xml:space="preserve">
     <value>Order field</value>
@@ -328,6 +526,12 @@
   <data name="FieldDesigner_PatternRegularExpression" xml:space="preserve">
     <value>Pattern (regular expression)</value>
   </data>
+  <data name="FieldDesigner_PickAFieldInTheList" xml:space="preserve">
+    <value>Pick a field in the list to design it.</value>
+  </data>
+  <data name="FieldDesigner_PickATableThenAField" xml:space="preserve">
+    <value>Pick a table, then a field, to design it.</value>
+  </data>
   <data name="FieldDesigner_PK" xml:space="preserve">
     <value>PK</value>
   </data>
@@ -336,6 +540,12 @@
   </data>
   <data name="FieldDesigner_PREVIEWONTHESITE" xml:space="preserve">
     <value>PREVIEW ON THE SITE</value>
+  </data>
+  <data name="FieldDesigner_PrimaryKey" xml:space="preserve">
+    <value>Primary key</value>
+  </data>
+  <data name="FieldDesigner_PrimaryKeyPosition" xml:space="preserve">
+    <value>Primary key (position {0})</value>
   </data>
   <data name="FieldDesigner_ReadOnlyOnEdit" xml:space="preserve">
     <value>Read-only on edit</value>
@@ -352,8 +562,14 @@
   <data name="FieldDesigner_RequiredMessage" xml:space="preserve">
     <value>Required message</value>
   </data>
+  <data name="FieldDesigner_ResetEveryDesignSettingOfTo" xml:space="preserve">
+    <value>Reset every design setting of {0} to its default? Its caption, type and key settings are not changed.</value>
+  </data>
   <data name="FieldDesigner_ResetField" xml:space="preserve">
     <value>Reset field</value>
+  </data>
+  <data name="FieldDesigner_ResetTheDesignSettingsOf" xml:space="preserve">
+    <value>Reset the design settings of {0}.</value>
   </data>
   <data name="FieldDesigner_Rows150" xml:space="preserve">
     <value>Rows (1-50)</value>
@@ -363,6 +579,24 @@
   </data>
   <data name="FieldDesigner_SearchFieldNames" xml:space="preserve">
     <value>Search field names</value>
+  </data>
+  <data name="FieldDesigner_Secret" xml:space="preserve">
+    <value>Secret</value>
+  </data>
+  <data name="FieldDesigner_SectionDisplay" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="FieldDesigner_SectionEditing" xml:space="preserve">
+    <value>Editing</value>
+  </data>
+  <data name="FieldDesigner_SectionGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="FieldDesigner_SectionStyle" xml:space="preserve">
+    <value>Style</value>
+  </data>
+  <data name="FieldDesigner_SectionValidation" xml:space="preserve">
+    <value>Validation</value>
   </data>
   <data name="FieldDesigner_ShowInAdd" xml:space="preserve">
     <value>Show in add</value>
@@ -376,6 +610,9 @@
   <data name="FieldDesigner_ShowInView" xml:space="preserve">
     <value>Show in view</value>
   </data>
+  <data name="FieldDesigner_ShownAsTextNotEditable" xml:space="preserve">
+    <value>Shown as text, not editable</value>
+  </data>
   <data name="FieldDesigner_ShowTheDisplayTextInList" xml:space="preserve">
     <value>Show the display text in list and view pages</value>
   </data>
@@ -385,11 +622,20 @@
   <data name="FieldDesigner_Step" xml:space="preserve">
     <value>Step</value>
   </data>
+  <data name="FieldDesigner_StepMustBeGreaterThan0" xml:space="preserve">
+    <value>Step must be greater than 0. The last valid value was kept.</value>
+  </data>
   <data name="FieldDesigner_TestThePatternWithASample" xml:space="preserve">
     <value>Test the pattern with a sample (the whole text must match)</value>
   </data>
   <data name="FieldDesigner_Text" xml:space="preserve">
     <value>Text</value>
+  </data>
+  <data name="FieldDesigner_ThePatternIsNotAValid" xml:space="preserve">
+    <value>The pattern is not a valid regular expression ({0}) The last valid pattern was kept.</value>
+  </data>
+  <data name="FieldDesigner_ThereIsNoOtherFieldTo" xml:space="preserve">
+    <value>There is no other {0} field to copy the settings of {1} to.</value>
   </data>
   <data name="FieldDesigner_Tooltip" xml:space="preserve">
     <value>Tooltip</value>
@@ -403,11 +649,53 @@
   <data name="FieldDesigner_Width120px20Auto" xml:space="preserve">
     <value>Width (120px, 20%, auto)</value>
   </data>
+  <data name="FieldDesigner_WidthMustBeACSSLength" xml:space="preserve">
+    <value>Width must be a CSS length such as 120px, 20% or auto. The last valid value was kept.</value>
+  </data>
+  <data name="FormPages_AddAFormPageFirst" xml:space="preserve">
+    <value>Add a form page first.</value>
+  </data>
+  <data name="FormPages_AFormPageNameCanHave" xml:space="preserve">
+    <value>A form page name can have at most 50 characters. The last name was kept.</value>
+  </data>
+  <data name="FormPages_AFormPageNeedsAName" xml:space="preserve">
+    <value>A form page needs a name. The last name was kept.</value>
+  </data>
+  <data name="FormPages_FirstPage" xml:space="preserve">
+    <value>(first page)</value>
+  </data>
+  <data name="FormPages_ThereIsAlreadyAFormPage" xml:space="preserve">
+    <value>There is already a form page named '{0}'. The last name was kept.</value>
+  </data>
+  <data name="FormPages_TickTheFieldsToAssignFirst" xml:space="preserve">
+    <value>Tick the fields to assign first.</value>
+  </data>
+  <data name="FormPages_TickTheFieldsToMoveFirst" xml:space="preserve">
+    <value>Tick the fields to move first.</value>
+  </data>
   <data name="Generate_AutoScroll" xml:space="preserve">
     <value>Auto-scroll</value>
   </data>
+  <data name="Generate_Build" xml:space="preserve">
+    <value>Build ({0})</value>
+  </data>
   <data name="Generate_BuildOnly" xml:space="preserve">
     <value>Build only</value>
+  </data>
+  <data name="Generate_BuildSucceededWithWarningSIn" xml:space="preserve">
+    <value>Build succeeded with {0} warning(s) in {1:0.#} s.</value>
+  </data>
+  <data name="Generate_BuiltDockerImage" xml:space="preserve">
+    <value> Built Docker image {0}.</value>
+  </data>
+  <data name="Generate_BuiltWithWarningSInS" xml:space="preserve">
+    <value> Built with {0} warning(s) in {1:0.#} s.</value>
+  </data>
+  <data name="Generate_Cancelled" xml:space="preserve">
+    <value>Cancelled.</value>
+  </data>
+  <data name="Generate_CancelledDuring" xml:space="preserve">
+    <value>Cancelled during {0}.</value>
   </data>
   <data name="Generate_ChangeInTheProjectTab" xml:space="preserve">
     <value>Change in the Project tab</value>
@@ -415,17 +703,62 @@
   <data name="Generate_Code" xml:space="preserve">
     <value>Code</value>
   </data>
+  <data name="Generate_CopiedTheConsoleOutputToThe" xml:space="preserve">
+    <value>Copied the console output to the clipboard.</value>
+  </data>
+  <data name="Generate_CopiedToTheClipboard" xml:space="preserve">
+    <value>Copied {0} to the clipboard.</value>
+  </data>
   <data name="Generate_CopyAll" xml:space="preserve">
     <value>Copy all</value>
   </data>
   <data name="Generate_DiagnosticsDoubleClickARowTo" xml:space="preserve">
     <value>Diagnostics (double-click a row to copy path:line)</value>
   </data>
+  <data name="Generate_DockerFiles" xml:space="preserve">
+    <value>Docker files</value>
+  </data>
+  <data name="Generate_DockerImage" xml:space="preserve">
+    <value>Docker image</value>
+  </data>
+  <data name="Generate_DockerImage2" xml:space="preserve">
+    <value>Docker image {0}</value>
+  </data>
+  <data name="Generate_Generate" xml:space="preserve">
+    <value>Generate: {0}</value>
+  </data>
+  <data name="Generate_GeneratedFileSInto" xml:space="preserve">
+    <value>Generated {0} file(s) into {1}.</value>
+  </data>
+  <data name="Generate_GenerateOnlyBuildPublishAndDocker" xml:space="preserve">
+    <value>Generate only. Build, publish and Docker options are in the Project tab.</value>
+  </data>
+  <data name="Generate_GenerateThen" xml:space="preserve">
+    <value>Generate, then {0}.</value>
+  </data>
+  <data name="Generate_GenerationBlocked" xml:space="preserve">
+    <value>Generation blocked: {0}</value>
+  </data>
+  <data name="Generate_GenerationBlockedEnterTheConnectionString" xml:space="preserve">
+    <value>Generation blocked: enter the connection string or its environment variable on the Database section.</value>
+  </data>
+  <data name="Generate_GenerationFailed" xml:space="preserve">
+    <value>Generation failed: {0}</value>
+  </data>
   <data name="Generate_Line" xml:space="preserve">
     <value>Line</value>
   </data>
   <data name="Generate_Message" xml:space="preserve">
     <value>Message</value>
+  </data>
+  <data name="Generate_NoFreePortWasFound" xml:space="preserve">
+    <value>No free port was found: {0}</value>
+  </data>
+  <data name="Generate_NotFoundOnPATH" xml:space="preserve">
+    <value>{0}: not found on PATH</value>
+  </data>
+  <data name="Generate_NotSupported" xml:space="preserve">
+    <value>Not supported: {0}</value>
   </data>
   <data name="Generate_OpenInBrowser" xml:space="preserve">
     <value>Open in browser</value>
@@ -439,8 +772,17 @@
   <data name="Generate_OutputFolderRelativeToTheProject" xml:space="preserve">
     <value>Output folder (relative to the project folder, or absolute)</value>
   </data>
+  <data name="Generate_PublishedTo" xml:space="preserve">
+    <value> Published to {0}.</value>
+  </data>
+  <data name="Generate_PublishedTo2" xml:space="preserve">
+    <value>Published to {0}.</value>
+  </data>
   <data name="Generate_PublishOnly" xml:space="preserve">
     <value>Publish only</value>
+  </data>
+  <data name="Generate_PublishTo" xml:space="preserve">
+    <value>Publish to {0}</value>
   </data>
   <data name="Generate_RunningAt" xml:space="preserve">
     <value>Running at</value>
@@ -448,14 +790,80 @@
   <data name="Generate_RunSite" xml:space="preserve">
     <value>Run site</value>
   </data>
+  <data name="Generate_RunSiteDotnetRunNoBuild" xml:space="preserve">
+    <value>Run site: dotnet run --no-build --urls {0}</value>
+  </data>
+  <data name="Generate_SaveTheProjectFirstOutputAnd" xml:space="preserve">
+    <value>Save the project first. Output and database paths are resolved against the project folder.</value>
+  </data>
   <data name="Generate_Severity" xml:space="preserve">
     <value>Severity</value>
+  </data>
+  <data name="Generate_StageBuild" xml:space="preserve">
+    <value>Build</value>
+  </data>
+  <data name="Generate_StagePublish" xml:space="preserve">
+    <value>Publish</value>
   </data>
   <data name="Generate_Stop" xml:space="preserve">
     <value>Stop</value>
   </data>
+  <data name="Generate_StoppingTheRunningSiteBeforeBuilding" xml:space="preserve">
+    <value>Stopping the running site before building.</value>
+  </data>
+  <data name="Generate_TheBrowserCouldNotBeOpened" xml:space="preserve">
+    <value>The browser could not be opened: {0}</value>
+  </data>
+  <data name="Generate_TheDockerImageStageIsOn" xml:space="preserve">
+    <value>The Docker image stage is on, but the Docker CLI was not found. Install Docker or set its path in Tools &gt; Options.</value>
+  </data>
+  <data name="Generate_TheDotnetCLIWasNotFound" xml:space="preserve">
+    <value>The dotnet CLI was not found. Install the .NET SDK or set its path in Tools &gt; Options.</value>
+  </data>
+  <data name="Generate_TheFolderCouldNotBeOpened" xml:space="preserve">
+    <value>The folder could not be opened: {0}</value>
+  </data>
+  <data name="Generate_TheOutputFolderDoesNotExist" xml:space="preserve">
+    <value>The output folder {0} does not exist yet. Use Generate first.</value>
+  </data>
+  <data name="Generate_ThePathSetInOptionsWas" xml:space="preserve">
+    <value>{0}: the path set in Options was not found ({1})</value>
+  </data>
+  <data name="Generate_ThereIsNoGeneratedSiteIn" xml:space="preserve">
+    <value>There is no generated site in {0}. Use Generate first.</value>
+  </data>
+  <data name="Generate_TheSiteCouldNotBeStarted" xml:space="preserve">
+    <value>The site could not be started: {0}</value>
+  </data>
+  <data name="Generate_TheSiteHasNotBeenBuilt" xml:space="preserve">
+    <value>The site has not been built yet. Use Build only (or turn on Build in the Project tab) first.</value>
+  </data>
+  <data name="Generate_TheSiteIsNotRunningUse" xml:space="preserve">
+    <value>The site is not running. Use Run site first.</value>
+  </data>
+  <data name="Generate_TheSiteIsRunningAt" xml:space="preserve">
+    <value>The site is running at {0}.</value>
+  </data>
+  <data name="Generate_TheSiteStoppedExitCode" xml:space="preserve">
+    <value>The site stopped (exit code {0}).</value>
+  </data>
+  <data name="Generate_TheSiteStoppedOnItsOwn" xml:space="preserve">
+    <value>The site stopped on its own (exit code {0}).</value>
+  </data>
+  <data name="Generate_TheSiteWasStopped" xml:space="preserve">
+    <value>The site was stopped.</value>
+  </data>
+  <data name="Generate_WaitForTheCurrentBuildTo" xml:space="preserve">
+    <value>Wait for the current build to finish before running the site.</value>
+  </data>
+  <data name="Generate_WasCancelled" xml:space="preserve">
+    <value>{0} was cancelled.</value>
+  </data>
   <data name="Generate_WritesTheASPNETCoreProject" xml:space="preserve">
     <value>Writes the ASP.NET Core project for every table marked Generate, then builds, publishes or packs it as the Project tab says. Save the project before generating.</value>
+  </data>
+  <data name="Generate_WroteDockerFileS" xml:space="preserve">
+    <value> Wrote {0} Docker file(s).</value>
   </data>
   <data name="ImportExport_ChoosePerTableWhetherItExports" xml:space="preserve">
     <value>Choose per table whether it exports and imports. Upsert updates rows whose key is already there. Excluded fields (comma separated) are left out of both; password and secret fields always are.</value>
@@ -468,6 +876,9 @@
   </data>
   <data name="ImportExport_DateFormat" xml:space="preserve">
     <value>Date format</value>
+  </data>
+  <data name="ImportExport_ExcelXlsx" xml:space="preserve">
+    <value>Excel (.xlsx)</value>
   </data>
   <data name="ImportExport_Export" xml:space="preserve">
     <value>Export</value>
@@ -499,14 +910,59 @@
   <data name="ImportExport_MostExportRows0All" xml:space="preserve">
     <value>Most export rows (0 = all)</value>
   </data>
+  <data name="ImportExport_TheLastValidValueWasKept" xml:space="preserve">
+    <value> The last valid value was kept.</value>
+  </data>
+  <data name="ImportExport_TheLowestLevelForExportMust" xml:space="preserve">
+    <value>The lowest level for export must be zero or a positive whole number.</value>
+  </data>
+  <data name="ImportExport_TheLowestLevelForImportMust" xml:space="preserve">
+    <value>The lowest level for import must be zero or a positive whole number.</value>
+  </data>
+  <data name="ImportExport_TheMostExportRowsOfMust" xml:space="preserve">
+    <value>The most export rows of '{0}' must be zero (all) or a positive whole number. The last valid value was kept.</value>
+  </data>
+  <data name="ImportExport_TheUploadLimitMustBeA" xml:space="preserve">
+    <value>The upload limit must be a whole number of megabytes from 1 to 100.</value>
+  </data>
+  <data name="ImportExport_WordDocx" xml:space="preserve">
+    <value>Word (.docx)</value>
+  </data>
   <data name="ImportExport_WriteAHeaderRow" xml:space="preserve">
     <value>Write a header row</value>
+  </data>
+  <data name="LanguageCatalog_EnterALanguageCodeSuchAs" xml:space="preserve">
+    <value>Enter a language code such as de or pt-BR.</value>
+  </data>
+  <data name="LanguageCatalog_IsNotALanguageCodeUse" xml:space="preserve">
+    <value>'{0}' is not a language code. Use letters and digits such as de, pt-BR or zh-Hans.</value>
   </data>
   <data name="Languages_AddFromList" xml:space="preserve">
     <value>Add from list...</value>
   </data>
+  <data name="Languages_AddLanguage" xml:space="preserve">
+    <value>Add language</value>
+  </data>
+  <data name="Languages_AllLanguages" xml:space="preserve">
+    <value>All languages</value>
+  </data>
+  <data name="Languages_AutomaticTranslationIsOffTickTranslate" xml:space="preserve">
+    <value>Automatic translation is off. Tick 'Translate automatically with an online service' first. Nothing was sent.</value>
+  </data>
   <data name="Languages_BuiltInShippedWithWebAppForgeTyping" xml:space="preserve">
     <value>Built-in: shipped with WebAppForge; typing a text replaces it for this project</value>
+  </data>
+  <data name="Languages_Cancelled" xml:space="preserve">
+    <value>Cancelled. </value>
+  </data>
+  <data name="Languages_ChooseALanguageToAddTo" xml:space="preserve">
+    <value>Choose a language to add to the site.</value>
+  </data>
+  <data name="Languages_ChooseATranslationServiceGoogleOr" xml:space="preserve">
+    <value>Choose a translation service (Google or Claude) first. Nothing was sent.</value>
+  </data>
+  <data name="Languages_CoveredByTheBuiltInTranslation" xml:space="preserve">
+    <value>, {0} covered by the built-in translation.</value>
   </data>
   <data name="Languages_DefaultLanguageTheLanguageOfYour" xml:space="preserve">
     <value>Default language (the language of your captions)</value>
@@ -517,14 +973,44 @@
   <data name="Languages_ExportCSV" xml:space="preserve">
     <value>Export CSV...</value>
   </data>
+  <data name="Languages_ExportedTranslationSTo" xml:space="preserve">
+    <value>Exported {0} translation(s) to {1}.</value>
+  </data>
+  <data name="Languages_ExportFailed" xml:space="preserve">
+    <value>Export failed: {0}</value>
+  </data>
   <data name="Languages_ImportCSV" xml:space="preserve">
     <value>Import CSV...</value>
+  </data>
+  <data name="Languages_ImportedTranslationSSkippedForUnknown" xml:space="preserve">
+    <value>Imported {0} translation(s). Skipped {1} for unknown keys, {2} for languages not in the project, {3} other.</value>
+  </data>
+  <data name="Languages_ImportFailed" xml:space="preserve">
+    <value>Import failed: {0}</value>
+  </data>
+  <data name="Languages_IsAlreadyOneOfTheLanguages" xml:space="preserve">
+    <value>{0} is already one of the languages.</value>
+  </data>
+  <data name="Languages_IsNotSetSetItAs" xml:space="preserve">
+    <value>{0} is not set. Set it as an environment variable and restart the editor.</value>
+  </data>
+  <data name="Languages_IsNotSetSoCannotBe" xml:space="preserve">
+    <value>{0} is not set, so {1} cannot be used. Nothing was sent.</value>
+  </data>
+  <data name="Languages_IsSetTheKeyIsRead" xml:space="preserve">
+    <value>{0} is set. The key is read from the environment and is never saved in the project.</value>
   </data>
   <data name="Languages_Language" xml:space="preserve">
     <value>Language</value>
   </data>
   <data name="Languages_LanguagesAndAutomaticTranslation" xml:space="preserve">
     <value>Languages and automatic translation</value>
+  </data>
+  <data name="Languages_NothingToTranslateUpToDate" xml:space="preserve">
+    <value>Nothing to translate. {0} up to date, {1} skipped because reviewed or typed by hand</value>
+  </data>
+  <data name="Languages_NoTranslationServiceChosenChooseGoogle" xml:space="preserve">
+    <value>No translation service chosen. Choose Google or Claude to translate automatically.</value>
   </data>
   <data name="Languages_Of" xml:space="preserve">
     <value>of</value>
@@ -550,14 +1036,49 @@
   <data name="Languages_SearchKeysAndTexts" xml:space="preserve">
     <value>Search keys and texts</value>
   </data>
+  <data name="Languages_SelectALanguageToRemove" xml:space="preserve">
+    <value>Select a language to remove.</value>
+  </data>
+  <data name="Languages_SelectOneOrMoreRowsIn" xml:space="preserve">
+    <value>Select one or more rows in the grid first.</value>
+  </data>
+  <data name="Languages_SendTextsToATranslationService" xml:space="preserve">
+    <value>Send texts to a translation service?</value>
+  </data>
+  <data name="Languages_Service" xml:space="preserve">
+    <value>Service: </value>
+  </data>
   <data name="Languages_SourceText" xml:space="preserve">
     <value>Source text</value>
+  </data>
+  <data name="Languages_StringsToSend" xml:space="preserve">
+    <value>Strings to send: </value>
+  </data>
+  <data name="Languages_TargetLanguages" xml:space="preserve">
+    <value>Target languages: </value>
   </data>
   <data name="Languages_TextsAreSentToTheService" xml:space="preserve">
     <value>Texts are sent to the service only when you start a translation and confirm. Reviewed and typed texts are never replaced.</value>
   </data>
+  <data name="Languages_TheDefaultLanguageCannotBeRemoved" xml:space="preserve">
+    <value>The default language cannot be removed. Choose another default language first.</value>
+  </data>
+  <data name="Languages_TheseTextsWillBeSentTo" xml:space="preserve">
+    <value>These texts will be sent to a third party over the internet:
+
+</value>
+  </data>
+  <data name="Languages_TheTranslationServiceCouldNotBe" xml:space="preserve">
+    <value>The translation service could not be created. Nothing was sent.</value>
+  </data>
   <data name="Languages_TranslateAutomaticallyWithAnOnlineService" xml:space="preserve">
     <value>Translate automatically with an online service (opt in)</value>
+  </data>
+  <data name="Languages_TranslateButton" xml:space="preserve">
+    <value>Translate</value>
+  </data>
+  <data name="Languages_TranslatedSkippedBecauseReviewedOrTyped" xml:space="preserve">
+    <value>Translated {0}, skipped {1} because reviewed or typed by hand, failed {2}.</value>
   </data>
   <data name="Languages_TranslateMissing" xml:space="preserve">
     <value>Translate missing</value>
@@ -568,6 +1089,9 @@
   <data name="Languages_TranslatesTheMissingTextsOfThe" xml:space="preserve">
     <value>Translates the missing texts of the chosen language, or of all languages</value>
   </data>
+  <data name="Languages_TranslationCancelledNothingWasSent" xml:space="preserve">
+    <value>Translation cancelled. Nothing was sent.</value>
+  </data>
   <data name="Languages_TranslationNotesStyleGlossarySentWith" xml:space="preserve">
     <value>Translation notes (style, glossary; sent with the texts)</value>
   </data>
@@ -577,14 +1101,36 @@
   <data name="Languages_WrittenRightToLeft" xml:space="preserve">
     <value>Written right to left</value>
   </data>
+  <data name="Languages_YourTranslationNotesAreSentWith" xml:space="preserve">
+    <value>Your translation notes are sent with them.
+</value>
+  </data>
   <data name="Main_AboutWebAppForge" xml:space="preserve">
     <value>About WebAppForge</value>
+  </data>
+  <data name="Main_AutosavedABackupCopyTo" xml:space="preserve">
+    <value>Autosaved a backup copy to {0}.</value>
+  </data>
+  <data name="Main_AutosaveFailed" xml:space="preserve">
+    <value>Autosave failed: {0}</value>
   </data>
   <data name="Main_ConnectToDatabase" xml:space="preserve">
     <value>Connect to database</value>
   </data>
+  <data name="Main_CouldNotOpen" xml:space="preserve">
+    <value>Could not open {0}: {1}</value>
+  </data>
+  <data name="Main_CouldNotReopen" xml:space="preserve">
+    <value>Could not reopen {0}: {1}</value>
+  </data>
+  <data name="Main_CreateANewProjectOrOpen" xml:space="preserve">
+    <value>Create a new project or open an existing one.</value>
+  </data>
   <data name="Main_CustomStyles" xml:space="preserve">
     <value>Custom styles...</value>
+  </data>
+  <data name="Main_CustomStylesSetTo" xml:space="preserve">
+    <value>Custom styles set to {0}.</value>
   </data>
   <data name="Main_Exit" xml:space="preserve">
     <value>Exit</value>
@@ -598,8 +1144,14 @@
   <data name="Main_NewProject" xml:space="preserve">
     <value>New project</value>
   </data>
+  <data name="Main_NewProjectSaveItToChoose" xml:space="preserve">
+    <value>New project. Save it to choose a project folder.</value>
+  </data>
   <data name="Main_NotSavedYet" xml:space="preserve">
     <value>Not saved yet</value>
+  </data>
+  <data name="Main_NotSavedYet2" xml:space="preserve">
+    <value>(not saved yet)</value>
   </data>
   <data name="Main_Open" xml:space="preserve">
     <value>Open...</value>
@@ -607,14 +1159,23 @@
   <data name="Main_Open2" xml:space="preserve">
     <value>Open</value>
   </data>
+  <data name="Main_OpenedWithTableS" xml:space="preserve">
+    <value>Opened {0} with {1} table(s).</value>
+  </data>
   <data name="Main_OpenProjectCtrlO" xml:space="preserve">
     <value>Open project (Ctrl+O)</value>
   </data>
   <data name="Main_Options" xml:space="preserve">
     <value>Options...</value>
   </data>
+  <data name="Main_OptionsApplied" xml:space="preserve">
+    <value>Options applied.</value>
+  </data>
   <data name="Main_OptionsCtrl" xml:space="preserve">
     <value>Options (Ctrl+,)</value>
+  </data>
+  <data name="Main_ReopenedWithTableS" xml:space="preserve">
+    <value>Reopened {0} with {1} table(s).</value>
   </data>
   <data name="Main_SaveAs" xml:space="preserve">
     <value>Save As...</value>
@@ -624,6 +1185,12 @@
   </data>
   <data name="Main_Saved" xml:space="preserve">
     <value>Saved</value>
+  </data>
+  <data name="Main_Saved2" xml:space="preserve">
+    <value>Saved {0}.</value>
+  </data>
+  <data name="Main_SaveFailed" xml:space="preserve">
+    <value>Save failed: {0}</value>
   </data>
   <data name="Main_SearchKindField" xml:space="preserve">
     <value>Field</value>
@@ -658,14 +1225,23 @@
   <data name="Main_UntitledProject" xml:space="preserve">
     <value>Untitled project</value>
   </data>
+  <data name="Main_WebAppForgeDesktopEditorAppearanceAndSession" xml:space="preserve">
+    <value>WebAppForge desktop editor. Appearance and session settings are under Tools &gt; Options.</value>
+  </data>
   <data name="Options_Advanced" xml:space="preserve">
     <value>Advanced</value>
+  </data>
+  <data name="Options_AllSettingsWereResetToTheir" xml:space="preserve">
+    <value>All settings were reset to their defaults.</value>
   </data>
   <data name="Options_Appearance" xml:space="preserve">
     <value>Appearance</value>
   </data>
   <data name="Options_AppearanceMode" xml:space="preserve">
     <value>Appearance mode</value>
+  </data>
+  <data name="Options_Applied" xml:space="preserve">
+    <value>Applied.</value>
   </data>
   <data name="Options_Apply" xml:space="preserve">
     <value>Apply</value>
@@ -675,6 +1251,9 @@
   </data>
   <data name="Options_AskBeforeExitingWhenTheProject" xml:space="preserve">
     <value>Ask before exiting when the project has unsaved changes (off: exit without asking)</value>
+  </data>
+  <data name="Options_AutosaveInterval" xml:space="preserve">
+    <value>Autosave interval</value>
   </data>
   <data name="Options_AutosaveIntervalInMinutes0Off" xml:space="preserve">
     <value>Autosave interval in minutes (0 = off)</value>
@@ -694,6 +1273,9 @@
   <data name="Options_CompactTablesSmallerRowHeight" xml:space="preserve">
     <value>Compact tables (smaller row height)</value>
   </data>
+  <data name="Options_CouldNotOpenTheSettingsFolder" xml:space="preserve">
+    <value>Could not open the settings folder: {0}</value>
+  </data>
   <data name="Options_CustomStylesAXAMLResourceDictionaryOptional" xml:space="preserve">
     <value>Custom styles (AXAML resource dictionary, optional)</value>
   </data>
@@ -706,17 +1288,38 @@
   <data name="Options_DefaultPageSize" xml:space="preserve">
     <value>Default page size</value>
   </data>
+  <data name="Options_DefaultsRestoredOnThisPageClick" xml:space="preserve">
+    <value>Defaults restored on this page. Click Apply or OK to keep them.</value>
+  </data>
   <data name="Options_Detect" xml:space="preserve">
     <value>Detect</value>
   </data>
   <data name="Options_DetectRunsEachProgramWithVersion" xml:space="preserve">
     <value>Detect runs each program with --version (5 second limit). The paths are stored for later features; the app does not run these tools yet.</value>
   </data>
+  <data name="Options_EnterAClaudeModelId" xml:space="preserve">
+    <value>Enter a Claude model id.</value>
+  </data>
+  <data name="Options_EnterAnOutputFolderPattern" xml:space="preserve">
+    <value>Enter an output folder pattern.</value>
+  </data>
+  <data name="Options_EnterAProxyURLSuchAs" xml:space="preserve">
+    <value>Enter a proxy URL such as http://proxy.example.com:8080 (http, https or socks5).</value>
+  </data>
+  <data name="Options_FixTheHighlightedEntriesFirst" xml:space="preserve">
+    <value>Fix the highlighted entries first.</value>
+  </data>
   <data name="Options_General" xml:space="preserve">
     <value>General</value>
   </data>
   <data name="Options_HTTPProxyURLOptional" xml:space="preserve">
     <value>HTTP proxy URL (optional)</value>
+  </data>
+  <data name="Options_IsNotSet" xml:space="preserve">
+    <value>{0} is not set.</value>
+  </data>
+  <data name="Options_IsSet" xml:space="preserve">
+    <value>{0} is set.</value>
   </data>
   <data name="Options_KeysAreReadFromEnvironmentVariables" xml:space="preserve">
     <value>Keys are read from environment variables and are never saved in project files or in these settings. The provider and model are stored for later features; nothing translates yet.</value>
@@ -726,6 +1329,9 @@
   </data>
   <data name="Options_LeaveAPathEmptyToUse" xml:space="preserve">
     <value>Leave a path empty to use the program found on PATH.</value>
+  </data>
+  <data name="Options_MustBeAWholeNumberFrom" xml:space="preserve">
+    <value>{0} must be a whole number from {1} to {2}{3}.</value>
   </data>
   <data name="Options_Network" xml:space="preserve">
     <value>Network</value>
@@ -739,14 +1345,23 @@
   <data name="Options_OpenTheOutputFolderAfterGenerating" xml:space="preserve">
     <value>Open the output folder after generating</value>
   </data>
+  <data name="Options_RecentFiles" xml:space="preserve">
+    <value>Recent files</value>
+  </data>
   <data name="Options_RecentFilesListLength5To" xml:space="preserve">
     <value>Recent files list length (5 to 20)</value>
   </data>
   <data name="Options_ReopenTheLastProjectAtStartup" xml:space="preserve">
     <value>Reopen the last project at startup</value>
   </data>
+  <data name="Options_RequestTimeout" xml:space="preserve">
+    <value>Request timeout</value>
+  </data>
   <data name="Options_RequestTimeoutInSeconds0No" xml:space="preserve">
     <value>Request timeout in seconds (0 = no limit for build and publish)</value>
+  </data>
+  <data name="Options_ResetAll" xml:space="preserve">
+    <value>Reset all</value>
   </data>
   <data name="Options_ResetALLAsksForConfirmationThen" xml:space="preserve">
     <value>Reset ALL asks for confirmation, then sets every option on every page to its default and applies it at once.</value>
@@ -754,11 +1369,20 @@
   <data name="Options_ResetALLSettings" xml:space="preserve">
     <value>Reset ALL settings...</value>
   </data>
+  <data name="Options_ResetAllSettingsTitle" xml:space="preserve">
+    <value>Reset all settings</value>
+  </data>
+  <data name="Options_ResetEveryOptionOnEveryPage" xml:space="preserve">
+    <value>Reset every option on every page to its default value? The recent files list and the last project are cleared too.</value>
+  </data>
   <data name="Options_ResetThisPageToDefaults" xml:space="preserve">
     <value>Reset this page to defaults</value>
   </data>
   <data name="Options_ResourcesOnlyTheFileMustBe" xml:space="preserve">
     <value>Resources only: the file must be a ResourceDictionary without x:Class.</value>
+  </data>
+  <data name="Options_SessionIdleTimeout" xml:space="preserve">
+    <value>Session idle timeout</value>
   </data>
   <data name="Options_SessionIdleTimeoutInMinutesNo" xml:space="preserve">
     <value>Session idle timeout in minutes (no input)</value>
@@ -781,6 +1405,12 @@
   <data name="Options_ThemePaletteAccentColour" xml:space="preserve">
     <value>Theme palette (accent colour)</value>
   </data>
+  <data name="Options_TheModelIdMayContainLetters" xml:space="preserve">
+    <value>The model id may contain letters, digits and . _ : / - only.</value>
+  </data>
+  <data name="Options_ThePatternContainsCharactersThatAre" xml:space="preserve">
+    <value>The pattern contains characters that are not allowed in a path.</value>
+  </data>
   <data name="Options_ToolsAndPaths" xml:space="preserve">
     <value>Tools and paths</value>
   </data>
@@ -790,6 +1420,9 @@
   <data name="Options_TranslationProvider" xml:space="preserve">
     <value>Translation provider</value>
   </data>
+  <data name="Options_UIFontSize" xml:space="preserve">
+    <value>UI font size</value>
+  </data>
   <data name="Options_UIFontSize10To20" xml:space="preserve">
     <value>UI font size (10 to 20)</value>
   </data>
@@ -798,6 +1431,15 @@
   </data>
   <data name="Options_UiLanguageHint" xml:space="preserve">
     <value>The language of the editor's menus, tabs and dialogs. The generated site has its own languages on the Languages tab.</value>
+  </data>
+  <data name="Options_UnitMinutes" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="Options_UnitMinutesOff" xml:space="preserve">
+    <value>minutes, 0 = off</value>
+  </data>
+  <data name="Options_UnitSeconds" xml:space="preserve">
+    <value>seconds</value>
   </data>
   <data name="Options_UsePATH" xml:space="preserve">
     <value>(use PATH)</value>
@@ -813,6 +1455,9 @@
   </data>
   <data name="PageDesigner_AddPage" xml:space="preserve">
     <value>Add page</value>
+  </data>
+  <data name="PageDesigner_AnIconNameUsesLowerCase" xml:space="preserve">
+    <value>An icon name uses lower case letters, digits and dashes, for example people or card-list. The last valid icon was kept.</value>
   </data>
   <data name="PageDesigner_AppliesToTheAddCopyEdit" xml:space="preserve">
     <value>Applies to the Add, Copy, Edit and Search pages.</value>
@@ -850,14 +1495,29 @@
   <data name="PageDesigner_ContainerHowThePageOpensFrom" xml:space="preserve">
     <value>Container (how the page opens from the list)</value>
   </data>
+  <data name="PageDesigner_CopiedThePageDesignOfTo" xml:space="preserve">
+    <value>Copied the {0} page design of {1} to the {2} page of {3}.</value>
+  </data>
+  <data name="PageDesigner_CopiedTheSearchingFilteringAndSorting" xml:space="preserve">
+    <value>Copied the searching, filtering and sorting options to 1 other list.</value>
+  </data>
+  <data name="PageDesigner_CopiedTheSearchingFilteringAndSorting2" xml:space="preserve">
+    <value>Copied the searching, filtering and sorting options to {0} other lists.</value>
+  </data>
   <data name="PageDesigner_CopyDesignFrom" xml:space="preserve">
     <value>Copy design from...</value>
+  </data>
+  <data name="PageDesigner_CopyPageDesign" xml:space="preserve">
+    <value>Copy page design</value>
   </data>
   <data name="PageDesigner_CustomCSS" xml:space="preserve">
     <value>Custom CSS</value>
   </data>
   <data name="PageDesigner_CustomScript" xml:space="preserve">
     <value>Custom script</value>
+  </data>
+  <data name="PageDesigner_EveryFieldIsAlreadyAColumn" xml:space="preserve">
+    <value>Every field is already a column.</value>
   </data>
   <data name="PageDesigner_EveryWordMustMatchSomeColumn" xml:space="preserve">
     <value>Every word must match some column. "Phrases", column:value and -word (leave out) are understood.</value>
@@ -922,8 +1582,14 @@
   <data name="PageDesigner_Pager" xml:space="preserve">
     <value>Pager</value>
   </data>
+  <data name="PageDesigner_PageSizeIsListedTwiceThe" xml:space="preserve">
+    <value>Page size {0} is listed twice. The last valid list was kept.</value>
+  </data>
   <data name="PageDesigner_PageSizeOptionsCommaListFor" xml:space="preserve">
     <value>Page size options (comma list, for example 10, 25, 50)</value>
+  </data>
+  <data name="PageDesigner_PageSizesMustBeWholeNumbers" xml:space="preserve">
+    <value>Page sizes must be whole numbers from 1 to 1000 separated by commas ('{0}' is not). The last valid list was kept.</value>
   </data>
   <data name="PageDesigner_Pick" xml:space="preserve">
     <value>Pick</value>
@@ -940,11 +1606,20 @@
   <data name="PageDesigner_QuickFilterBox" xml:space="preserve">
     <value>Quick filter box</value>
   </data>
+  <data name="PageDesigner_ReplaceThePageDesignOfWith" xml:space="preserve">
+    <value>Replace the {0} page design of {1} with a copy of:</value>
+  </data>
   <data name="PageDesigner_ResetButton" xml:space="preserve">
     <value>Reset button</value>
   </data>
   <data name="PageDesigner_ResetPageDesign" xml:space="preserve">
     <value>Reset page design</value>
+  </data>
+  <data name="PageDesigner_ResetThePageDesignOf" xml:space="preserve">
+    <value>Reset the {0} page design of {1}.</value>
+  </data>
+  <data name="PageDesigner_ResetThePageDesignOfTo" xml:space="preserve">
+    <value>Reset the {0} page design of {1} to its defaults?</value>
   </data>
   <data name="PageDesigner_RowNumbers" xml:space="preserve">
     <value>Row numbers</value>
@@ -984,6 +1659,9 @@
   </data>
   <data name="PageDesigner_TextForAnEmptyList" xml:space="preserve">
     <value>Text for an empty list</value>
+  </data>
+  <data name="PageDesigner_ThisTableHasNoFields" xml:space="preserve">
+    <value>This table has no fields.</value>
   </data>
   <data name="PageDesigner_TitleEmptyTheGeneratedHeading" xml:space="preserve">
     <value>Title (empty: the generated heading)</value>
@@ -1045,11 +1723,20 @@
   <data name="ProjectSettings_Connection" xml:space="preserve">
     <value>Connection</value>
   </data>
+  <data name="ProjectSettings_ConnectionStringInTheProject" xml:space="preserve">
+    <value>Connection string in the project</value>
+  </data>
   <data name="ProjectSettings_Copyright" xml:space="preserve">
     <value>Copyright</value>
   </data>
+  <data name="ProjectSettings_CreatedANewProjectId" xml:space="preserve">
+    <value>Created a new project id.</value>
+  </data>
   <data name="ProjectSettings_Environment" xml:space="preserve">
     <value>Environment</value>
+  </data>
+  <data name="ProjectSettings_EnvironmentVariable" xml:space="preserve">
+    <value>Environment variable {0}</value>
   </data>
   <data name="ProjectSettings_ExposedPort165535" xml:space="preserve">
     <value>Exposed port (1-65535)</value>
@@ -1078,8 +1765,14 @@
   <data name="ProjectSettings_GoToSecurityTab" xml:space="preserve">
     <value>Go to Security tab</value>
   </data>
+  <data name="ProjectSettings_HTTPPort" xml:space="preserve">
+    <value>HTTP port</value>
+  </data>
   <data name="ProjectSettings_HTTPPort165535" xml:space="preserve">
     <value>HTTP port (1-65535)</value>
+  </data>
+  <data name="ProjectSettings_HTTPSPort" xml:space="preserve">
+    <value>HTTPS port</value>
   </data>
   <data name="ProjectSettings_HTTPSPort165535" xml:space="preserve">
     <value>HTTPS port (1-65535)</value>
@@ -1099,8 +1792,26 @@
   <data name="ProjectSettings_Logo" xml:space="preserve">
     <value>Logo</value>
   </data>
+  <data name="ProjectSettings_MultiLanguageSupportIsOff" xml:space="preserve">
+    <value>Multi-language support is off.</value>
+  </data>
+  <data name="ProjectSettings_MultiLanguageSupportIsOn" xml:space="preserve">
+    <value>Multi-language support is on: {0} (default {1}).</value>
+  </data>
+  <data name="ProjectSettings_MustBeAnImageNameWithout" xml:space="preserve">
+    <value>{0} must be an image name without spaces. The last valid value was kept.</value>
+  </data>
   <data name="ProjectSettings_NavbarStyle" xml:space="preserve">
     <value>Navbar style</value>
+  </data>
+  <data name="ProjectSettings_NewUsersCanRegister" xml:space="preserve">
+    <value> New users can register.</value>
+  </data>
+  <data name="ProjectSettings_NoTableChosen" xml:space="preserve">
+    <value>(no table chosen)</value>
+  </data>
+  <data name="ProjectSettings_NotSet" xml:space="preserve">
+    <value>Not set</value>
   </data>
   <data name="ProjectSettings_OutputFolderRelativeToTheProject" xml:space="preserve">
     <value>Output folder (relative to the project file, or absolute)</value>
@@ -1120,6 +1831,12 @@
   <data name="ProjectSettings_Regenerate" xml:space="preserve">
     <value>Regenerate...</value>
   </data>
+  <data name="ProjectSettings_RegenerateButton" xml:space="preserve">
+    <value>Regenerate</value>
+  </data>
+  <data name="ProjectSettings_RegenerateProjectId" xml:space="preserve">
+    <value>Regenerate project id</value>
+  </data>
   <data name="ProjectSettings_RootNamespaceEmptyFromTheProject" xml:space="preserve">
     <value>Root namespace (empty: from the project name)</value>
   </data>
@@ -1128,6 +1845,12 @@
   </data>
   <data name="ProjectSettings_RuntimeIdentifierForExampleWinX64" xml:space="preserve">
     <value>Runtime identifier (for example win-x64, empty for any platform)</value>
+  </data>
+  <data name="ProjectSettings_RuntimeImage" xml:space="preserve">
+    <value>Runtime image</value>
+  </data>
+  <data name="ProjectSettings_SDKImage" xml:space="preserve">
+    <value>SDK image</value>
   </data>
   <data name="ProjectSettings_SecurityAndLocalization" xml:space="preserve">
     <value>Security and localization</value>
@@ -1141,20 +1864,62 @@
   <data name="ProjectSettings_SettingsOfTheWholeProjectChanges" xml:space="preserve">
     <value>Settings of the whole project. Changes are saved with the project file.</value>
   </data>
+  <data name="ProjectSettings_SignInIsOffEveryPage" xml:space="preserve">
+    <value>Sign-in is off. Every page is open to anyone who can reach the site.</value>
+  </data>
+  <data name="ProjectSettings_SignInIsOnUsersAreIn" xml:space="preserve">
+    <value>Sign-in is on. Users are in {0}</value>
+  </data>
   <data name="ProjectSettings_Site" xml:space="preserve">
     <value>Site</value>
   </data>
   <data name="ProjectSettings_SQLiteFilePath" xml:space="preserve">
     <value>SQLite file path</value>
   </data>
+  <data name="ProjectSettings_TheAssemblyNameCanUseLetters" xml:space="preserve">
+    <value>The assembly name can use letters, digits, dots, dashes and underscores and cannot start with a digit. The last valid value was kept.</value>
+  </data>
+  <data name="ProjectSettings_TheExposedPort" xml:space="preserve">
+    <value>The exposed port</value>
+  </data>
+  <data name="ProjectSettings_TheHTTPAndHTTPSPortsMust" xml:space="preserve">
+    <value>The HTTP and HTTPS ports must be different. The last valid value was kept.</value>
+  </data>
   <data name="ProjectSettings_Theme" xml:space="preserve">
     <value>Theme</value>
+  </data>
+  <data name="ProjectSettings_TheNamespaceMustBeLettersDigits" xml:space="preserve">
+    <value>The namespace must be letters, digits and underscores separated by dots, and cannot start with a digit. The last valid value was kept.</value>
+  </data>
+  <data name="ProjectSettings_TheOutputFolderCannotBeEmpty" xml:space="preserve">
+    <value>The output folder cannot be empty. The last valid value was kept.</value>
+  </data>
+  <data name="ProjectSettings_TheProjectIdIdentifiesThisProject" xml:space="preserve">
+    <value>The project id identifies this project in generated code. A new id makes sites generated earlier look like they came from a different project. Create a new id?</value>
+  </data>
+  <data name="ProjectSettings_TheProjectNameCannotBeEmpty" xml:space="preserve">
+    <value>The project name cannot be empty. The last valid value was kept.</value>
+  </data>
+  <data name="ProjectSettings_ThePublishFolderCannotBeEmpty" xml:space="preserve">
+    <value>The publish folder cannot be empty. The last valid value was kept.</value>
+  </data>
+  <data name="ProjectSettings_ThereIsNoLanguagesTabIn" xml:space="preserve">
+    <value>There is no Languages tab in this version of the editor.</value>
   </data>
   <data name="ProjectSettings_UseHTTPS" xml:space="preserve">
     <value>Use HTTPS</value>
   </data>
   <data name="ProjectSettings_Version" xml:space="preserve">
     <value>Version</value>
+  </data>
+  <data name="ProjectSettings_VersionMustLookLike10" xml:space="preserve">
+    <value>Version must look like 1.0.0 (numbers separated by dots). The last valid version was kept.</value>
+  </data>
+  <data name="ProjectSettings_WithUserLevelsFrom" xml:space="preserve">
+    <value>, with user levels from {0}.</value>
+  </data>
+  <data name="Relations_AddedMasterDetailLinkSFrom" xml:space="preserve">
+    <value>Added {0} master/detail link(s) from foreign keys.</value>
   </data>
   <data name="Relations_AddKeyLink" xml:space="preserve">
     <value>Add key link</value>
@@ -1177,8 +1942,17 @@
   <data name="Relations_AQuickFilterBoxSortableColumn" xml:space="preserve">
     <value>A quick filter box, sortable column headers and a reset link above the grid when the master record is viewed.</value>
   </data>
+  <data name="Relations_BelowTheForm" xml:space="preserve">
+    <value>(below the form)</value>
+  </data>
   <data name="Relations_CaptionEmptyTheDetailTableS" xml:space="preserve">
     <value>Caption (empty: the detail table's caption)</value>
+  </data>
+  <data name="Relations_CascadeOnUpdateOnlyMattersFor" xml:space="preserve">
+    <value>Cascade on update only matters for editable, non-key link fields. A key field cannot change, so nothing would be updated for it.</value>
+  </data>
+  <data name="Relations_DeleteTheDetailRecordsTogetherWith" xml:space="preserve">
+    <value>Delete the detail records together with the master record, in one transaction.</value>
   </data>
   <data name="Relations_DetailField" xml:space="preserve">
     <value>Detail field</value>
@@ -1192,14 +1966,29 @@
   <data name="Relations_DetailTable" xml:space="preserve">
     <value>Detail table</value>
   </data>
+  <data name="Relations_DoNothingTheDatabaseSOwn" xml:space="preserve">
+    <value>Do nothing; the database's own foreign key rules, if any, apply.</value>
+  </data>
+  <data name="Relations_ErrorSTheyDisableGenerateWarning" xml:space="preserve">
+    <value>{0} error(s) (they disable Generate), {1} warning(s).</value>
+  </data>
+  <data name="Relations_EveryForeignKeyAlreadyHasA" xml:space="preserve">
+    <value>Every foreign key already has a master/detail link.</value>
+  </data>
   <data name="Relations_EveryLinkOfTheProjectMaster" xml:space="preserve">
     <value>Every link of the project: master -&gt; detail, key pairs and rules. Double-click a line to open it.</value>
+  </data>
+  <data name="Relations_ExpandableRow" xml:space="preserve">
+    <value>Expandable row</value>
   </data>
   <data name="Relations_FormPagesAreDefinedOnThe" xml:space="preserve">
     <value>Form pages are defined on the Pages tab. They only apply when the master's page uses a multi-page mode.</value>
   </data>
   <data name="Relations_FormPageThatHoldsTheGrid" xml:space="preserve">
     <value>Form page that holds the grid</value>
+  </data>
+  <data name="Relations_KeepTheDetailRecordsAndClear" xml:space="preserve">
+    <value>Keep the detail records and clear their link fields (the fields must allow null).</value>
   </data>
   <data name="Relations_KeyLinksMasterFieldDetailField" xml:space="preserve">
     <value>Key links (master field = detail field)</value>
@@ -1210,6 +1999,18 @@
   <data name="Relations_MasterTable" xml:space="preserve">
     <value>Master table</value>
   </data>
+  <data name="Relations_NoDetailTable" xml:space="preserve">
+    <value>(no detail table)</value>
+  </data>
+  <data name="Relations_NoForeignKeysWereFoundConnect" xml:space="preserve">
+    <value>No foreign keys were found. Connect to a database whose tables declare foreign keys on the Database tab, then try again.</value>
+  </data>
+  <data name="Relations_NoLinkWasAdded" xml:space="preserve">
+    <value>No link was added.</value>
+  </data>
+  <data name="Relations_NoProblemsFound" xml:space="preserve">
+    <value>No problems found.</value>
+  </data>
   <data name="Relations_Note" xml:space="preserve">
     <value>Note</value>
   </data>
@@ -1219,8 +2020,17 @@
   <data name="Relations_OnUpdateOfALinkedMaster" xml:space="preserve">
     <value>On update of a linked master field</value>
   </data>
+  <data name="Relations_PageSize" xml:space="preserve">
+    <value>Page size</value>
+  </data>
   <data name="Relations_PageSize1To200" xml:space="preserve">
     <value>Page size (1 to 200)</value>
+  </data>
+  <data name="Relations_PreviewModal" xml:space="preserve">
+    <value>Modal</value>
+  </data>
+  <data name="Relations_PreviewOffcanvas" xml:space="preserve">
+    <value>Offcanvas</value>
   </data>
   <data name="Relations_PreviewOnTheMasterSList" xml:space="preserve">
     <value>Preview on the master's list</value>
@@ -1228,8 +2038,23 @@
   <data name="Relations_QuickFilterAndColumnSortingOn" xml:space="preserve">
     <value>Quick filter and column sorting on the view page</value>
   </data>
+  <data name="Relations_RefuseToDeleteAMasterRecord" xml:space="preserve">
+    <value>Refuse to delete a master record while it has detail records, and say so on the page.</value>
+  </data>
   <data name="Relations_RelationsOverview" xml:space="preserve">
     <value>Relations overview</value>
+  </data>
+  <data name="Relations_RuleCascade" xml:space="preserve">
+    <value>Cascade</value>
+  </data>
+  <data name="Relations_RuleRestrict" xml:space="preserve">
+    <value>Restrict</value>
+  </data>
+  <data name="Relations_SetNull" xml:space="preserve">
+    <value>Set null</value>
+  </data>
+  <data name="Relations_SetNullIsNotAvailableThe" xml:space="preserve">
+    <value>Set null is not available: the link field '{0}' of '{1}' is required.</value>
   </data>
   <data name="Relations_ShowOnEdit" xml:space="preserve">
     <value>Show on edit</value>
@@ -1240,11 +2065,113 @@
   <data name="Relations_SuggestFromForeignKeys" xml:space="preserve">
     <value>Suggest from foreign keys</value>
   </data>
+  <data name="Relations_TheDetailTableHasNoFields" xml:space="preserve">
+    <value>The detail table has no fields.</value>
+  </data>
+  <data name="Relations_TheLastRuleWasKept" xml:space="preserve">
+    <value>{0} The last rule was kept.</value>
+  </data>
   <data name="Relations_TheMasterItselfIsAllowedA" xml:space="preserve">
     <value>The master itself is allowed (a self link, such as a tree). Changing the table starts the key links over.</value>
   </data>
+  <data name="Relations_ThisTableIsNotGeneratedGenerate" xml:space="preserve">
+    <value>This table is not generated (Generate is off), so its links are ignored.</value>
+  </data>
+  <data name="Relations_TickTheMasterDetailLinksTo" xml:space="preserve">
+    <value>Tick the master/detail links to add. Links that already exist are disabled.</value>
+  </data>
+  <data name="Relations_TypesDiffer" xml:space="preserve">
+    <value>Types differ</value>
+  </data>
+  <data name="RelationSuggester_OnDelete" xml:space="preserve">
+    <value>, on delete {0}</value>
+  </data>
+  <data name="RelationValidator_AFormPageHasNoName" xml:space="preserve">
+    <value>a form page has no name.</value>
+  </data>
+  <data name="RelationValidator_CascadeDeleteCycleLoop" xml:space="preserve">
+    <value>Cascade delete cycle: {0} -&gt; {1}. Deleting a record would loop; use Restrict or Set null on one of these links.</value>
+  </data>
+  <data name="RelationValidator_CascadeDeleteCycleWouldDeleteIts" xml:space="preserve">
+    <value>Cascade delete cycle: '{0}' would delete its own records through a link {1} -&gt; {2}. Use Restrict or Set null for a link to the same table.</value>
+  </data>
+  <data name="RelationValidator_CascadeOnUpdateOnlyMattersFor" xml:space="preserve">
+    <value>'Cascade' on update only matters for editable non-key link fields, and every master field here is a key field.</value>
+  </data>
+  <data name="RelationValidator_ChooseTheDetailTable" xml:space="preserve">
+    <value>choose the detail table.</value>
+  </data>
+  <data name="RelationValidator_DuplicateOfAnotherLinkOfTo" xml:space="preserve">
+    <value>duplicate of another link of '{0}' to '{1}' with the same key fields ({2}).</value>
+  </data>
+  <data name="RelationValidator_Error" xml:space="preserve">
+    <value>Error: </value>
+  </data>
+  <data name="RelationValidator_FieldIsOnFormPageWhich" xml:space="preserve">
+    <value>field '{0}' is on form page '{1}', which does not exist.</value>
+  </data>
+  <data name="RelationValidator_KeyLinkHasNoDetailField" xml:space="preserve">
+    <value>key link {0} has no detail field.</value>
+  </data>
+  <data name="RelationValidator_KeyLinkHasNoMasterField" xml:space="preserve">
+    <value>key link {0} has no master field.</value>
+  </data>
+  <data name="RelationValidator_LinksOfThePrimaryKeyColumns" xml:space="preserve">
+    <value>links {0} of the {1} primary key columns of '{2}'; one detail row can match several master rows.</value>
+  </data>
+  <data name="RelationValidator_MasterDetail" xml:space="preserve">
+    <value>Master/detail {0}: {1}</value>
+  </data>
+  <data name="RelationValidator_MasterFieldIsButDetailField" xml:space="preserve">
+    <value>master field '{0}.{1}' is {2} but detail field '{3}.{4}' is {5}; the values may never match.</value>
+  </data>
+  <data name="RelationValidator_OnDeleteSetNullNeedsNullable" xml:space="preserve">
+    <value>on delete 'Set null' needs nullable link fields, but '{0}' of '{1}' is required.</value>
+  </data>
+  <data name="RelationValidator_Table" xml:space="preserve">
+    <value>Table '{0}': {1}</value>
+  </data>
+  <data name="RelationValidator_TheDetailFieldDoesNotExist" xml:space="preserve">
+    <value>the detail field '{0}' does not exist in table '{1}'.</value>
+  </data>
+  <data name="RelationValidator_TheDetailTableDoesNotExist" xml:space="preserve">
+    <value>the detail table '{0}' does not exist.</value>
+  </data>
+  <data name="RelationValidator_TheDetailTableIsNotGenerated" xml:space="preserve">
+    <value>the detail table '{0}' is not generated (Generate is off).</value>
+  </data>
+  <data name="RelationValidator_TheFormPageExistsTwice" xml:space="preserve">
+    <value>the form page '{0}' exists twice.</value>
+  </data>
+  <data name="RelationValidator_TheGridColumnDoesNotExist" xml:space="preserve">
+    <value>the grid column '{0}' does not exist in table '{1}'.</value>
+  </data>
+  <data name="RelationValidator_TheGridIsPlacedOnForm" xml:space="preserve">
+    <value>the grid is placed on form page '{0}', which '{1}' does not have.</value>
+  </data>
+  <data name="RelationValidator_TheKeyLinkIsListedTwice" xml:space="preserve">
+    <value>the key link '{0} = {1}' is listed twice.</value>
+  </data>
+  <data name="RelationValidator_TheKeyLinkRelatesEveryRow" xml:space="preserve">
+    <value>the key link '{0} = {1}' relates every row to itself.</value>
+  </data>
+  <data name="RelationValidator_TheMasterFieldDoesNotExist" xml:space="preserve">
+    <value>the master field '{0}' does not exist in table '{1}'.</value>
+  </data>
+  <data name="RelationValidator_ThePageSizeMustBeFrom" xml:space="preserve">
+    <value>the page size {0} must be from {1} to {2}.</value>
+  </data>
+  <data name="RelationValidator_ThePageUsesFormPagesBut" xml:space="preserve">
+    <value>the {0} page uses {1} form pages but the table has no form pages.</value>
+  </data>
+  <data name="RelationValidator_Warning" xml:space="preserve">
+    <value>Warning: </value>
+  </data>
   <data name="Reports_12ColumnsFillARowReports" xml:space="preserve">
     <value>12 columns fill a row. Reports a user may not open are left out of the dashboard for that user.</value>
+  </data>
+  <data name="Reports_AddedReport" xml:space="preserve">
+    <value>Added report {0}.</value>
   </data>
   <data name="Reports_AddFilter" xml:space="preserve">
     <value>Add filter</value>
@@ -1258,14 +2185,50 @@
   <data name="Reports_AddTotal" xml:space="preserve">
     <value>Add total</value>
   </data>
+  <data name="Reports_AnotherReportAlreadyUsesTheURL" xml:space="preserve">
+    <value>Another report already uses the URL /reports/{0}. The last valid name was kept.</value>
+  </data>
+  <data name="Reports_AReportNameNeedsAtLeast" xml:space="preserve">
+    <value>A report name needs at least one letter or digit. The last valid name was kept.</value>
+  </data>
   <data name="Reports_AReportReadsOneTableThe" xml:space="preserve">
     <value>A report reads one table. The table's filter, owner field and view level apply to it, and charts are drawn on the server, so the site needs no extra script.</value>
+  </data>
+  <data name="Reports_ByCategory" xml:space="preserve">
+    <value>By category</value>
+  </data>
+  <data name="Reports_ByValueLargestFirst" xml:space="preserve">
+    <value>By value, largest first</value>
   </data>
   <data name="Reports_CaptionEmptyTheName" xml:space="preserve">
     <value>Caption (empty: the name)</value>
   </data>
+  <data name="Reports_CategoryField" xml:space="preserve">
+    <value>Category field</value>
+  </data>
+  <data name="Reports_ChartArea" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="Reports_ChartBar" xml:space="preserve">
+    <value>Bar</value>
+  </data>
+  <data name="Reports_ChartDoughnut" xml:space="preserve">
+    <value>Doughnut</value>
+  </data>
+  <data name="Reports_ChartLine" xml:space="preserve">
+    <value>Line</value>
+  </data>
+  <data name="Reports_ChartPie" xml:space="preserve">
+    <value>Pie</value>
+  </data>
   <data name="Reports_ChartType" xml:space="preserve">
     <value>Chart type</value>
+  </data>
+  <data name="Reports_ColumnField" xml:space="preserve">
+    <value>Column field</value>
+  </data>
+  <data name="Reports_ConnectADatabaseOnTheDatabase" xml:space="preserve">
+    <value>Connect a database on the Database section first.</value>
   </data>
   <data name="Reports_DateField" xml:space="preserve">
     <value>Date field</value>
@@ -1288,6 +2251,21 @@
   <data name="Reports_Function" xml:space="preserve">
     <value>Function</value>
   </data>
+  <data name="Reports_FunctionAverage" xml:space="preserve">
+    <value>Average</value>
+  </data>
+  <data name="Reports_FunctionCount" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="Reports_FunctionMax" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="Reports_FunctionMin" xml:space="preserve">
+    <value>Min</value>
+  </data>
+  <data name="Reports_FunctionSum" xml:space="preserve">
+    <value>Sum</value>
+  </data>
   <data name="Reports_GrandTotal" xml:space="preserve">
     <value>Grand total</value>
   </data>
@@ -1299,6 +2277,39 @@
   </data>
   <data name="Reports_HeadingEmptyEGSumOf" xml:space="preserve">
     <value>Heading (empty: e.g. Sum of Freight)</value>
+  </data>
+  <data name="Reports_HorizontalBar" xml:space="preserve">
+    <value>Horizontal bar</value>
+  </data>
+  <data name="Reports_IntervalDay" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Reports_IntervalMonth" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Reports_IntervalQuarter" xml:space="preserve">
+    <value>Quarter</value>
+  </data>
+  <data name="Reports_IntervalYear" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="Reports_ItemCount" xml:space="preserve">
+    <value>{0} report(s)</value>
+  </data>
+  <data name="Reports_KindCalendar" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="Reports_KindChart" xml:space="preserve">
+    <value>Chart</value>
+  </data>
+  <data name="Reports_KindCrosstab" xml:space="preserve">
+    <value>Crosstab</value>
+  </data>
+  <data name="Reports_KindDashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Reports_KindSummary" xml:space="preserve">
+    <value>Summary</value>
   </data>
   <data name="Reports_LinkEntriesToTheViewPage" xml:space="preserve">
     <value>Link entries to the view page</value>
@@ -1321,6 +2332,15 @@
   <data name="Reports_MostColumnsOrSeries1To" xml:space="preserve">
     <value>Most columns or series (1 to 500)</value>
   </data>
+  <data name="Reports_NoName" xml:space="preserve">
+    <value>(no name)</value>
+  </data>
+  <data name="Reports_NotGeneratedSuffix" xml:space="preserve">
+    <value> - not generated</value>
+  </data>
+  <data name="Reports_OfTable" xml:space="preserve">
+    <value>of {0}</value>
+  </data>
   <data name="Reports_Order" xml:space="preserve">
     <value>Order</value>
   </data>
@@ -1329,6 +2349,15 @@
   </data>
   <data name="Reports_PickListFilters" xml:space="preserve">
     <value>Pick-list filters</value>
+  </data>
+  <data name="Reports_PreviewRunsTheSelectedReportOn" xml:space="preserve">
+    <value>Preview runs the selected report on the connected database.</value>
+  </data>
+  <data name="Reports_ProblemSGenerateStopsAtThe" xml:space="preserve">
+    <value>{0} problem(s). Generate stops at the first one.</value>
+  </data>
+  <data name="Reports_RemovedReport" xml:space="preserve">
+    <value>Removed report {0}.</value>
   </data>
   <data name="Reports_Report" xml:space="preserve">
     <value>Report</value>
@@ -1339,8 +2368,29 @@
   <data name="Reports_RowColumnsForListedRowsAnd" xml:space="preserve">
     <value>Row columns, for listed rows and the drill-down page (none: the fields shown in the list)</value>
   </data>
+  <data name="Reports_RowField" xml:space="preserve">
+    <value>Row field</value>
+  </data>
+  <data name="Reports_RunningTheReport" xml:space="preserve">
+    <value>Running the report...</value>
+  </data>
+  <data name="Reports_SeriesField" xml:space="preserve">
+    <value>Series field</value>
+  </data>
   <data name="Reports_ShowTheDataTableBelowThe" xml:space="preserve">
     <value>Show the data table below the chart</value>
+  </data>
+  <data name="Reports_TheMostColumns" xml:space="preserve">
+    <value>The most columns</value>
+  </data>
+  <data name="Reports_TheNumberOfCategories" xml:space="preserve">
+    <value>The number of categories</value>
+  </data>
+  <data name="Reports_TheSettingsChangedPreviewAgainTo" xml:space="preserve">
+    <value>The settings changed. Preview again to see the result.</value>
+  </data>
+  <data name="Reports_TheUserLevel" xml:space="preserve">
+    <value>The user level</value>
   </data>
   <data name="Reports_TitleFieldNoneTheFirstText" xml:space="preserve">
     <value>Title field (none: the first text field)</value>
@@ -1354,11 +2404,41 @@
   <data name="Reports_Width1To12" xml:space="preserve">
     <value>Width (1 to 12)</value>
   </data>
+  <data name="SchematicPreview_EmptyList" xml:space="preserve">
+    <value>Empty list: {0}</value>
+  </data>
+  <data name="SchematicPreview_HeaderHTML" xml:space="preserve">
+    <value>Header HTML</value>
+  </data>
+  <data name="SchematicPreview_NoFieldsAreShownOnThis" xml:space="preserve">
+    <value>No fields are shown on this form.</value>
+  </data>
+  <data name="SchematicPreview_NoFieldsOnThisPage" xml:space="preserve">
+    <value>No fields on this page.</value>
+  </data>
+  <data name="SchematicPreview_OpensAsAFullPage" xml:space="preserve">
+    <value>Opens as a full page</value>
+  </data>
+  <data name="SchematicPreview_OpensInAModalDialogOver" xml:space="preserve">
+    <value>Opens in a modal dialog over the list</value>
+  </data>
+  <data name="SchematicPreview_OpensInAnOffcanvasPanelBeside" xml:space="preserve">
+    <value>Opens in an offcanvas panel beside the list</value>
+  </data>
+  <data name="SchematicPreview_PickATableToSeeA" xml:space="preserve">
+    <value>Pick a table to see a preview.</value>
+  </data>
+  <data name="SchematicPreview_StepOf" xml:space="preserve">
+    <value>Step {0} of {1}: {2}</value>
+  </data>
   <data name="Security_AdministratorLevel" xml:space="preserve">
     <value>Administrator level</value>
   </data>
   <data name="Security_AdministratorUserName" xml:space="preserve">
     <value>Administrator user name</value>
+  </data>
+  <data name="Security_AllIdentityTablesExistInThe" xml:space="preserve">
+    <value>All {0} identity tables exist in the database.</value>
   </data>
   <data name="Security_AllowChangePasswordSignedInUsers" xml:space="preserve">
     <value>Allow change password (signed-in users can change their password)</value>
@@ -1375,17 +2455,47 @@
   <data name="Security_ChooseATableMarkedGenerate" xml:space="preserve">
     <value>Choose a table marked Generate</value>
   </data>
+  <data name="Security_ChooseThePasswordFieldLoginIs" xml:space="preserve">
+    <value>Choose the password field. Login is enabled but no field is set.</value>
+  </data>
+  <data name="Security_ChooseTheUserNameFieldLogin" xml:space="preserve">
+    <value>Choose the user name field. Login is enabled but no field is set.</value>
+  </data>
+  <data name="Security_ChooseTheUserTableLoginIs" xml:space="preserve">
+    <value>Choose the user table. Login is enabled but no table is set.</value>
+  </data>
+  <data name="Security_ConnectTheDatabaseFirst" xml:space="preserve">
+    <value>Connect the database first.</value>
+  </data>
+  <data name="Security_CreatedIdentityTables" xml:space="preserve">
+    <value>Created {0} identity table(s): {1}.</value>
+  </data>
+  <data name="Security_CreateIdentityTables" xml:space="preserve">
+    <value>Create identity tables</value>
+  </data>
   <data name="Security_CreateMissingIdentityTablesWhenThe" xml:space="preserve">
     <value>Create missing identity tables when the site starts</value>
   </data>
   <data name="Security_CreateMissingTables" xml:space="preserve">
     <value>Create missing tables</value>
   </data>
+  <data name="Security_CreateTables" xml:space="preserve">
+    <value>Create tables</value>
+  </data>
+  <data name="Security_FailedAttemptsWindowMinutes" xml:space="preserve">
+    <value>Failed attempts window (minutes)</value>
+  </data>
+  <data name="Security_IsNotAValidIdentityTable" xml:space="preserve">
+    <value>'{0}' is not a valid identity table prefix: use 1 to 30 letters, digits and underscores, starting with a letter.</value>
+  </data>
   <data name="Security_LevelFieldIntegerOptionalEnablesUser" xml:space="preserve">
     <value>Level field (integer, optional: enables user level security)</value>
   </data>
   <data name="Security_LevelOfNewUsers" xml:space="preserve">
     <value>Level of new users</value>
+  </data>
+  <data name="Security_LevelOfNewUsersMustBe" xml:space="preserve">
+    <value>Level of new users must be a whole number of 0 or more. The last valid value was kept.</value>
   </data>
   <data name="Security_LoginOptions" xml:space="preserve">
     <value>Login options</value>
@@ -1395,6 +2505,12 @@
   </data>
   <data name="Security_MinimumPasswordLength" xml:space="preserve">
     <value>Minimum password length</value>
+  </data>
+  <data name="Security_MissingIdentityTables" xml:space="preserve">
+    <value>Missing identity tables: {0}. Nothing was created.</value>
+  </data>
+  <data name="Security_MustBeAPositiveWholeNumber" xml:space="preserve">
+    <value>{0} must be a positive whole number. The last valid value was kept.</value>
   </data>
   <data name="Security_PasswordEnvironmentVariable" xml:space="preserve">
     <value>Password environment variable</value>
@@ -1426,14 +2542,41 @@
   <data name="Security_RequireSignInCookieLoginAgainst" xml:space="preserve">
     <value>Require sign-in (cookie login against a generated table)</value>
   </data>
+  <data name="Security_SecurityIsEnabledButTableHas" xml:space="preserve">
+    <value>Security is enabled but table '{0}' has no user name field '{1}'.</value>
+  </data>
+  <data name="Security_SecurityIsEnabledButTableHas2" xml:space="preserve">
+    <value>Security is enabled but table '{0}' has no password field '{1}'.</value>
+  </data>
+  <data name="Security_SecurityIsEnabledButTheUser" xml:space="preserve">
+    <value>Security is enabled but the user table '{0}' is not one of the generated tables.</value>
+  </data>
   <data name="Security_TablePrefix" xml:space="preserve">
     <value>Table prefix</value>
+  </data>
+  <data name="Security_TheIdentityTablesCouldNotBe" xml:space="preserve">
+    <value>The identity tables could not be created: {0}</value>
+  </data>
+  <data name="Security_TheOwnerFieldInTableMust" xml:space="preserve">
+    <value>The owner field '{0}' in table '{1}' must be a text column to hold the user name, but it is {2}.</value>
+  </data>
+  <data name="Security_TheseTablesAreMissingFromThe" xml:space="preserve">
+    <value>These tables are missing from the project database and will be created:{0}{1}</value>
   </data>
   <data name="Security_TheSiteCreatesTheAdministratorWhen" xml:space="preserve">
     <value>The site creates the administrator when it has no users, with the password from the environment variable. The password is never stored in the project.</value>
   </data>
+  <data name="Security_TheUserLevelFieldInTable" xml:space="preserve">
+    <value>The user level field '{0}' in table '{1}' must be an integer column, but it is {2}.</value>
+  </data>
   <data name="Security_TrackFailedSignInAttempts" xml:space="preserve">
     <value>Track failed sign-in attempts</value>
+  </data>
+  <data name="Security_UserIDSecurityIsEnabledFor" xml:space="preserve">
+    <value>User ID security is enabled for table '{0}' but it has no owner field '{1}'.</value>
+  </data>
+  <data name="Security_UserLevelSecurityIsEnabledBut" xml:space="preserve">
+    <value>User level security is enabled but table '{0}' has no user level field '{1}'.</value>
   </data>
   <data name="Security_UserNameField" xml:space="preserve">
     <value>User name field</value>
@@ -1510,6 +2653,9 @@
   <data name="Tables_EditLevel" xml:space="preserve">
     <value>Edit level</value>
   </data>
+  <data name="Tables_FieldsOf" xml:space="preserve">
+    <value>Fields of {0}</value>
+  </data>
   <data name="Tables_FilterSQLWithoutWHERE" xml:space="preserve">
     <value>Filter (SQL without WHERE)</value>
   </data>
@@ -1522,20 +2668,50 @@
   <data name="Tables_LevelsApplyWhenTheSecuritySection" xml:space="preserve">
     <value>Levels apply when the Security section names a user level field. 0 means any signed-in user.</value>
   </data>
+  <data name="Tables_MustBeAWholeNumber0" xml:space="preserve">
+    <value>{0} must be a whole number, 0 or more. The last valid value was kept.</value>
+  </data>
   <data name="Tables_OwnerFieldRowsBelongToThe" xml:space="preserve">
     <value>Owner field (rows belong to the signed-in user)</value>
   </data>
   <data name="Tables_PAGES" xml:space="preserve">
     <value>PAGES</value>
   </data>
+  <data name="Tables_PageSizeMustBe1020" xml:space="preserve">
+    <value>Page size must be 10, 20, 50 or 100. The last valid value was kept.</value>
+  </data>
   <data name="Tables_RowsPerPage" xml:space="preserve">
     <value>Rows per page</value>
+  </data>
+  <data name="Tables_SelectATableOnTheTables" xml:space="preserve">
+    <value>Select a table on the Tables tab to edit its fields.</value>
   </data>
   <data name="Tables_SelectATableToEditIt" xml:space="preserve">
     <value>Select a table to edit it on the right, or its fields on the Fields section. Muted rows are not generated; yellow rows have no primary key.</value>
   </data>
   <data name="Tables_ViewLevel" xml:space="preserve">
     <value>View level</value>
+  </data>
+  <data name="TableSummary_DetailLinks" xml:space="preserve">
+    <value>{0} detail links</value>
+  </data>
+  <data name="TableSummary_NoKey" xml:space="preserve">
+    <value>No key</value>
+  </data>
+  <data name="TableSummary_NoKey2" xml:space="preserve">
+    <value>no key</value>
+  </data>
+  <data name="TableSummary_NotGenerated" xml:space="preserve">
+    <value>Not generated</value>
+  </data>
+  <data name="ToolDetector_TheFileDoesNotExist" xml:space="preserve">
+    <value>The file {0} does not exist.</value>
+  </data>
+  <data name="ToolDetector_WasNotFoundOnPATH" xml:space="preserve">
+    <value>{0} was not found on PATH.</value>
+  </data>
+  <data name="TranslationCsv_RowHasColumnSExpectedKey" xml:space="preserve">
+    <value>Row {0} has {1} column(s); expected key, language, text.</value>
   </data>
   <data name="UnsavedChanges_Discard" xml:space="preserve">
     <value>Discard</value>
