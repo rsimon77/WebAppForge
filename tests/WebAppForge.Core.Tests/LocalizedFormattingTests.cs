@@ -195,4 +195,48 @@ public sealed class LocalizedFormattingTests : IAsyncLifetime
 
         Assert.Equal(7.25m, StoredPrice());
     }
+
+    [Fact]
+    public async Task AnImportReadsTheVisitorsDecimalCommaAndDatesAfterTheInvariantForms()
+    {
+        // A Hungarian spreadsheet saved as CSV: semicolons, a decimal comma and the Hungarian date order, next to invariant values.
+        using (var hu = Visitor("hu"))
+        {
+            var csv = ImportExportSiteTests.Csv("name;price;due\nDesk;12,5;2026. 08. 05.\nChair;7.25;2026-08-06\n");
+            var preview = ImportExportSiteTests.Page(await ImportExportSiteTests.UploadAsync(hu, "/items", "items.csv", csv));
+            await ImportExportSiteTests.ApplyAsync(hu, "/items", preview, "import");
+        }
+
+        Assert.Equal(("12.5", "2026-08-05"), Imported("Desk"));
+        Assert.Equal(("7.25", "2026-08-06"), Imported("Chair"));
+
+        // In English "1,5" is no decimal (and never 15), so the whole file is refused.
+        using (var en = Visitor("en"))
+        {
+            var csv = ImportExportSiteTests.Csv("name,price\nStool,\"1,5\"\n");
+            var preview = ImportExportSiteTests.Page(await ImportExportSiteTests.UploadAsync(en, "/items", "items.csv", csv));
+            await ImportExportSiteTests.ApplyAsync(en, "/items", preview, "import");
+        }
+
+        Assert.Null(Imported("Stool"));
+    }
+
+    private HttpClient Visitor(string language)
+    {
+        var client = new HttpClient(new HttpClientHandler { CookieContainer = new CookieContainer(), AllowAutoRedirect = false }) { BaseAddress = _client.BaseAddress };
+        client.DefaultRequestHeaders.Add("Accept-Language", language);
+        return client;
+    }
+
+    /// <summary>Price and date of the imported row named <paramref name="name"/>, as SQLite stores them, or null when there is none.</summary>
+    private (string Price, string Due)? Imported(string name)
+    {
+        using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={DbPath}");
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT CAST(price AS TEXT), substr(due, 1, 10) FROM items WHERE name = $name";
+        command.Parameters.AddWithValue("$name", name);
+        using var reader = command.ExecuteReader();
+        return reader.Read() ? (reader.GetString(0), reader.GetString(1)) : null;
+    }
 }
