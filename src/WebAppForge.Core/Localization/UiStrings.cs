@@ -186,6 +186,7 @@ public static class UiStrings
         new("impFailed", "The import failed at row {0} and was rolled back. Nothing was changed."),
         new("impBool", "{0} must be yes or no."),
         new("impLookup", "{0}: '{1}' is not an allowed value."),
+        new("impReference", "{0}: no row of {1} has these values."),
         new("impDuplicate", "The key appears more than once in the file."),
         new("impKeyExists", "A row with this key already exists."),
         new("impKeyMissing", "The key {0} is empty."),

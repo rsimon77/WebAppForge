@@ -577,6 +577,10 @@
       "text": "{0}: a(z) '{1}' nem engedélyezett érték.",
       "source": "87783a5c613ba8a7"
     },
+    "impReference": {
+      "text": "{0}: a(z) {1} táblában nincs ilyen értékekkel rendelkező sor.",
+      "source": "9c9a51a0847b0bf3"
+    },
     "impDuplicate": {
       "text": "A kulcs többször szerepel a fájlban.",
       "source": "ba51a067acaecf53"

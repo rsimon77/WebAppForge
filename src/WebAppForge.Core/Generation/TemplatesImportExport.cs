@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
@@ -81,6 +82,24 @@ internal static partial class Templates
         return foreign is null
             ? null
             : $"new DataExchange.Lookup({Lit(QuoteIdent(foreign.ReferencedTable))}, {Lit(QuoteIdent(foreign.ReferencedColumns[0]))}, \"\", \"\")";
+    }
+
+    /// <summary>
+    /// The foreign keys of more than one column that an import checks: every column of the key is imported and refers to a column
+    /// of the referenced table. Single-column keys are checked through <see cref="ExchangeLookup"/>.
+    /// </summary>
+    internal static List<ForeignKeyInfo> ExchangeReferences(TableInfo table)
+    {
+        if (!ExchangeImports(table))
+        {
+            return [];
+        }
+
+        var fields = ExchangeFields(table);
+        return table.ForeignKeys
+            .Where(fk => fk.Columns.Count > 1 && fk.ReferencedColumns.Count == fk.Columns.Count && fk.ReferencedTable.Length > 0
+                && fk.Columns.All(c => fields.Any(f => string.Equals(f.Name, c, StringComparison.OrdinalIgnoreCase))))
+            .ToList();
     }
 
     /// <summary>The routes of the export and the import of a table, written into its Map method.</summary>
@@ -252,31 +271,58 @@ internal static partial class Templates
     }
 
     /// <summary>
-    /// Closes the spec of <paramref name="table"/>. An audited table that imports also gets what the import needs for its entries;
-    /// a table without a key, or whose key the import cannot see, gets none.
+    /// Closes the spec of <paramref name="table"/>. An audited table that imports also gets what the import needs for its entries
+    /// (a table without a key, or whose key the import cannot see, gets none), and a table whose import checks foreign keys of
+    /// more than one column gets those keys.
     /// </summary>
     private static void AppendExchangeAudit(StringBuilder sb, TableInfo table, List<FieldInfo> fields)
     {
+        var lines = new List<string>();
         var keys = table.PrimaryKeys;
         var inserts = AuditsInserts(table);
         var updates = AuditsUpdates(table) && table.ImportExport.ImportMode == ImportMode.Upsert;
-        if (!ExchangeImports(table) || (!inserts && !updates) || keys.Count == 0 || !keys.All(k => fields.Any(f => f.Name == k.Name)))
+        if (ExchangeImports(table) && (inserts || updates) && keys.Count > 0 && keys.All(k => fields.Any(f => f.Name == k.Name)))
+        {
+            var kept = AuditFields(table);
+            var identity = keys.Count == 1 && keys[0].IsAutoIncrement ? Db.IdentityAfterInsert : string.Empty;
+            lines.Add($"        AuditTable = {Lit(table.Name)},");
+            lines.Add($"        AuditInserts = {(inserts ? "true" : "false")},");
+            lines.Add($"        AuditUpdates = {(updates ? "true" : "false")},");
+            lines.Add($"        AuditColumns = {Lit(kept.Count == 0 ? "NULL AS __none" : string.Join(", ", kept.Select(f => QuoteIdent(f.Name))))},");
+            lines.Add($"        AuditWhere = {Lit(string.Join(" AND ", keys.Select((k, i) => QuoteIdent(k.Name) + " = @a" + i)))},");
+            lines.Add($"        AuditKeys = new[] {{ {string.Join(", ", keys.Select(k => Lit(k.Name)))} }},");
+            lines.Add($"        AuditIdentity = {Lit(identity)},");
+        }
+
+        var references = ExchangeReferences(table);
+        if (references.Count > 0)
+        {
+            lines.Add("        References = new DataExchange.Reference[]");
+            lines.Add("        {");
+            foreach (var fk in references)
+            {
+                var columns = fk.Columns.Select(c => fields.FindIndex(f => string.Equals(f.Name, c, StringComparison.OrdinalIgnoreCase)).ToString(CultureInfo.InvariantCulture));
+                var referenced = MdTables.FirstOrDefault(t => string.Equals(t.Name, fk.ReferencedTable, StringComparison.OrdinalIgnoreCase));
+                lines.Add($"            new({Lit(QuoteIdent(fk.ReferencedTable))}, new[] {{ {string.Join(", ", columns)} }}, new[] {{ {string.Join(", ", fk.ReferencedColumns.Select(c => Lit(QuoteIdent(c))))} }}, "
+                    + $"{(referenced is null ? Lit(fk.ReferencedTable) : TableText(referenced))}),");
+            }
+
+            lines.Add("        },");
+        }
+
+        if (lines.Count == 0)
         {
             sb.AppendLine("        });");
             return;
         }
 
-        var kept = AuditFields(table);
-        var identity = keys.Count == 1 && keys[0].IsAutoIncrement ? Db.IdentityAfterInsert : string.Empty;
         sb.AppendLine("        })");
         sb.AppendLine("    {");
-        sb.AppendLine($"        AuditTable = {Lit(table.Name)},");
-        sb.AppendLine($"        AuditInserts = {(inserts ? "true" : "false")},");
-        sb.AppendLine($"        AuditUpdates = {(updates ? "true" : "false")},");
-        sb.AppendLine($"        AuditColumns = {Lit(kept.Count == 0 ? "NULL AS __none" : string.Join(", ", kept.Select(f => QuoteIdent(f.Name))))},");
-        sb.AppendLine($"        AuditWhere = {Lit(string.Join(" AND ", keys.Select((k, i) => QuoteIdent(k.Name) + " = @a" + i)))},");
-        sb.AppendLine($"        AuditKeys = new[] {{ {string.Join(", ", keys.Select(k => Lit(k.Name)))} }},");
-        sb.AppendLine($"        AuditIdentity = {Lit(identity)},");
+        foreach (var line in lines)
+        {
+            sb.AppendLine(line);
+        }
+
         sb.AppendLine("    };");
     }
 }
