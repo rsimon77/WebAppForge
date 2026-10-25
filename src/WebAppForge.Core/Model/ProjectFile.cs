@@ -129,10 +129,10 @@ public static class ProjectFile
         ArgumentNullException.ThrowIfNull(document);
 
         var root = document.Root
-            ?? throw new InvalidDataException("Project file has no root element.");
+            ?? throw new InvalidDataException(Localization.CoreMessages.Text("ProjectFile_NoRoot"));
         if (root.Name.LocalName != RootElement)
         {
-            throw new InvalidDataException($"Expected root element '{RootElement}' but found '{root.Name.LocalName}'.");
+            throw new InvalidDataException(Localization.CoreMessages.Format("ProjectFile_WrongRoot", RootElement, root.Name.LocalName));
         }
 
         var project = new Project
@@ -279,7 +279,7 @@ public static class ProjectFile
     private static string RequiredAttribute(XElement element, string name)
     {
         return element.Attribute(name)?.Value
-            ?? throw new InvalidDataException($"Element '{element.Name.LocalName}' is missing attribute '{name}'.");
+            ?? throw new InvalidDataException(Localization.CoreMessages.Format("ProjectFile_MissingAttribute", element.Name.LocalName, name));
     }
 
     /// <summary>The database element. A SQLite project writes only provider and path, as before servers were supported.</summary>

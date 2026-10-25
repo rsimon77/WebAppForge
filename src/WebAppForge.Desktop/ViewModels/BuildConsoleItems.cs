@@ -1,6 +1,7 @@
 using System;
 using WebAppForge.Core.Build;
 using CommunityToolkit.Mvvm.ComponentModel;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -93,10 +94,16 @@ public sealed record OutputLineItem(string Text, OutputKind Kind, DateTimeOffset
     public bool IsWarning => Kind == OutputKind.Warning;
 }
 
-/// <summary>One row of the diagnostics grid.</summary>
+/// <summary>One row of the diagnostics grid. <see cref="Severity"/> is "Error" or "Warning"; the grid shows <see cref="SeverityText"/>.</summary>
 public sealed record DiagnosticRow(string Severity, string Code, string Message, string File, int Line)
 {
-    public bool IsError => Severity == "Error";
+    public const string Error = "Error";
+    public const string Warning = "Warning";
+
+    public bool IsError => Severity == Error;
+
+    /// <summary>The severity in the UI language.</summary>
+    public string SeverityText => Localizer.Instance[IsError ? "Generate_SeverityError" : "Generate_SeverityWarning"];
 
     /// <summary>"path:line", the text double-click copies. Without a line it is the path alone.</summary>
     public string Location => Line > 0 ? $"{File}:{Line}" : File;

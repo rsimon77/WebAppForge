@@ -14,7 +14,7 @@ public static class DatabaseConnections
         DatabaseProviders.Sqlite => new SqliteConnection(connectionString),
         DatabaseProviders.SqlServer or DatabaseProviders.AzureSql => new SqlConnection(connectionString),
         DatabaseProviders.MySql => new MySqlConnection(connectionString),
-        var other => throw new NotSupportedException($"Provider '{other}' is not supported."),
+        var other => throw new NotSupportedException(Localization.CoreMessages.Format("Generator_ProviderNotSupported", other)),
     };
 
     public static ISchemaReader SchemaReader(string provider) => DatabaseProviders.Normalize(provider) switch
@@ -22,7 +22,7 @@ public static class DatabaseConnections
         DatabaseProviders.Sqlite => new SqliteSchemaReader(),
         DatabaseProviders.SqlServer or DatabaseProviders.AzureSql => new SqlServerSchemaReader(),
         DatabaseProviders.MySql => new MySqlSchemaReader(),
-        var other => throw new NotSupportedException($"Provider '{other}' is not supported."),
+        var other => throw new NotSupportedException(Localization.CoreMessages.Format("Generator_ProviderNotSupported", other)),
     };
 
     /// <summary>Opens and closes a connection. Returns null when it works, else the driver's message.</summary>

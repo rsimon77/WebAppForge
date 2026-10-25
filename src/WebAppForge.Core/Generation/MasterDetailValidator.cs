@@ -1,4 +1,5 @@
 using WebAppForge.Core.Model;
+using M = WebAppForge.Core.Localization.CoreMessages;
 
 namespace WebAppForge.Core.Generation;
 
@@ -32,12 +33,12 @@ internal static class MasterDetailValidator
             var name = page.Name?.Trim() ?? string.Empty;
             if (name.Length == 0)
             {
-                throw new InvalidOperationException($"Table '{table.Name}': a form page has no name.");
+                throw new InvalidOperationException(M.Format("MasterDetail_FormPageNoName", table.Name));
             }
 
             if (!seen.Add(name))
             {
-                throw new InvalidOperationException($"Table '{table.Name}': the form page '{name}' exists twice.");
+                throw new InvalidOperationException(M.Format("MasterDetail_FormPageTwice", table.Name, name));
             }
         }
     }
@@ -45,29 +46,28 @@ internal static class MasterDetailValidator
     private static void ValidateLink(IReadOnlyList<TableInfo> tables, TableInfo master, int index)
     {
         var link = master.Details[index];
-        var prefix = $"Master/detail {master.Name} -> {link.DetailTable}: ";
-        InvalidOperationException Error(string text) => new(prefix + text);
+        InvalidOperationException Error(string text) => new(M.Format("MasterDetail_Problem", master.Name, link.DetailTable, text));
 
         if (string.IsNullOrWhiteSpace(link.DetailTable))
         {
-            throw Error("choose the detail table.");
+            throw Error(M.Text("MasterDetail_ChooseDetail"));
         }
 
         var detail = tables.FirstOrDefault(t => Same(t.Name, link.DetailTable))
-            ?? throw Error($"the detail table '{link.DetailTable}' does not exist.");
+            ?? throw Error(M.Format("MasterDetail_DetailMissing", link.DetailTable));
         if (!detail.Generate)
         {
-            throw Error($"the detail table '{detail.Name}' is not generated (Generate is off).");
+            throw Error(M.Format("MasterDetail_DetailNotGenerated", detail.Name));
         }
 
         if (master.PrimaryKeys.Count == 0)
         {
-            throw Error($"the master table '{master.Name}' has no primary key.");
+            throw Error(M.Format("MasterDetail_MasterNoKey", master.Name));
         }
 
         if (link.Links.Count == 0)
         {
-            throw Error("add at least one key link (master field = detail field).");
+            throw Error(M.Text("MasterDetail_NoLinks"));
         }
 
         var pairs = new List<(FieldInfo Master, FieldInfo Detail)>();
@@ -76,21 +76,21 @@ internal static class MasterDetailValidator
             var pair = link.Links[n];
             if (string.IsNullOrWhiteSpace(pair.MasterField))
             {
-                throw Error($"key link {n + 1} has no master field.");
+                throw Error(M.Format("MasterDetail_LinkNoMaster", n + 1));
             }
 
             if (string.IsNullOrWhiteSpace(pair.DetailField))
             {
-                throw Error($"key link {n + 1} has no detail field.");
+                throw Error(M.Format("MasterDetail_LinkNoDetail", n + 1));
             }
 
             var m = master.Fields.FirstOrDefault(f => Same(f.Name, pair.MasterField))
-                ?? throw Error($"the master field '{pair.MasterField}' does not exist in table '{master.Name}'.");
+                ?? throw Error(M.Format("MasterDetail_MasterFieldMissing", pair.MasterField, master.Name));
             var d = detail.Fields.FirstOrDefault(f => Same(f.Name, pair.DetailField))
-                ?? throw Error($"the detail field '{pair.DetailField}' does not exist in table '{detail.Name}'.");
+                ?? throw Error(M.Format("MasterDetail_DetailFieldMissing", pair.DetailField, detail.Name));
             if (pairs.Any(p => ReferenceEquals(p.Master, m) && ReferenceEquals(p.Detail, d)))
             {
-                throw Error($"the key link '{pair.MasterField} = {pair.DetailField}' is listed twice.");
+                throw Error(M.Format("MasterDetail_LinkTwice", pair.MasterField, pair.DetailField));
             }
 
             pairs.Add((m, d));
@@ -102,7 +102,7 @@ internal static class MasterDetailValidator
             if (Same(o.DetailTable, link.DetailTable) && o.Links.Count == link.Links.Count
                 && link.Links.All(p => o.Links.Any(q => Same(q.MasterField, p.MasterField) && Same(q.DetailField, p.DetailField))))
             {
-                throw Error($"duplicate of another link of '{master.Name}' to '{detail.Name}' with the same key fields.");
+                throw Error(M.Format("MasterDetail_Duplicate", master.Name, detail.Name));
             }
         }
 
@@ -110,18 +110,18 @@ internal static class MasterDetailValidator
         {
             if (!detail.Fields.Any(f => Same(f.Name, column)))
             {
-                throw Error($"the grid column '{column}' does not exist in table '{detail.Name}'.");
+                throw Error(M.Format("MasterDetail_GridColumnMissing", column, detail.Name));
             }
         }
 
         if (link.PageSize is < 1 or > 200)
         {
-            throw Error($"the page size {link.PageSize} must be from 1 to 200.");
+            throw Error(M.Format("MasterDetail_PageSize", link.PageSize));
         }
 
         if (link.FormPage.Trim().Length > 0 && !master.FormPages.Any(p => Same(p.Name, link.FormPage)))
         {
-            throw Error($"the grid is placed on form page '{link.FormPage.Trim()}', which '{master.Name}' does not have.");
+            throw Error(M.Format("MasterDetail_FormPageMissing", link.FormPage.Trim(), master.Name));
         }
 
         if (link.OnDelete == DeleteRule.SetNull)
@@ -130,7 +130,7 @@ internal static class MasterDetailValidator
             {
                 if (d.IsRequired || d.IsPrimaryKey)
                 {
-                    throw Error($"on delete 'Set null' needs nullable link fields, but '{d.Name}' of '{detail.Name}' is required.");
+                    throw Error(M.Format("MasterDetail_SetNullRequired", d.Name, detail.Name));
                 }
             }
         }
@@ -139,14 +139,13 @@ internal static class MasterDetailValidator
         {
             if (link.OnDelete == DeleteRule.Cascade)
             {
-                throw Error("a table cannot cascade delete to itself (Cascade delete cycle: "
-                    + $"{master.Name} -> {master.Name}). Use Restrict or Set null.");
+                throw Error(M.Format("MasterDetail_SelfCascade", master.Name));
             }
         }
 
         if (link.ShowOnAdd && !(master.Pages.Edit && (master.PrimaryKeys.Count > 1 || master.Fields.Any(f => !f.IsPrimaryKey && !f.IsSecret))))
         {
-            throw Error($"the details are shown after add (ShowOnAdd) but the edit page of '{master.Name}' is not generated.");
+            throw Error(M.Format("MasterDetail_ShowOnAdd", master.Name));
         }
     }
 
@@ -173,7 +172,7 @@ internal static class MasterDetailValidator
                 {
                     var start = path.FindIndex(p => Same(p, next));
                     var cycle = path.Skip(start).Append(next);
-                    throw new InvalidOperationException("Cascade delete cycle: " + string.Join(" -> ", cycle) + ". Cascade delete rules may not form a cycle; change one of them to Restrict or Set null.");
+                    throw new InvalidOperationException(M.Format("MasterDetail_Cycle", string.Join(" -> ", cycle)));
                 }
 
                 if (s == 0)

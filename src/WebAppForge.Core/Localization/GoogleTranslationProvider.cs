@@ -73,14 +73,14 @@ public sealed class GoogleTranslationProvider : ITranslationProvider
 
             if (list.Count != expected)
             {
-                throw new TranslationException($"Google translation returned {list.Count} texts for {expected} requested.");
+                throw new TranslationException(CoreMessages.Format("Translation_WrongCount", "Google", list.Count, expected));
             }
 
             return list;
         }
         catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException)
         {
-            throw new TranslationException("Google translation returned a response that could not be read.", ex);
+            throw new TranslationException(CoreMessages.Format("Translation_Unreadable", "Google"), ex);
         }
     }
 }

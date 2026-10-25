@@ -19,7 +19,7 @@ internal static partial class LocalizedSite
         {
             if (!LanguageCode().IsMatch(code))
             {
-                throw new InvalidOperationException($"'{code}' is not a valid language code. Use a BCP-47 code such as 'en' or 'pt-BR'.");
+                throw new InvalidOperationException(CoreMessages.Format("Generator_LanguageCode", code));
             }
         }
     }

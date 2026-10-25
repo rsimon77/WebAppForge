@@ -63,18 +63,18 @@ internal static partial class Templates
         var name = audit.LogTable.Trim();
         if (name.Length == 0)
         {
-            problems.Add("The audit trail needs the name of its log table.");
+            problems.Add(Localization.CoreMessages.Text("Audit_NoLogTable"));
         }
         else if (project.Tables.FirstOrDefault(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase)) is { } clash && !IsAuditLog(clash))
         {
-            problems.Add($"The audit log table '{name}' has the name of a table of the project. Choose another name, or remove that table.");
+            problems.Add(Localization.CoreMessages.Format("Audit_LogTableClash", name));
         }
 
         foreach (var table in project.Tables.Where(t => t.Generate && t.Audit.Enabled))
         {
             foreach (var field in table.Audit.ExcludedFields.Where(x => !table.Fields.Any(f => string.Equals(f.Name, x.Trim(), StringComparison.OrdinalIgnoreCase))))
             {
-                problems.Add($"Table '{table.Name}' excludes the field '{field}' from the audit trail, but it has no such field.");
+                problems.Add(Localization.CoreMessages.Format("Audit_ExcludedMissing", table.Name, field));
             }
         }
 

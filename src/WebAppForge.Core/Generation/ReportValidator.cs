@@ -1,4 +1,5 @@
 using WebAppForge.Core.Model;
+using M = WebAppForge.Core.Localization.CoreMessages;
 
 namespace WebAppForge.Core.Generation;
 
@@ -18,6 +19,11 @@ public static class ReportValidator
 
     /// <summary>True when a report can treat the field as a date: a date column, or a number column that stores dates (<see cref="FieldInfo.DateStorage"/>).</summary>
     public static bool IsDateField(FieldInfo field) => IsDate(field.Type) || (IsNumeric(field.Type) && field.DateStorage != DateStorage.Text);
+
+    /// <summary>The name of an aggregate function in the message language, lower case for the middle of a sentence.</summary>
+    internal static string FunctionName(AggregateFunction function) => M.Text("Function_" + function);
+
+    private static string LowerFunctionName(AggregateFunction function) => FunctionName(function).ToLower(M.Current);
 
     /// <summary>Throws for the first problem of the generated reports of <paramref name="project"/>.</summary>
     public static void Validate(Project project, IReadOnlyList<TableInfo> tables)
@@ -41,18 +47,18 @@ public static class ReportValidator
         var classes = new HashSet<string>(StringComparer.Ordinal);
         foreach (var report in generated)
         {
-            var label = report.Name.Trim().Length == 0 ? "(no name)" : report.Name.Trim();
-            void Add(string text) => problems.Add($"Report {label}: {text}");
+            var label = report.Name.Trim().Length == 0 ? M.Text("Report_NoName") : report.Name.Trim();
+            void Add(string text) => problems.Add(M.Format("Report_Problem", label, text));
 
             if (Identifier.Route(report.Name).Length == 0)
             {
-                Add("give the report a name with at least one letter or digit.");
+                Add(M.Text("Report_NameNeeded"));
                 continue;
             }
 
             if (!routes.Add(Identifier.Route(report.Name)) || !classes.Add(Identifier.Pascal(report.Name)))
             {
-                Add("another report has the same name or URL.");
+                Add(M.Text("Report_NameTaken"));
             }
 
             if (report.Kind == ReportKind.Dashboard)
@@ -63,45 +69,45 @@ public static class ReportValidator
 
             if (string.IsNullOrWhiteSpace(report.SourceTable))
             {
-                Add("choose the table it reads.");
+                Add(M.Text("Report_ChooseTable"));
                 continue;
             }
 
             var table = tables.FirstOrDefault(t => Same(t.Name, report.SourceTable));
             if (table is null)
             {
-                Add($"the table '{report.SourceTable}' is not one of the generated tables.");
+                Add(M.Format("Report_TableNotGenerated", report.SourceTable));
                 continue;
             }
 
             if (report.MaxColumns < 1)
             {
-                Add("the most columns must be at least 1.");
+                Add(M.Text("Report_MaxColumns"));
             }
 
             if (report.TopCount < 0)
             {
-                Add("the number of categories shown cannot be negative.");
+                Add(M.Text("Report_TopCountNegative"));
             }
 
             if (report.DateFilterField.Trim().Length > 0)
             {
                 if (report.Kind == ReportKind.Calendar)
                 {
-                    Add("a calendar moves by month; clear the date range field.");
+                    Add(M.Text("Report_CalendarDateRange"));
                 }
-                else if (CheckField(table, report.DateFilterField, "date range field", Add) is { } range && !IsDateField(range))
+                else if (CheckField(table, report.DateFilterField, "DateRange", Add) is { } range && !IsDateField(range))
                 {
-                    Add($"the date range field '{range.Name}' is not a date.");
+                    Add(M.Format("Report_NotADate", What("DateRange"), range.Name));
                 }
             }
 
             var filters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var filter in report.FilterFields)
             {
-                if (CheckField(table, filter, "filter field", Add) is { } field && !filters.Add(field.Name))
+                if (CheckField(table, filter, "Filter", Add) is { } field && !filters.Add(field.Name))
                 {
-                    Add($"the filter field '{field.Name}' is listed twice.");
+                    Add(M.Format("Report_FilterTwice", field.Name));
                 }
             }
 
@@ -110,7 +116,7 @@ public static class ReportValidator
                 case ReportKind.Summary:
                     foreach (var group in report.Groups)
                     {
-                        CheckGrouping(table, group.Field, group.Interval, "group field", Add);
+                        CheckGrouping(table, group.Field, group.Interval, "Group", Add);
                     }
 
                     foreach (var aggregate in report.Aggregates)
@@ -120,30 +126,30 @@ public static class ReportValidator
 
                     foreach (var column in report.DetailColumns)
                     {
-                        CheckField(table, column, "detail column", Add);
+                        CheckField(table, column, "DetailColumn", Add);
                     }
 
                     break;
 
                 case ReportKind.Crosstab:
-                    CheckGrouping(table, report.RowField, report.RowInterval, "row field", Add);
-                    CheckGrouping(table, report.ColumnField, report.ColumnInterval, "column field", Add);
+                    CheckGrouping(table, report.RowField, report.RowInterval, "Row", Add);
+                    CheckGrouping(table, report.ColumnField, report.ColumnInterval, "Column", Add);
                     CheckAggregate(table, report.ValueField, report.Function, Add);
                     break;
 
                 case ReportKind.Chart:
-                    CheckGrouping(table, report.RowField, report.RowInterval, "category field", Add);
+                    CheckGrouping(table, report.RowField, report.RowInterval, "Category", Add);
                     if (report.ColumnField.Trim().Length > 0)
                     {
-                        CheckGrouping(table, report.ColumnField, report.ColumnInterval, "series field", Add);
+                        CheckGrouping(table, report.ColumnField, report.ColumnInterval, "Series", Add);
                         if (report.ChartType is ChartType.Pie or ChartType.Doughnut)
                         {
-                            Add("a pie or doughnut chart has one series; clear the series field.");
+                            Add(M.Text("Report_PieOneSeries"));
                         }
 
                         if (report.ChartOrder == ChartOrder.ValueDescending)
                         {
-                            Add("a chart with a series field is ordered by category; choose the category order.");
+                            Add(M.Text("Report_SeriesOrder"));
                         }
                     }
 
@@ -151,26 +157,26 @@ public static class ReportValidator
                     if (report.Function is AggregateFunction.Min or AggregateFunction.Max
                         && table.Fields.FirstOrDefault(f => Same(f.Name, report.ValueField)) is { } plotted && !IsNumeric(plotted.Type))
                     {
-                        Add($"a chart plots numbers, but the {report.Function.ToString().ToLowerInvariant()} of '{plotted.Name}' is not a number.");
+                        Add(M.Format("Report_ChartNotNumber", LowerFunctionName(report.Function), plotted.Name));
                     }
 
                     break;
 
                 case ReportKind.Calendar:
-                    if (CheckField(table, report.DateField, "date field", Add) is { } date && !IsDateField(date))
+                    if (CheckField(table, report.DateField, "Date", Add) is { } date && !IsDateField(date))
                     {
-                        Add($"the date field '{date.Name}' is not a date.");
+                        Add(M.Format("Report_NotADate", What("Date"), date.Name));
                     }
 
                     if (report.EndDateField.Trim().Length > 0
-                        && CheckField(table, report.EndDateField, "end date field", Add) is { } end && !IsDateField(end))
+                        && CheckField(table, report.EndDateField, "EndDate", Add) is { } end && !IsDateField(end))
                     {
-                        Add($"the end date field '{end.Name}' is not a date.");
+                        Add(M.Format("Report_NotADate", What("EndDate"), end.Name));
                     }
 
                     if (report.TitleField.Trim().Length > 0)
                     {
-                        CheckField(table, report.TitleField, "title field", Add);
+                        CheckField(table, report.TitleField, "Title", Add);
                     }
 
                     break;
@@ -184,7 +190,7 @@ public static class ReportValidator
     {
         if (report.Items.Count == 0)
         {
-            add("add at least one report to the dashboard.");
+            add(M.Text("Report_DashboardEmpty"));
         }
 
         foreach (var item in report.Items)
@@ -192,39 +198,42 @@ public static class ReportValidator
             var target = generated.FirstOrDefault(r => Same(r.Name, item.Report));
             if (target is null)
             {
-                add($"the dashboard shows '{item.Report}', which is not a generated report.");
+                add(M.Format("Report_DashboardMissing", item.Report));
             }
             else if (target.Kind == ReportKind.Dashboard)
             {
-                add($"a dashboard cannot show another dashboard ('{target.Name}').");
+                add(M.Format("Report_DashboardNested", target.Name));
             }
 
             if (item.Width is < 1 or > 12)
             {
-                add($"the width of '{item.Report}' must be between 1 and 12 columns.");
+                add(M.Format("Report_DashboardWidth", item.Report));
             }
         }
     }
+
+    /// <summary>The name of a report setting that holds a field ("date range field"), from its ReportField_ key.</summary>
+    private static string What(string what) => M.Text("ReportField_" + what);
 
     /// <summary>The field, or null after adding a problem when it is missing, secret or binary.</summary>
     private static FieldInfo? CheckField(TableInfo table, string name, string what, Action<string> add)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            add($"choose the {what}.");
+            add(M.Format("Report_ChooseField", What(what)));
             return null;
         }
 
         var field = table.Fields.FirstOrDefault(f => Same(f.Name, name));
         if (field is null || field.IsSecret)
         {
-            add($"the {what} '{name}' is not a field of '{table.Name}'.");
+            add(M.Format("Report_NotAField", What(what), name, table.Name));
             return null;
         }
 
         if (field.Type == FieldType.Binary)
         {
-            add($"the {what} '{field.Name}' holds binary data, which a report cannot show.");
+            add(M.Format("Report_Binary", What(what), field.Name));
             return null;
         }
 
@@ -235,7 +244,7 @@ public static class ReportValidator
     {
         if (CheckField(table, name, what, add) is { } field && interval != DateInterval.None && !IsDateField(field))
         {
-            add($"the {what} '{field.Name}' is not a date, so it cannot be grouped by {interval.ToString().ToLowerInvariant()}.");
+            add(M.Format("Report_GroupNotDate", What(what), field.Name, M.Text("Interval_" + interval)));
         }
     }
 
@@ -246,10 +255,10 @@ public static class ReportValidator
             return;
         }
 
-        if (CheckField(table, name, "value field", add) is { } field
+        if (CheckField(table, name, "Value", add) is { } field
             && function is AggregateFunction.Sum or AggregateFunction.Average && !IsNumeric(field.Type))
         {
-            add($"{function.ToString().ToLowerInvariant()} needs a number field, but '{field.Name}' is {field.Type}.");
+            add(M.Format("Report_AggregateNeedsNumber", LowerFunctionName(function), field.Name, field.Type));
         }
     }
 }

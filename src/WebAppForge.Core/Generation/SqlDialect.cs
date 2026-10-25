@@ -19,7 +19,7 @@ internal abstract class SqlDialect
         DatabaseProviders.Sqlite => Sqlite,
         DatabaseProviders.SqlServer or DatabaseProviders.AzureSql => SqlServer,
         DatabaseProviders.MySql => MySql,
-        var other => throw new NotSupportedException($"Provider '{other}' is not supported."),
+        var other => throw new NotSupportedException(Localization.CoreMessages.Format("Generator_ProviderNotSupported", other)),
     };
 
     public abstract string Name { get; }
@@ -128,7 +128,7 @@ internal abstract class SqlDialect
         {
             if (name.Contains('"'))
             {
-                throw new NotSupportedException($"Identifier '{name}' contains a double quote and cannot be generated.");
+                throw new NotSupportedException(Localization.CoreMessages.Format("Generator_QuoteInName", name));
             }
 
             return "\"" + name + "\"";
@@ -190,7 +190,7 @@ internal abstract class SqlDialect
         {
             if (name.Contains(']'))
             {
-                throw new NotSupportedException($"Identifier '{name}' contains a closing bracket and cannot be generated.");
+                throw new NotSupportedException(Localization.CoreMessages.Format("Generator_BracketInName", name));
             }
 
             var dot = name.IndexOf('.');
@@ -275,7 +275,7 @@ internal abstract class SqlDialect
         {
             if (name.Contains('`'))
             {
-                throw new NotSupportedException($"Identifier '{name}' contains a backtick and cannot be generated.");
+                throw new NotSupportedException(Localization.CoreMessages.Format("Generator_BacktickInName", name));
             }
 
             return "`" + name + "`";

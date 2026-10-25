@@ -180,7 +180,7 @@
                       IsReadOnly="True" SelectionMode="Single" GridLinesVisibility="All" CanUserResizeColumns="True"
                       AutomationProperties.AutomationId="DiagnosticsGrid">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="{l:Tr Generate_Severity}" Binding="{Binding Severity}" Width="80" />
+                    <DataGridTextColumn Header="{l:Tr Generate_Severity}" Binding="{Binding SeverityText}" Width="80" />
                     <DataGridTextColumn Header="{l:Tr Generate_Code}" Binding="{Binding Code}" Width="90" />
                     <DataGridTextColumn Header="{l:Tr Generate_Message}" Binding="{Binding Message}" Width="*" MinWidth="160" />
                     <DataGridTextColumn Header="{l:Tr Common_File}" Binding="{Binding File}" Width="260" />

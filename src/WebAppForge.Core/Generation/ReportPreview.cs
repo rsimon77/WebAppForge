@@ -2,6 +2,7 @@ using System.Data.Common;
 using System.Globalization;
 using WebAppForge.Core.Model;
 using WebAppForge.Core.Schema;
+using M = WebAppForge.Core.Localization.CoreMessages;
 
 namespace WebAppForge.Core.Generation;
 
@@ -28,11 +29,11 @@ public static class ReportPreview
         ArgumentNullException.ThrowIfNull(report);
         if (report.Kind == ReportKind.Dashboard)
         {
-            return ReportPreviewResult.Note("A dashboard shows other reports. Preview them one at a time.");
+            return ReportPreviewResult.Note(M.Text("Preview_Dashboard"));
         }
 
         var tables = project.Tables.Where(t => t.Generate).ToList();
-        var problems = ReportValidator.Problems([report], tables).Where(p => !p.Contains("dashboard", StringComparison.Ordinal)).ToList();
+        var problems = ReportValidator.Problems([report], tables);
         if (problems.Count > 0)
         {
             return ReportPreviewResult.Note(problems[0]);
@@ -58,7 +59,7 @@ public static class ReportPreview
         }
         catch (DbException ex)
         {
-            return ReportPreviewResult.Note("The database refused the query: " + ex.Message);
+            return ReportPreviewResult.Note(M.Format("Preview_QueryRefused", ex.Message));
         }
         finally
         {
@@ -127,14 +128,14 @@ public static class ReportPreview
     }
 
     private static string Heading(AggregateFunction function, FieldInfo? field, string caption) =>
-        caption.Length > 0 ? caption : field is null ? "Count" : $"{function} of {(field.Caption.Length > 0 ? field.Caption : field.Name)}";
+        caption.Length > 0 ? caption : field is null ? ReportValidator.FunctionName(AggregateFunction.Count) : M.Format("Preview_FunctionOf", ReportValidator.FunctionName(function), Caption(field));
 
     private static string Caption(FieldInfo field) => field.Caption.Length > 0 ? field.Caption : field.Name;
 
     private static string Text(object? value) => value switch
     {
-        null or DBNull => "(empty)",
-        bool flag => flag ? "Yes" : "No",
+        null or DBNull => M.Text("Preview_Empty"),
+        bool flag => M.Text(flag ? "Preview_Yes" : "Preview_No"),
         double d => d.ToString("#,0.##", CultureInfo.InvariantCulture),
         decimal m => m.ToString("#,0.##", CultureInfo.InvariantCulture),
         long l => l.ToString("#,0", CultureInfo.InvariantCulture),
@@ -161,7 +162,7 @@ public static class ReportPreview
             rows.Add(Enumerable.Range(0, headers.Count).Select(i => Text(reader.GetValue(i))).ToArray());
         }
 
-        return new ReportPreviewResult(headers, rows, null, rows.Count == 0 ? "No rows." : $"First {rows.Count} groups.");
+        return new ReportPreviewResult(headers, rows, null, rows.Count == 0 ? M.Text("Preview_NoRows") : M.Format("Preview_FirstGroups", rows.Count));
     }
 
     private static ReportPreviewResult Grid(DbCommand command, ReportInfo report, TableInfo table, bool pivot)
@@ -187,7 +188,7 @@ public static class ReportPreview
 
             var max = numbers.Count == 0 ? 0 : numbers.Max(Math.Abs);
             var bars = report.Kind == ReportKind.Chart ? numbers.Select(n => max == 0 ? 0 : Math.Abs(n) / max).ToList() : null;
-            return new ReportPreviewResult([Caption(row), heading], rows, bars, rows.Count == 0 ? "No rows." : $"First {rows.Count} {(report.Kind == ReportKind.Chart ? "categories" : "rows")}.");
+            return new ReportPreviewResult([Caption(row), heading], rows, bars, rows.Count == 0 ? M.Text("Preview_NoRows") : M.Format(report.Kind == ReportKind.Chart ? "Preview_FirstCategories" : "Preview_FirstRows", rows.Count));
         }
 
         var columnSql = Templates.GroupSql(table, column, report.ColumnInterval);
@@ -218,7 +219,9 @@ public static class ReportPreview
 
         var shown = columnKeys.Take(MaxColumns).ToList();
         var result = rowKeys.Select(r => new[] { r }.Concat(shown.Select(c => cells.TryGetValue((r, c), out var v) ? v : string.Empty)).ToArray()).ToList();
-        var note = rowKeys.Count == 0 ? "No rows." : $"{heading}, first {rowKeys.Count} rows" + (columnKeys.Count > shown.Count ? $" and {shown.Count} of {columnKeys.Count} columns." : ".");
+        var note = rowKeys.Count == 0 ? M.Text("Preview_NoRows")
+            : columnKeys.Count > shown.Count ? M.Format("Preview_PivotRowsColumns", heading, rowKeys.Count, shown.Count, columnKeys.Count)
+            : M.Format("Preview_PivotRows", heading, rowKeys.Count);
         return new ReportPreviewResult(new[] { Caption(row) }.Concat(shown).ToList(), result, null, note);
     }
 
@@ -237,6 +240,6 @@ public static class ReportPreview
             rows.Add([Text(reader.GetValue(0)), Text(reader.GetValue(1))]);
         }
 
-        return new ReportPreviewResult([Caption(date), title is null ? "Entry" : Caption(title)], rows, null, rows.Count == 0 ? "No dated rows." : "The latest entries.");
+        return new ReportPreviewResult([Caption(date), title is null ? M.Text("Preview_Entry") : Caption(title)], rows, null, rows.Count == 0 ? M.Text("Preview_NoDatedRows") : M.Text("Preview_LatestEntries"));
     }
 }

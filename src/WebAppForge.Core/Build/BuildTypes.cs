@@ -29,6 +29,9 @@ public sealed class BuildResult
     /// <summary>A short human readable summary, set for failures (missing tool, cancelled, exit code).</summary>
     public string Message { get; init; } = string.Empty;
 
+    /// <summary>True when a tool path set in the options does not exist; the editor then points to the options.</summary>
+    public bool ToolPathMissing { get; init; }
+
     public IReadOnlyList<BuildDiagnostic> ParsedDiagnostics { get; init; } = [];
 
     /// <summary>Folder the output was published to, when a publish succeeded.</summary>
@@ -41,5 +44,14 @@ public sealed class BuildResult
         Cancelled = cancelled,
         Message = message,
         Duration = duration,
+    };
+
+    /// <summary>A failure because a tool path set in the options does not exist (<see cref="ToolPathMissing"/>).</summary>
+    public static BuildResult MissingToolPath(string message) => new()
+    {
+        Succeeded = false,
+        ExitCode = -1,
+        Message = message,
+        ToolPathMissing = true,
     };
 }

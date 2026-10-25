@@ -346,10 +346,10 @@ public partial class GenerateViewModel : ViewModelBase
             ? Localizer.Instance.Format("Generate_CancelledDuring", title)
             : failedStage == BuildStage.Generate
                 ? Localizer.Instance.Format("Generate_GenerationFailed", result.Message)
-                : $"{title} failed: {result.Message}";
+                : Localizer.Instance.Format("Generate_StageFailed", title, result.Message);
         LastResult = failure;
         _main.Status = failure;
-        RelayMissingPath(result.Message);
+        RelayMissingPath(result.Message, result.Build?.ToolPathMissing == true || result.Publish?.ToolPathMissing == true || result.DockerImage?.ToolPathMissing == true);
     }
 
     /// <summary>Runs <c>dotnet build</c> on the site in the saved output folder.</summary>
@@ -410,7 +410,7 @@ public partial class GenerateViewModel : ViewModelBase
         if (result.Succeeded)
         {
             item2.State = StageState.Ok;
-            item2.Message = stage == BuildStage.Publish ? result.PublishPath ?? string.Empty : $"{result.Warnings} warning(s)";
+            item2.Message = stage == BuildStage.Publish ? result.PublishPath ?? string.Empty : Localizer.Instance.Format("Generate_WarningCount", result.Warnings);
             status = stage == BuildStage.Build
                 ? Localizer.Instance.Format("Generate_BuildSucceededWithWarningSIn", result.Warnings, result.Duration.TotalSeconds)
                 : Localizer.Instance.Format("Generate_PublishedTo2", result.PublishPath);
@@ -421,7 +421,9 @@ public partial class GenerateViewModel : ViewModelBase
             item2.Message = result.Message;
             status = result.Cancelled
                 ? Localizer.Instance.Format("Generate_CancelledDuring", title)
-                : result.Errors > 0 ? $"{title} failed: {result.Errors} error(s). {result.Message}".TrimEnd() : $"{title} failed: {result.Message}";
+                : result.Errors > 0
+                    ? Localizer.Instance.Format("Generate_StageFailedErrors", title, result.Errors, result.Message).TrimEnd()
+                    : Localizer.Instance.Format("Generate_StageFailed", title, result.Message);
         }
 
         LastResult = status;
@@ -429,14 +431,14 @@ public partial class GenerateViewModel : ViewModelBase
         ShowOptionsHint = false;
         if (!result.Succeeded)
         {
-            RelayMissingPath(result.Message);
+            RelayMissingPath(result.Message, result.ToolPathMissing);
         }
     }
 
     /// <summary>When a stage failed because a configured tool path does not exist, writes the message to the console and shows the Open Options link.</summary>
-    private void RelayMissingPath(string message)
+    private void RelayMissingPath(string message, bool toolPathMissing)
     {
-        if (!message.Contains("path was not found", StringComparison.Ordinal))
+        if (!toolPathMissing)
         {
             return;
         }
@@ -628,7 +630,7 @@ public partial class GenerateViewModel : ViewModelBase
     }
 
     private static DiagnosticRow ToRow(BuildDiagnostic d)
-        => new(d.IsError ? "Error" : "Warning", d.Code, d.Message, d.File, d.Line);
+        => new(d.IsError ? DiagnosticRow.Error : DiagnosticRow.Warning, d.Code, d.Message, d.File, d.Line);
 
     [RelayCommand]
     private void ClearOutput()

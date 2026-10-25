@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hungarian messages of Core, formal register. Every key of Messages.resx; CoreMessagesTests checks it. -->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Audit_ExcludedMissing" xml:space="preserve">
+    <value>A(z) „{0}” tábla kizárja a(z) „{1}” mezőt a változásnaplóból, de nincs ilyen mezője.</value>
+  </data>
+  <data name="Audit_LogTableClash" xml:space="preserve">
+    <value>A(z) „{0}” naplótábla neve megegyezik a projekt egyik táblájának nevével. Válasszon másik nevet, vagy távolítsa el azt a táblát.</value>
+  </data>
+  <data name="Audit_NoLogTable" xml:space="preserve">
+    <value>A változásnaplóhoz meg kell adni a naplótábla nevét.</value>
+  </data>
+  <data name="Build_Cancelled" xml:space="preserve">
+    <value>Megszakítva.</value>
+  </data>
+  <data name="Build_ConfiguredPathMissing" xml:space="preserve">
+    <value>A(z) {0} beállított elérési útja nem található: {1}</value>
+  </data>
+  <data name="Build_CouldNotStart" xml:space="preserve">
+    <value>A(z) {0} nem indítható el: {1}</value>
+  </data>
+  <data name="Build_DockerMissing" xml:space="preserve">
+    <value>A docker parancssori eszköz nem található a PATH-ban. Telepítse a Dockert, majd próbálja újra.</value>
+  </data>
+  <data name="Build_DockerOff" xml:space="preserve">
+    <value>A Docker-lemezkép készítése ki van kapcsolva a fordítási beállításokban.</value>
+  </data>
+  <data name="Build_DotnetMissing" xml:space="preserve">
+    <value>A dotnet parancssori eszköz nem található a PATH-ban. Telepítse a .NET SDK-t (https://dotnet.microsoft.com/download), majd próbálja újra.</value>
+  </data>
+  <data name="Build_ExitCode" xml:space="preserve">
+    <value>A(z) {0} hibával állt le (kilépési kód: {1}).</value>
+  </data>
+  <data name="Build_FileCount" xml:space="preserve">
+    <value>{0} fájl</value>
+  </data>
+  <data name="Build_FirstError" xml:space="preserve">
+    <value>{0} hiba. Az első: {1}({2}): {3}: {4}</value>
+  </data>
+  <data name="Build_FolderMissing" xml:space="preserve">
+    <value>A(z) „{0}” mappa nem létezik. Előbb generálja a webhelyet.</value>
+  </data>
+  <data name="Build_ManyProjects" xml:space="preserve">
+    <value>A(z) „{0}” mappában több .csproj fájl is van.</value>
+  </data>
+  <data name="Build_NoDockerfile" xml:space="preserve">
+    <value>A(z) „{0}” mappában nincs Dockerfile. Előbb generálja a Docker-fájlokat.</value>
+  </data>
+  <data name="Build_NoExecutable" xml:space="preserve">
+    <value>Nincs megadva futtatható fájl.</value>
+  </data>
+  <data name="Build_NoProject" xml:space="preserve">
+    <value>A(z) „{0}” mappában nincs .csproj fájl. Előbb generálja a webhelyet.</value>
+  </data>
+  <data name="Build_TimedOut" xml:space="preserve">
+    <value>A(z) {0} túllépte az időkorlátot ({1}), ezért leállt.</value>
+  </data>
+  <data name="Build_VersionExitCode" xml:space="preserve">
+    <value>A(z) „{0} --version” {1} kóddal lépett ki.</value>
+  </data>
+  <data name="Build_VersionNothing" xml:space="preserve">
+    <value>A(z) „{0} --version” nem írt ki semmit.</value>
+  </data>
+  <data name="Build_VersionTimedOut" xml:space="preserve">
+    <value>A(z) „{0} --version” túllépte az időkorlátot ({1}).</value>
+  </data>
+  <data name="Build_WarningCount" xml:space="preserve">
+    <value>{0} figyelmeztetés</value>
+  </data>
+  <data name="Build_WasCancelled" xml:space="preserve">
+    <value>A(z) {0} futása megszakadt.</value>
+  </data>
+  <data name="Function_Average" xml:space="preserve">
+    <value>Átlag</value>
+  </data>
+  <data name="Function_Count" xml:space="preserve">
+    <value>Darabszám</value>
+  </data>
+  <data name="Function_Max" xml:space="preserve">
+    <value>Maximum</value>
+  </data>
+  <data name="Function_Min" xml:space="preserve">
+    <value>Minimum</value>
+  </data>
+  <data name="Function_Sum" xml:space="preserve">
+    <value>Összeg</value>
+  </data>
+  <data name="Generator_AssetFavicon" xml:space="preserve">
+    <value>favicon</value>
+  </data>
+  <data name="Generator_AssetLogo" xml:space="preserve">
+    <value>logó</value>
+  </data>
+  <data name="Generator_AssetMissing" xml:space="preserve">
+    <value>A(z) „{1}” {0}fájl nem található (keresett hely: „{2}”).</value>
+  </data>
+  <data name="Generator_BacktickInName" xml:space="preserve">
+    <value>A(z) „{0}” azonosító fordított aposztrófot (`) tartalmaz, ezért nem generálható.</value>
+  </data>
+  <data name="Generator_BracketInName" xml:space="preserve">
+    <value>A(z) „{0}” azonosító záró szögletes zárójelet tartalmaz, ezért nem generálható.</value>
+  </data>
+  <data name="Generator_CompositeAutoIncrement" xml:space="preserve">
+    <value>A(z) „{0}” tábla összetett kulcsában automatikusan növekvő oszlop van, amelyet az SQLite nem támogat.</value>
+  </data>
+  <data name="Generator_LanguageCode" xml:space="preserve">
+    <value>A(z) „{0}” nem érvényes nyelvkód. BCP-47 kódot használjon, például „en” vagy „pt-BR”.</value>
+  </data>
+  <data name="Generator_LevelMissing" xml:space="preserve">
+    <value>A felhasználói szint szerinti biztonság be van kapcsolva, de a(z) „{0}” táblának nincs „{1}” felhasználóiszint-mezője.</value>
+  </data>
+  <data name="Generator_LevelNotInteger" xml:space="preserve">
+    <value>A(z) „{1}” tábla „{0}” felhasználóiszint-mezőjének egész számos oszlopnak kell lennie, de a típusa {2}.</value>
+  </data>
+  <data name="Generator_OwnerMissing" xml:space="preserve">
+    <value>A(z) „{0}” táblánál be van kapcsolva a felhasználóazonosító szerinti védelem, de nincs „{1}” tulajdonosmezője.</value>
+  </data>
+  <data name="Generator_OwnerNotText" xml:space="preserve">
+    <value>A(z) „{1}” tábla „{0}” tulajdonosmezőjének szöveges oszlopnak kell lennie a felhasználónév tárolásához, de a típusa {2}.</value>
+  </data>
+  <data name="Generator_PasswordMissing" xml:space="preserve">
+    <value>A biztonság be van kapcsolva, de a(z) „{0}” táblának nincs „{1}” jelszómezője.</value>
+  </data>
+  <data name="Generator_PasswordNotText" xml:space="preserve">
+    <value>A(z) „{1}” tábla „{0}” jelszómezőjének szöveges oszlopnak kell lennie a jelszókivonat tárolásához, de a típusa {2}.</value>
+  </data>
+  <data name="Generator_ProviderNotSupported" xml:space="preserve">
+    <value>A(z) „{0}” szolgáltató nem támogatott.</value>
+  </data>
+  <data name="Generator_QuoteInName" xml:space="preserve">
+    <value>A(z) „{0}” azonosító idézőjelet tartalmaz, ezért nem generálható.</value>
+  </data>
+  <data name="Generator_UnsupportedProvider" xml:space="preserve">
+    <value>A(z) „{0}” szolgáltató nem támogatott. Ezek egyikét használja: {1}.</value>
+  </data>
+  <data name="Generator_UserNameMissing" xml:space="preserve">
+    <value>A biztonság be van kapcsolva, de a(z) „{0}” táblának nincs „{1}” felhasználónév-mezője.</value>
+  </data>
+  <data name="Generator_UserTableMissing" xml:space="preserve">
+    <value>A biztonság be van kapcsolva, de a(z) „{0}” felhasználói tábla nincs a generált táblák között.</value>
+  </data>
+  <data name="Identity_AdminLevel" xml:space="preserve">
+    <value>A rendszergazdai szint legalább 1 legyen.</value>
+  </data>
+  <data name="Identity_AdminName" xml:space="preserve">
+    <value>Adja meg annak a rendszergazdának a nevét, akit a webhely létrehoz, amikor még nincs felhasználója.</value>
+  </data>
+  <data name="Identity_AdminVariable" xml:space="preserve">
+    <value>A(z) „{0}” nem érvényes környezetiváltozó-név a rendszergazda jelszavához: betűket, számjegyeket és aláhúzásjelet használjon, és ne számjeggyel kezdje.</value>
+  </data>
+  <data name="Identity_Lockout" xml:space="preserve">
+    <value>A zároláshoz legalább egy sikertelen próbálkozás és legalább egyperces zárolási idő kell.</value>
+  </data>
+  <data name="Identity_NoteNoCreate" xml:space="preserve">
+    <value>A webhely nem hozza létre az identitástáblákat: ezeknek már az indulás előtt létezniük kell az adatbázisban.</value>
+  </data>
+  <data name="Identity_NoteUserTable" xml:space="preserve">
+    <value>A felhasználói tábla és a felhasználónév-, jelszó- és felhasználóiszint-mező nincs használatban: a felhasználókat az ASP.NET Core Identity tárolja.</value>
+  </data>
+  <data name="Identity_PasswordLength" xml:space="preserve">
+    <value>A jelszó legkisebb hossza 1 és 128 között lehet.</value>
+  </data>
+  <data name="Identity_Prefix" xml:space="preserve">
+    <value>A(z) „{0}” identitástábla-előtag érvénytelen: 1–30 betűt, számjegyet és aláhúzásjelet használjon, betűvel kezdve.</value>
+  </data>
+  <data name="Identity_RegisteredLevel" xml:space="preserve">
+    <value>A regisztráló felhasználók szintje legalább 0 legyen, és kisebb a rendszergazdai szintnél.</value>
+  </data>
+  <data name="ImportExport_DateFormat" xml:space="preserve">
+    <value>a(z) „{0}” dátumformátum nem használható: olyan dátumot kell írnia, amelyet vissza is tud olvasni (például yyyy-MM-dd).</value>
+  </data>
+  <data name="ImportExport_Delimiter" xml:space="preserve">
+    <value>a CSV-elválasztó egyetlen karakter legyen, például , ; | vagy tabulátor.</value>
+  </data>
+  <data name="ImportExport_ExcludedMissing" xml:space="preserve">
+    <value>a(z) „{0}” kizárt mező nem létezik.</value>
+  </data>
+  <data name="ImportExport_FileNameBrace" xml:space="preserve">
+    <value>az exportfájl nevében pár nélküli kapcsos zárójel van.</value>
+  </data>
+  <data name="ImportExport_FileNameCharacter" xml:space="preserve">
+    <value>az exportfájl neve olyan karaktert tartalmaz, amely fájlnévben nem szerepelhet.</value>
+  </data>
+  <data name="ImportExport_FileNameEmpty" xml:space="preserve">
+    <value>az exportfájl neve nem lehet üres.</value>
+  </data>
+  <data name="ImportExport_FileNameLetter" xml:space="preserve">
+    <value>az exportfájl nevének legalább egy betűt vagy számjegyet kell tartalmaznia.</value>
+  </data>
+  <data name="ImportExport_FileNamePart" xml:space="preserve">
+    <value>az exportfájl nevében ismeretlen rész van: {0}; a {{table}}, {{date}} vagy {{datetime}} részt használja.</value>
+  </data>
+  <data name="ImportExport_KeyLeftOut" xml:space="preserve">
+    <value>a(z) „{0}” kulcsmező ki van hagyva, így a sorok nem párosíthatók.</value>
+  </data>
+  <data name="ImportExport_MaxRows" xml:space="preserve">
+    <value>az exportált sorok legnagyobb száma nem lehet negatív.</value>
+  </data>
+  <data name="ImportExport_NegativeLevel" xml:space="preserve">
+    <value>a legalacsonyabb felhasználói szintek nem lehetnek negatívak.</value>
+  </data>
+  <data name="ImportExport_NoFormat" xml:space="preserve">
+    <value>kapcsoljon be legalább egy exportálási vagy importálási formátumot.</value>
+  </data>
+  <data name="ImportExport_Problem" xml:space="preserve">
+    <value>Import/export: {0}</value>
+  </data>
+  <data name="ImportExport_RequiredLeftOut" xml:space="preserve">
+    <value>a(z) „{0}” kötelező mező ki van hagyva, így az importálás nem tudna sorokat felvenni.</value>
+  </data>
+  <data name="ImportExport_TableProblem" xml:space="preserve">
+    <value>Import/export, „{0}” tábla: {1}</value>
+  </data>
+  <data name="ImportExport_UploadLimit" xml:space="preserve">
+    <value>a legnagyobb feltöltés 1 és {0} MB között lehet.</value>
+  </data>
+  <data name="ImportExport_UpsertNoKey" xml:space="preserve">
+    <value>a meglévő sorok frissítéséhez elsődleges kulcs kell, de a táblának nincs.</value>
+  </data>
+  <data name="Interval_Day" xml:space="preserve">
+    <value>nap</value>
+  </data>
+  <data name="Interval_Month" xml:space="preserve">
+    <value>hónap</value>
+  </data>
+  <data name="Interval_Quarter" xml:space="preserve">
+    <value>negyedév</value>
+  </data>
+  <data name="Interval_Year" xml:space="preserve">
+    <value>év</value>
+  </data>
+  <data name="MasterDetail_ChooseDetail" xml:space="preserve">
+    <value>válassza ki a részletező táblát.</value>
+  </data>
+  <data name="MasterDetail_Cycle" xml:space="preserve">
+    <value>Kaszkádtörlési kör: {0}. A kaszkádtörlési szabályok nem alkothatnak kört; az egyiket állítsa Tiltás vagy Üres értékre állítás szabályra.</value>
+  </data>
+  <data name="MasterDetail_DetailFieldMissing" xml:space="preserve">
+    <value>a(z) „{0}” részletező mező nem létezik a(z) „{1}” táblában.</value>
+  </data>
+  <data name="MasterDetail_DetailMissing" xml:space="preserve">
+    <value>a(z) „{0}” részletező tábla nem létezik.</value>
+  </data>
+  <data name="MasterDetail_DetailNotGenerated" xml:space="preserve">
+    <value>a(z) „{0}” részletező tábla nem generálódik (a Generálás ki van kapcsolva).</value>
+  </data>
+  <data name="MasterDetail_Duplicate" xml:space="preserve">
+    <value>a(z) „{0}” egy másik, „{1}” táblára mutató kapcsolatának másolata ugyanazokkal a kulcsmezőkkel.</value>
+  </data>
+  <data name="MasterDetail_FormPageMissing" xml:space="preserve">
+    <value>a rács a(z) „{0}” űrlapoldalon van, amely a(z) „{1}” táblának nincs.</value>
+  </data>
+  <data name="MasterDetail_FormPageNoName" xml:space="preserve">
+    <value>„{0}” tábla: egy űrlapoldalnak nincs neve.</value>
+  </data>
+  <data name="MasterDetail_FormPageTwice" xml:space="preserve">
+    <value>„{0}” tábla: a(z) „{1}” űrlapoldal kétszer szerepel.</value>
+  </data>
+  <data name="MasterDetail_GridColumnMissing" xml:space="preserve">
+    <value>a(z) „{0}” rácsoszlop nem létezik a(z) „{1}” táblában.</value>
+  </data>
+  <data name="MasterDetail_LinkNoDetail" xml:space="preserve">
+    <value>a(z) {0}. kulcskapcsolatnak nincs részletező mezője.</value>
+  </data>
+  <data name="MasterDetail_LinkNoMaster" xml:space="preserve">
+    <value>a(z) {0}. kulcskapcsolatnak nincs fő mezője.</value>
+  </data>
+  <data name="MasterDetail_LinkTwice" xml:space="preserve">
+    <value>a(z) „{0} = {1}” kulcskapcsolat kétszer szerepel.</value>
+  </data>
+  <data name="MasterDetail_MasterFieldMissing" xml:space="preserve">
+    <value>a(z) „{0}” fő mező nem létezik a(z) „{1}” táblában.</value>
+  </data>
+  <data name="MasterDetail_MasterNoKey" xml:space="preserve">
+    <value>a(z) „{0}” fő táblának nincs elsődleges kulcsa.</value>
+  </data>
+  <data name="MasterDetail_NoLinks" xml:space="preserve">
+    <value>adjon meg legalább egy kulcskapcsolatot (fő mező = részletező mező).</value>
+  </data>
+  <data name="MasterDetail_PageSize" xml:space="preserve">
+    <value>a(z) {0} oldalméret 1 és 200 között lehet.</value>
+  </data>
+  <data name="MasterDetail_Problem" xml:space="preserve">
+    <value>Fő-részletező {0} -&gt; {1}: {2}</value>
+  </data>
+  <data name="MasterDetail_SelfCascade" xml:space="preserve">
+    <value>egy tábla nem törölhet kaszkádolva önmagából (kaszkádtörlési kör: {0} -&gt; {0}). Használja a Tiltás vagy az Üres értékre állítás szabályt.</value>
+  </data>
+  <data name="MasterDetail_SetNullRequired" xml:space="preserve">
+    <value>a törléskori „Üres értékre állítás” üres értéket engedő kapcsolómezőket igényel, de a(z) „{1}” „{0}” mezője kötelező.</value>
+  </data>
+  <data name="MasterDetail_ShowOnAdd" xml:space="preserve">
+    <value>a részletek hozzáadás után jelennek meg (ShowOnAdd), de a(z) „{0}” szerkesztőoldala nem generálódik.</value>
+  </data>
+  <data name="Preview_Dashboard" xml:space="preserve">
+    <value>Az irányítópult más jelentéseket mutat. Azokat egyenként tekintse meg.</value>
+  </data>
+  <data name="Preview_Empty" xml:space="preserve">
+    <value>(üres)</value>
+  </data>
+  <data name="Preview_Entry" xml:space="preserve">
+    <value>Bejegyzés</value>
+  </data>
+  <data name="Preview_FirstCategories" xml:space="preserve">
+    <value>Az első {0} kategória.</value>
+  </data>
+  <data name="Preview_FirstGroups" xml:space="preserve">
+    <value>Az első {0} csoport.</value>
+  </data>
+  <data name="Preview_FirstRows" xml:space="preserve">
+    <value>Az első {0} sor.</value>
+  </data>
+  <data name="Preview_FunctionOf" xml:space="preserve">
+    <value>{1} – {0}</value>
+  </data>
+  <data name="Preview_LatestEntries" xml:space="preserve">
+    <value>A legutóbbi bejegyzések.</value>
+  </data>
+  <data name="Preview_No" xml:space="preserve">
+    <value>Nem</value>
+  </data>
+  <data name="Preview_NoDatedRows" xml:space="preserve">
+    <value>Nincsenek dátummal rendelkező sorok.</value>
+  </data>
+  <data name="Preview_NoRows" xml:space="preserve">
+    <value>Nincsenek sorok.</value>
+  </data>
+  <data name="Preview_PivotRows" xml:space="preserve">
+    <value>{0}, az első {1} sor.</value>
+  </data>
+  <data name="Preview_PivotRowsColumns" xml:space="preserve">
+    <value>{0}, az első {1} sor és {3} oszlopból {2}.</value>
+  </data>
+  <data name="Preview_QueryRefused" xml:space="preserve">
+    <value>Az adatbázis elutasította a lekérdezést: {0}</value>
+  </data>
+  <data name="Preview_Yes" xml:space="preserve">
+    <value>Igen</value>
+  </data>
+  <data name="ProjectFile_MissingAttribute" xml:space="preserve">
+    <value>A(z) „{0}” elemből hiányzik a(z) „{1}” attribútum.</value>
+  </data>
+  <data name="ProjectFile_NoRoot" xml:space="preserve">
+    <value>A projektfájlnak nincs gyökéreleme.</value>
+  </data>
+  <data name="ProjectFile_WrongRoot" xml:space="preserve">
+    <value>A várt „{0}” gyökérelem helyett „{1}” található.</value>
+  </data>
+  <data name="Report_AggregateNeedsNumber" xml:space="preserve">
+    <value>a(z) {0} számmezőt igényel, de a(z) „{1}” típusa {2}.</value>
+  </data>
+  <data name="Report_Binary" xml:space="preserve">
+    <value>a(z) „{1}” {0} bináris adatot tárol, amelyet egy jelentés nem tud megjeleníteni.</value>
+  </data>
+  <data name="Report_CalendarDateRange" xml:space="preserve">
+    <value>a naptár hónaponként lapoz; ürítse ki a dátumtartomány mezőt.</value>
+  </data>
+  <data name="Report_ChartNotNumber" xml:space="preserve">
+    <value>a diagram számokat ábrázol, de a(z) „{1}” mező {0} értéke nem szám.</value>
+  </data>
+  <data name="Report_ChooseField" xml:space="preserve">
+    <value>válassza ki a következőt: {0}.</value>
+  </data>
+  <data name="Report_ChooseTable" xml:space="preserve">
+    <value>válassza ki a táblát, amelyből a jelentés olvas.</value>
+  </data>
+  <data name="Report_DashboardEmpty" xml:space="preserve">
+    <value>adjon legalább egy jelentést az irányítópulthoz.</value>
+  </data>
+  <data name="Report_DashboardMissing" xml:space="preserve">
+    <value>az irányítópult a(z) „{0}” jelentést mutatja, amely nem generált jelentés.</value>
+  </data>
+  <data name="Report_DashboardNested" xml:space="preserve">
+    <value>egy irányítópult nem jeleníthet meg másik irányítópultot („{0}”).</value>
+  </data>
+  <data name="Report_DashboardWidth" xml:space="preserve">
+    <value>a(z) „{0}” szélessége 1 és 12 oszlop között lehet.</value>
+  </data>
+  <data name="Report_FilterTwice" xml:space="preserve">
+    <value>a(z) „{0}” szűrőmező kétszer szerepel.</value>
+  </data>
+  <data name="Report_GroupNotDate" xml:space="preserve">
+    <value>a(z) „{1}” {0} nem dátum, ezért nem csoportosítható {2} szerint.</value>
+  </data>
+  <data name="Report_MaxColumns" xml:space="preserve">
+    <value>az oszlopok legnagyobb száma legalább 1 legyen.</value>
+  </data>
+  <data name="Report_NameNeeded" xml:space="preserve">
+    <value>adjon a jelentésnek legalább egy betűt vagy számjegyet tartalmazó nevet.</value>
+  </data>
+  <data name="Report_NameTaken" xml:space="preserve">
+    <value>egy másik jelentésnek ugyanez a neve vagy az URL-je.</value>
+  </data>
+  <data name="Report_NoName" xml:space="preserve">
+    <value>(névtelen)</value>
+  </data>
+  <data name="Report_NotADate" xml:space="preserve">
+    <value>a(z) „{1}” {0} nem dátum.</value>
+  </data>
+  <data name="Report_NotAField" xml:space="preserve">
+    <value>a(z) „{1}” {0} nem a(z) „{2}” tábla mezője.</value>
+  </data>
+  <data name="Report_PieOneSeries" xml:space="preserve">
+    <value>a kör- és a fánkdiagramnak egy adatsora van; ürítse ki az adatsor mezőt.</value>
+  </data>
+  <data name="Report_Problem" xml:space="preserve">
+    <value>„{0}” jelentés: {1}</value>
+  </data>
+  <data name="Report_SeriesOrder" xml:space="preserve">
+    <value>az adatsor mezős diagram kategóriák szerint rendezett; válassza a kategória szerinti sorrendet.</value>
+  </data>
+  <data name="Report_TableNotGenerated" xml:space="preserve">
+    <value>a(z) „{0}” tábla nincs a generált táblák között.</value>
+  </data>
+  <data name="Report_TopCountNegative" xml:space="preserve">
+    <value>a megjelenített kategóriák száma nem lehet negatív.</value>
+  </data>
+  <data name="ReportField_Category" xml:space="preserve">
+    <value>kategóriamező</value>
+  </data>
+  <data name="ReportField_Column" xml:space="preserve">
+    <value>oszlopmező</value>
+  </data>
+  <data name="ReportField_Date" xml:space="preserve">
+    <value>dátummező</value>
+  </data>
+  <data name="ReportField_DateRange" xml:space="preserve">
+    <value>dátumtartomány mező</value>
+  </data>
+  <data name="ReportField_DetailColumn" xml:space="preserve">
+    <value>részletező oszlop</value>
+  </data>
+  <data name="ReportField_EndDate" xml:space="preserve">
+    <value>záródátum mező</value>
+  </data>
+  <data name="ReportField_Filter" xml:space="preserve">
+    <value>szűrőmező</value>
+  </data>
+  <data name="ReportField_Group" xml:space="preserve">
+    <value>csoportosító mező</value>
+  </data>
+  <data name="ReportField_Row" xml:space="preserve">
+    <value>sormező</value>
+  </data>
+  <data name="ReportField_Series" xml:space="preserve">
+    <value>adatsor mező</value>
+  </data>
+  <data name="ReportField_Title" xml:space="preserve">
+    <value>címmező</value>
+  </data>
+  <data name="ReportField_Value" xml:space="preserve">
+    <value>értékmező</value>
+  </data>
+  <data name="TextKind_Detail" xml:space="preserve">
+    <value>Részletező</value>
+  </data>
+  <data name="TextKind_Field" xml:space="preserve">
+    <value>Mező</value>
+  </data>
+  <data name="TextKind_FieldGroup" xml:space="preserve">
+    <value>Mezőcsoport</value>
+  </data>
+  <data name="TextKind_FieldSetting" xml:space="preserve">
+    <value>Mezőbeállítás</value>
+  </data>
+  <data name="TextKind_FormPage" xml:space="preserve">
+    <value>Űrlapoldal</value>
+  </data>
+  <data name="TextKind_Menu" xml:space="preserve">
+    <value>Menü</value>
+  </data>
+  <data name="TextKind_Page" xml:space="preserve">
+    <value>Oldal</value>
+  </data>
+  <data name="TextKind_Report" xml:space="preserve">
+    <value>Jelentés</value>
+  </data>
+  <data name="TextKind_Site" xml:space="preserve">
+    <value>Webhely</value>
+  </data>
+  <data name="TextKind_Table" xml:space="preserve">
+    <value>Tábla</value>
+  </data>
+  <data name="TextKind_UI" xml:space="preserve">
+    <value>Felület</value>
+  </data>
+  <data name="Translation_AutoOff" xml:space="preserve">
+    <value>Ehhez a projekthez nincs bekapcsolva az automatikus fordítás (a Localization.AutoTranslate ki van kapcsolva).</value>
+  </data>
+  <data name="Translation_Failed" xml:space="preserve">
+    <value>A(z) {0}-fordítás sikertelen: {1}.</value>
+  </data>
+  <data name="Translation_FailedAfter" xml:space="preserve">
+    <value>A(z) {0}-fordítás {1} próbálkozás után is sikertelen: {2}.</value>
+  </data>
+  <data name="Translation_InvalidJson" xml:space="preserve">
+    <value>A(z) {0}-fordítás nem érvényes JSON-nal válaszolt.</value>
+  </data>
+  <data name="Translation_NetworkError" xml:space="preserve">
+    <value>hálózati hiba: {0}</value>
+  </data>
+  <data name="Translation_NoKey" xml:space="preserve">
+    <value>Nincs beállítva {0} API-kulcs. Állítsa be a(z) {1} környezeti változót.</value>
+  </data>
+  <data name="Translation_NoResponse" xml:space="preserve">
+    <value>nincs válasz</value>
+  </data>
+  <data name="Translation_NotArray" xml:space="preserve">
+    <value>A(z) {0}-fordítás nem JSON-tömbbel válaszolt.</value>
+  </data>
+  <data name="Translation_NotStrings" xml:space="preserve">
+    <value>A(z) {0}-fordítás olyan tömbbel válaszolt, amely nem csak szövegeket tartalmaz.</value>
+  </data>
+  <data name="Translation_ProviderWrongCount" xml:space="preserve">
+    <value>A fordítási szolgáltató {1} kért szöveg helyett {0} szöveget adott vissza.</value>
+  </data>
+  <data name="Translation_TimedOut" xml:space="preserve">
+    <value>a kérés túllépte az időkorlátot</value>
+  </data>
+  <data name="Translation_Unreadable" xml:space="preserve">
+    <value>A(z) {0}-fordítás olvashatatlan választ adott.</value>
+  </data>
+  <data name="Translation_WrongCount" xml:space="preserve">
+    <value>A(z) {0}-fordítás {2} kért szöveg helyett {1} szöveget adott vissza.</value>
+  </data>
+</root>

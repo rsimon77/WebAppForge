@@ -101,11 +101,16 @@ public class UiLanguageTests
             };
             Assert.Equal("Munkamenet tétlenségi időkorlátja: 1 és 1440 közötti egész szám lehet (perc).", options.SessionTimeoutError);
             Assert.Equal("Általános", options.Categories[0].Title.Value);
+
+            // Core's messages (checks, generator and build errors) follow the UI language too.
+            Assert.Equal("Tábla", WebAppForge.Core.Localization.LocalizationKeys.KindOf("table.items"));
         }
         finally
         {
             Localizer.Instance.SetCulture(Localizer.NeutralCulture);
         }
+
+        Assert.Equal("Table", WebAppForge.Core.Localization.LocalizationKeys.KindOf("table.items"));
     }
 
     /// <summary>

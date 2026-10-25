@@ -57,7 +57,7 @@ public sealed class ProjectGenerator
 
     /// <summary>The message for a provider key the generator does not know.</summary>
     public static string UnsupportedProviderMessage(string provider) =>
-        $"Provider '{provider}' is not supported. Use one of: {string.Join(", ", DatabaseProviders.All)}.";
+        Localization.CoreMessages.Format("Generator_UnsupportedProvider", provider, string.Join(", ", DatabaseProviders.All));
 
     private static IReadOnlyList<string> Write(Project project, string outputDirectory, string projectFolder)
     {
@@ -173,7 +173,7 @@ public sealed class ProjectGenerator
             // SQLite assigns rowids only to a single INTEGER PRIMARY KEY, so a composite key cannot auto-increment.
             if (table.PrimaryKeys.Count > 1 && table.PrimaryKeys.Any(k => k.IsAutoIncrement))
             {
-                throw new NotSupportedException($"Table '{table.Name}' has a composite key with an auto-increment column, which SQLite does not support.");
+                throw new NotSupportedException(Localization.CoreMessages.Format("Generator_CompositeAutoIncrement", table.Name));
             }
 
             if (project.Security.Enabled && !string.IsNullOrEmpty(table.OwnerField))
@@ -246,8 +246,8 @@ public sealed class ProjectGenerator
             written.Add(relativePath);
         }
 
-        CopyAsset(project.Meta.FaviconPath, "favicon", Templates.FaviconFile(project.Meta), outputDirectory, projectFolder, written);
-        CopyAsset(project.Meta.LogoPath, "logo", Templates.LogoFile(project.Meta), outputDirectory, projectFolder, written);
+        CopyAsset(project.Meta.FaviconPath, "Favicon", Templates.FaviconFile(project.Meta), outputDirectory, projectFolder, written);
+        CopyAsset(project.Meta.LogoPath, "Logo", Templates.LogoFile(project.Meta), outputDirectory, projectFolder, written);
         return written;
     }
 
@@ -262,7 +262,7 @@ public sealed class ProjectGenerator
         var source = Path.IsPathRooted(path) ? path : Path.GetFullPath(Path.Combine(projectFolder, path));
         if (!File.Exists(source))
         {
-            throw new FileNotFoundException($"The {what} file '{path}' was not found (looked for '{source}').", source);
+            throw new FileNotFoundException(Localization.CoreMessages.Format("Generator_AssetMissing", Localization.CoreMessages.Text("Generator_Asset" + what), path, source), source);
         }
 
         var relative = "wwwroot/" + fileName;
@@ -278,10 +278,10 @@ public sealed class ProjectGenerator
     private static void ValidateOwnerField(TableInfo table)
     {
         var owner = table.Fields.FirstOrDefault(f => string.Equals(f.Name, table.OwnerField, StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidOperationException($"User ID security is enabled for table '{table.Name}' but it has no owner field '{table.OwnerField}'.");
+            ?? throw new InvalidOperationException(Localization.CoreMessages.Format("Generator_OwnerMissing", table.Name, table.OwnerField));
         if (owner.Type != FieldType.Text)
         {
-            throw new InvalidOperationException($"The owner field '{owner.Name}' in table '{table.Name}' must be a text column to hold the user name, but it is {owner.Type}.");
+            throw new InvalidOperationException(Localization.CoreMessages.Format("Generator_OwnerNotText", owner.Name, table.Name, owner.Type));
         }
     }
 
@@ -432,23 +432,23 @@ public sealed class ProjectGenerator
     private static void AddLoginFiles(Dictionary<string, string> files, string ns, SecuritySettings security, IReadOnlyList<TableInfo> tables)
     {
         var users = tables.FirstOrDefault(t => string.Equals(t.Name, security.UserTable, StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidOperationException($"Security is enabled but the user table '{security.UserTable}' is not one of the generated tables.");
+            ?? throw new InvalidOperationException(Localization.CoreMessages.Format("Generator_UserTableMissing", security.UserTable));
         var userName = users.Fields.FirstOrDefault(f => string.Equals(f.Name, security.UserNameField, StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidOperationException($"Security is enabled but table '{users.Name}' has no user name field '{security.UserNameField}'.");
+            ?? throw new InvalidOperationException(Localization.CoreMessages.Format("Generator_UserNameMissing", users.Name, security.UserNameField));
         var password = users.Fields.FirstOrDefault(f => string.Equals(f.Name, security.PasswordField, StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidOperationException($"Security is enabled but table '{users.Name}' has no password field '{security.PasswordField}'.");
+            ?? throw new InvalidOperationException(Localization.CoreMessages.Format("Generator_PasswordMissing", users.Name, security.PasswordField));
         if (password.Type != FieldType.Text)
         {
-            throw new InvalidOperationException($"The password field '{password.Name}' in table '{users.Name}' must be a text column to hold the password hash, but it is {password.Type}.");
+            throw new InvalidOperationException(Localization.CoreMessages.Format("Generator_PasswordNotText", password.Name, users.Name, password.Type));
         }
 
         if (HasUserLevelSecurity(security))
         {
             var level = users.Fields.FirstOrDefault(f => string.Equals(f.Name, security.UserLevelField, StringComparison.OrdinalIgnoreCase))
-                ?? throw new InvalidOperationException($"User level security is enabled but table '{users.Name}' has no user level field '{security.UserLevelField}'.");
+                ?? throw new InvalidOperationException(Localization.CoreMessages.Format("Generator_LevelMissing", users.Name, security.UserLevelField));
             if (level.Type != FieldType.Integer)
             {
-                throw new InvalidOperationException($"The user level field '{level.Name}' in table '{users.Name}' must be an integer column, but it is {level.Type}.");
+                throw new InvalidOperationException(Localization.CoreMessages.Format("Generator_LevelNotInteger", level.Name, users.Name, level.Type));
             }
 
             files["Security/Permissions.cs"] = AuthTemplates.Permissions(ns);

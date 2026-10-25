@@ -32,12 +32,12 @@ public sealed class DockerBuilder
 
         if (!project.Build.BuildDockerImage)
         {
-            return BuildResult.Failure("Building the Docker image is turned off in the build settings.");
+            return BuildResult.Failure(Localization.CoreMessages.Text("Build_DockerOff"));
         }
 
         if (!Directory.Exists(siteFolder) || !File.Exists(Path.Combine(siteFolder, "Dockerfile")))
         {
-            return BuildResult.Failure($"No Dockerfile was found in '{siteFolder}'. Generate the Docker files first.");
+            return BuildResult.Failure(Localization.CoreMessages.Format("Build_NoDockerfile", siteFolder));
         }
 
         var docker = BuildTools.Resolve("docker", tools.DockerPath, locate, out var configuredFailure);
@@ -48,7 +48,7 @@ public sealed class DockerBuilder
 
         if (string.IsNullOrEmpty(docker))
         {
-            return BuildResult.Failure("The docker CLI was not found on PATH. Install Docker and try again.");
+            return BuildResult.Failure(Localization.CoreMessages.Text("Build_DockerMissing"));
         }
 
         var image = project.Build.EffectiveImageName(project.Name);

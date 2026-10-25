@@ -799,8 +799,20 @@
   <data name="Generate_Severity" xml:space="preserve">
     <value>Severity</value>
   </data>
+  <data name="Generate_SeverityError" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Generate_SeverityWarning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
   <data name="Generate_StageBuild" xml:space="preserve">
     <value>Build</value>
+  </data>
+  <data name="Generate_StageFailed" xml:space="preserve">
+    <value>{0} failed: {1}</value>
+  </data>
+  <data name="Generate_StageFailedErrors" xml:space="preserve">
+    <value>{0} failed: {1} error(s). {2}</value>
   </data>
   <data name="Generate_StagePublish" xml:space="preserve">
     <value>Publish</value>
@@ -855,6 +867,9 @@
   </data>
   <data name="Generate_WaitForTheCurrentBuildTo" xml:space="preserve">
     <value>Wait for the current build to finish before running the site.</value>
+  </data>
+  <data name="Generate_WarningCount" xml:space="preserve">
+    <value>{0} warning(s)</value>
   </data>
   <data name="Generate_WasCancelled" xml:space="preserve">
     <value>{0} was cancelled.</value>

@@ -102,7 +102,7 @@ public class BuildToolsWiringTests
     {
         using var folder = new TempFolder();
         var message = @"The configured dotnet path was not found: C:\gone\dotnet.exe";
-        var runner = new FakeBuildRunner { BuildScript = (_, _) => Task.FromResult(BuildResult.Failure(message)) };
+        var runner = new FakeBuildRunner { BuildScript = (_, _) => Task.FromResult(BuildResult.MissingToolPath(message)) };
         var rig = await BuildConsoleTests.SetupAsync(folder, runner: runner);
         rig.CreateSite(built: true);
         Assert.False(rig.Generate.ShowOptionsHint);
@@ -131,6 +131,7 @@ public class BuildToolsWiringTests
                 Succeeded = false,
                 FailedStage = BuildStage.DockerImage,
                 Message = message,
+                DockerImage = BuildResult.MissingToolPath(message),
             }),
         };
         var rig = await BuildConsoleTests.SetupAsync(folder, runner: runner);
