@@ -64,7 +64,8 @@ dotnet test WebAppForge.slnx
   variables only.
 - Desktop UI text lives in `src/WebAppForge.Desktop/Localization/Strings.resx`, and views use `{l:Tr Key}`. After adding
   text to a view, run `python scripts/extract-desktop-strings.py` to move it there. `LocalizationTests` fails on any
-  literal text left in a view, unless the value is listed in `scripts/desktop-strings-ignore.txt`. In code, use
+  literal text left in a view, unless the value is listed in `scripts/desktop-strings-ignore.txt`. Add the Hungarian
+  text for every new key to `Strings.hu.resx`; the tests fail on a missing entry. In code, use
   `Localizer.Instance["Key"]` or `Localizer.Instance.Format("Key", ...)`.
 
 ## Pull requests

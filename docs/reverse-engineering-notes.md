@@ -346,3 +346,6 @@ Only the UI language changes: number and date formats keep the system settings. 
 the system's UI language); the environment variable WEBAPPFORGE_UI_LANGUAGE overrides it, and the FlaUI tests set it to "en".
 Tabs keep English ids (MainViewModel.TabNames, automation ids Tab_<Id>), and their titles come from the Tab_<Id> keys.
 Messages that view models build (status line, validation, dialogs) are still English; they move to Strings.resx in the next phase.
+Hungarian (Strings.hu.resx, formal register) covers every key; LocalizationTests fails when a key has no Hungarian entry or a
+placeholder differs, and UiLanguageTests renders every tab in Hungarian and fails on text that is cut off or an untranslated key.
+Tests pin the UI to English (TestSupport/EnglishUi.cs), so they pass on a Hungarian Windows too.

@@ -45,11 +45,11 @@
                             <TextBox Text="{Binding MaxUploadText}" />
                         </StackPanel>
                         <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
-                            <TextBlock Text="{l:Tr ImportExport_LowestUserLevelToExport}" />
+                            <TextBlock Text="{l:Tr ImportExport_LowestUserLevelToExport}" TextWrapping="Wrap" />
                             <TextBox Text="{Binding ExportMinLevelText}" />
                         </StackPanel>
                         <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
-                            <TextBlock Text="{l:Tr ImportExport_LowestUserLevelToImport}" />
+                            <TextBlock Text="{l:Tr ImportExport_LowestUserLevelToImport}" TextWrapping="Wrap" />
                             <TextBox Text="{Binding ImportMinLevelText}" />
                         </StackPanel>
                     </WrapPanel>

@@ -1,0 +1,1549 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hungarian texts of the desktop app (formal register). Every key of Strings.resx needs an entry here; LocalizationTests checks it. -->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AspNet_ApplicationTitle" xml:space="preserve">
+    <value>Alkalmazás címe</value>
+  </data>
+  <data name="Audit_AddAPageThatListsThe" xml:space="preserve">
+    <value>Oldal a bejegyzések listájával (/audit-trail)</value>
+  </data>
+  <data name="Audit_AlsoStoreTheClientSIP" xml:space="preserve">
+    <value>Az ügyfél IP-címének tárolása is</value>
+  </data>
+  <data name="Audit_Audit" xml:space="preserve">
+    <value>Naplózás</value>
+  </data>
+  <data name="Audit_ChooseTheTablesToAuditAnd" xml:space="preserve">
+    <value>Válassza ki a naplózandó táblákat és műveleteket. A kizárt mezők (vesszővel elválasztva) soha nem kerülnek a naplóba, és a jelszómezők sem.</value>
+  </data>
+  <data name="Audit_CreateTheLogTableWhenThe" xml:space="preserve">
+    <value>A naplótábla létrehozása a webhely indulásakor, ha még nem létezik</value>
+  </data>
+  <data name="Audit_Deletes" xml:space="preserve">
+    <value>Törlések</value>
+  </data>
+  <data name="Audit_Inserts" xml:space="preserve">
+    <value>Beszúrások</value>
+  </data>
+  <data name="Audit_LogTable" xml:space="preserve">
+    <value>Naplótábla</value>
+  </data>
+  <data name="Audit_LowestUserLevelThatMayOpen" xml:space="preserve">
+    <value>A megnyitáshoz szükséges legalacsonyabb felhasználói szint (0 = bármely bejelentkezett felhasználó)</value>
+  </data>
+  <data name="Audit_RecordAnAuditTrailWhoInserted" xml:space="preserve">
+    <value>Változásnapló vezetése (ki, mikor, melyik rekordot szúrta be, módosította vagy törölte)</value>
+  </data>
+  <data name="Audit_Updates" xml:space="preserve">
+    <value>Módosítások</value>
+  </data>
+  <data name="Audit_ValuesKeptInAnEntry" xml:space="preserve">
+    <value>Egy bejegyzésben megőrzött értékek</value>
+  </data>
+  <data name="Choice_Choose" xml:space="preserve">
+    <value>Kiválasztás</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Hozzáadás</value>
+  </data>
+  <data name="Common_AddColumn" xml:space="preserve">
+    <value>Oszlop hozzáadása</value>
+  </data>
+  <data name="Common_AddRule" xml:space="preserve">
+    <value>Szabály hozzáadása</value>
+  </data>
+  <data name="Common_Browse" xml:space="preserve">
+    <value>Tallózás...</value>
+  </data>
+  <data name="Common_BuildAfterGenerating" xml:space="preserve">
+    <value>Fordítás a generálás után</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Mégse</value>
+  </data>
+  <data name="Common_Caption" xml:space="preserve">
+    <value>Felirat</value>
+  </data>
+  <data name="Common_ChooseATable" xml:space="preserve">
+    <value>Válasszon táblát</value>
+  </data>
+  <data name="Common_Clear" xml:space="preserve">
+    <value>Törlés</value>
+  </data>
+  <data name="Common_Copy" xml:space="preserve">
+    <value>Másolás</value>
+  </data>
+  <data name="Common_CSSClass" xml:space="preserve">
+    <value>CSS-osztály</value>
+  </data>
+  <data name="Common_Database" xml:space="preserve">
+    <value>Adatbázis</value>
+  </data>
+  <data name="Common_Description" xml:space="preserve">
+    <value>Leírás</value>
+  </data>
+  <data name="Common_Edit" xml:space="preserve">
+    <value>Szerkesztés</value>
+  </data>
+  <data name="Common_ExcludedFields" xml:space="preserve">
+    <value>Kizárt mezők</value>
+  </data>
+  <data name="Common_Field" xml:space="preserve">
+    <value>Mező</value>
+  </data>
+  <data name="Common_Fields" xml:space="preserve">
+    <value>Mezők</value>
+  </data>
+  <data name="Common_File" xml:space="preserve">
+    <value>Fájl</value>
+  </data>
+  <data name="Common_Generate" xml:space="preserve">
+    <value>Generálás</value>
+  </data>
+  <data name="Common_IncludeHomePage" xml:space="preserve">
+    <value>Kezdőlappal együtt</value>
+  </data>
+  <data name="Common_Key" xml:space="preserve">
+    <value>Kulcs</value>
+  </data>
+  <data name="Common_Kind" xml:space="preserve">
+    <value>Fajta</value>
+  </data>
+  <data name="Common_Languages" xml:space="preserve">
+    <value>Nyelvek</value>
+  </data>
+  <data name="Common_List" xml:space="preserve">
+    <value>Lista</value>
+  </data>
+  <data name="Common_LogLevel" xml:space="preserve">
+    <value>Naplózási szint</value>
+  </data>
+  <data name="Common_MoveDown" xml:space="preserve">
+    <value>Lejjebb</value>
+  </data>
+  <data name="Common_MoveUp" xml:space="preserve">
+    <value>Feljebb</value>
+  </data>
+  <data name="Common_Name" xml:space="preserve">
+    <value>Név</value>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Common_Operator" xml:space="preserve">
+    <value>Operátor</value>
+  </data>
+  <data name="Common_Options" xml:space="preserve">
+    <value>Beállítások</value>
+  </data>
+  <data name="Common_Output" xml:space="preserve">
+    <value>Kimenet</value>
+  </data>
+  <data name="Common_Pages" xml:space="preserve">
+    <value>Oldalak</value>
+  </data>
+  <data name="Common_Preview" xml:space="preserve">
+    <value>Előnézet</value>
+  </data>
+  <data name="Common_ProjectName" xml:space="preserve">
+    <value>Projekt neve</value>
+  </data>
+  <data name="Common_Remove" xml:space="preserve">
+    <value>Eltávolítás</value>
+  </data>
+  <data name="Common_RemoveRule" xml:space="preserve">
+    <value>Szabály eltávolítása</value>
+  </data>
+  <data name="Common_Reports" xml:space="preserve">
+    <value>Kimutatások</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Mentés</value>
+  </data>
+  <data name="Common_Search" xml:space="preserve">
+    <value>Keresés</value>
+  </data>
+  <data name="Common_Security" xml:space="preserve">
+    <value>Biztonság</value>
+  </data>
+  <data name="Common_ShowInMenu" xml:space="preserve">
+    <value>Megjelenítés a menüben</value>
+  </data>
+  <data name="Common_Style" xml:space="preserve">
+    <value>Stílus</value>
+  </data>
+  <data name="Common_Table" xml:space="preserve">
+    <value>Tábla</value>
+  </data>
+  <data name="Common_Type" xml:space="preserve">
+    <value>Típus</value>
+  </data>
+  <data name="Common_Validation" xml:space="preserve">
+    <value>Ellenőrzés</value>
+  </data>
+  <data name="Common_Value" xml:space="preserve">
+    <value>Érték</value>
+  </data>
+  <data name="Common_View" xml:space="preserve">
+    <value>Nézet</value>
+  </data>
+  <data name="Confirm_Confirm" xml:space="preserve">
+    <value>Megerősítés</value>
+  </data>
+  <data name="Database_Connect" xml:space="preserve">
+    <value>Csatlakozás</value>
+  </data>
+  <data name="Database_ConnectionString" xml:space="preserve">
+    <value>Kapcsolati karakterlánc</value>
+  </data>
+  <data name="Database_ConnectReadsTheTablesAndColumns" xml:space="preserve">
+    <value>A Csatlakozás beolvassa a táblákat és oszlopokat. A projektben már szereplő táblák megtartják a beállításaikat; az új táblák bekerülnek, az adatbázisból hiányzók pedig kikerülnek.</value>
+  </data>
+  <data name="Database_EGDataAppDb" xml:space="preserve">
+    <value>pl. data/app.db</value>
+  </data>
+  <data name="Database_EGSHOPDB" xml:space="preserve">
+    <value>pl. SHOP_DB</value>
+  </data>
+  <data name="Database_Engine" xml:space="preserve">
+    <value>Adatbázismotor</value>
+  </data>
+  <data name="Database_OrReadItFromThisEnvironment" xml:space="preserve">
+    <value>Vagy olvassa ebből a környezeti változóból</value>
+  </data>
+  <data name="Database_SQLiteFileRelativeToTheProject" xml:space="preserve">
+    <value>SQLite-fájl (a projektmappához képest, perjelekkel)</value>
+  </data>
+  <data name="Database_TestConnection" xml:space="preserve">
+    <value>Kapcsolat tesztelése</value>
+  </data>
+  <data name="Database_WithAVariableTheConnectionString" xml:space="preserve">
+    <value>Változó használatakor a kapcsolati karakterlánc nem kerül a projektfájlba és az appsettings.json fájlba; a generált webhely ugyanezt a változót olvassa.</value>
+  </data>
+  <data name="FieldDesigner_AddOption" xml:space="preserve">
+    <value>Lehetőség hozzáadása</value>
+  </data>
+  <data name="FieldDesigner_Align" xml:space="preserve">
+    <value>Igazítás</value>
+  </data>
+  <data name="FieldDesigner_Auto" xml:space="preserve">
+    <value>Automatikus</value>
+  </data>
+  <data name="FieldDesigner_AutoFocus" xml:space="preserve">
+    <value>Automatikus fókusz</value>
+  </data>
+  <data name="FieldDesigner_BadgeRulesUsedByTheBadge" xml:space="preserve">
+    <value>Jelvényszabályok (a Jelvény formátumhoz)</value>
+  </data>
+  <data name="FieldDesigner_Basic" xml:space="preserve">
+    <value>Alapok</value>
+  </data>
+  <data name="FieldDesigner_Choose" xml:space="preserve">
+    <value>Kiválasztás...</value>
+  </data>
+  <data name="FieldDesigner_Control" xml:space="preserve">
+    <value>Vezérlő</value>
+  </data>
+  <data name="FieldDesigner_CopySettingsTo" xml:space="preserve">
+    <value>Beállítások másolása ide...</value>
+  </data>
+  <data name="FieldDesigner_DatesStoredAsNumberColumnsUsed" xml:space="preserve">
+    <value>Dátumok tárolása (számoszlopoknál, a kimutatások használják)</value>
+  </data>
+  <data name="FieldDesigner_DefaultValueAddForm" xml:space="preserve">
+    <value>Alapértelmezett érték (hozzáadási űrlap)</value>
+  </data>
+  <data name="FieldDesigner_Display" xml:space="preserve">
+    <value>Megjelenítés</value>
+  </data>
+  <data name="FieldDesigner_DisplayFieldShownToTheUser" xml:space="preserve">
+    <value>Megjelenített mező (ezt látja a felhasználó)</value>
+  </data>
+  <data name="FieldDesigner_EditControl" xml:space="preserve">
+    <value>Szerkesztővezérlő</value>
+  </data>
+  <data name="FieldDesigner_FalseText" xml:space="preserve">
+    <value>Hamis érték szövege</value>
+  </data>
+  <data name="FieldDesigner_FilterSQLConditionWithoutWHERE" xml:space="preserve">
+    <value>Szűrő (SQL-feltétel WHERE nélkül)</value>
+  </data>
+  <data name="FieldDesigner_FixedChoicesForADropDown" xml:space="preserve">
+    <value>Rögzített választási lehetőségek legördülő listához vagy választógomb-csoporthoz. Hagyja üresen, ha a lehetőségek keresőtáblából jönnek.</value>
+  </data>
+  <data name="FieldDesigner_Format" xml:space="preserve">
+    <value>Formátum</value>
+  </data>
+  <data name="FieldDesigner_FormatStringForExampleN2C" xml:space="preserve">
+    <value>Formátumkarakterlánc (például N2, C, yyyy-MM-dd)</value>
+  </data>
+  <data name="FieldDesigner_GroupHeadingAboveRelatedFields" xml:space="preserve">
+    <value>Csoport (címsor az összetartozó mezők fölött)</value>
+  </data>
+  <data name="FieldDesigner_HelpText" xml:space="preserve">
+    <value>Súgószöveg</value>
+  </data>
+  <data name="FieldDesigner_InlineStyle" xml:space="preserve">
+    <value>Beágyazott stílus</value>
+  </data>
+  <data name="FieldDesigner_InTheList" xml:space="preserve">
+    <value>A listában</value>
+  </data>
+  <data name="FieldDesigner_KeyFieldStoredInThisField" xml:space="preserve">
+    <value>Kulcsmező (ebben a mezőben tárolódik)</value>
+  </data>
+  <data name="FieldDesigner_Lookup" xml:space="preserve">
+    <value>Keresőtábla</value>
+  </data>
+  <data name="FieldDesigner_Max" xml:space="preserve">
+    <value>Max.</value>
+  </data>
+  <data name="FieldDesigner_MaxLength0None" xml:space="preserve">
+    <value>Max. hossz (0: nincs)</value>
+  </data>
+  <data name="FieldDesigner_Min" xml:space="preserve">
+    <value>Min.</value>
+  </data>
+  <data name="FieldDesigner_MinLength" xml:space="preserve">
+    <value>Min. hossz</value>
+  </data>
+  <data name="FieldDesigner_OrderField" xml:space="preserve">
+    <value>Rendezőmező</value>
+  </data>
+  <data name="FieldDesigner_PatternMessage" xml:space="preserve">
+    <value>Mintaüzenet</value>
+  </data>
+  <data name="FieldDesigner_PatternRegularExpression" xml:space="preserve">
+    <value>Minta (reguláris kifejezés)</value>
+  </data>
+  <data name="FieldDesigner_PK" xml:space="preserve">
+    <value>EK</value>
+  </data>
+  <data name="FieldDesigner_Placeholder" xml:space="preserve">
+    <value>Helyőrző</value>
+  </data>
+  <data name="FieldDesigner_PREVIEWONTHESITE" xml:space="preserve">
+    <value>ELŐNÉZET A WEBHELYEN</value>
+  </data>
+  <data name="FieldDesigner_ReadOnlyOnEdit" xml:space="preserve">
+    <value>Szerkesztéskor csak olvasható</value>
+  </data>
+  <data name="FieldDesigner_RemoveOption" xml:space="preserve">
+    <value>Lehetőség eltávolítása</value>
+  </data>
+  <data name="FieldDesigner_Req" xml:space="preserve">
+    <value>Kötelező</value>
+  </data>
+  <data name="FieldDesigner_Required" xml:space="preserve">
+    <value>Kötelező</value>
+  </data>
+  <data name="FieldDesigner_RequiredMessage" xml:space="preserve">
+    <value>Kötelező mező üzenete</value>
+  </data>
+  <data name="FieldDesigner_ResetField" xml:space="preserve">
+    <value>Mező visszaállítása</value>
+  </data>
+  <data name="FieldDesigner_Rows150" xml:space="preserve">
+    <value>Sorok (1-50)</value>
+  </data>
+  <data name="FieldDesigner_Searchable" xml:space="preserve">
+    <value>Kereshető</value>
+  </data>
+  <data name="FieldDesigner_SearchFieldNames" xml:space="preserve">
+    <value>Mezőnevek keresése</value>
+  </data>
+  <data name="FieldDesigner_ShowInAdd" xml:space="preserve">
+    <value>Hozzáadáskor látható</value>
+  </data>
+  <data name="FieldDesigner_ShowInEdit" xml:space="preserve">
+    <value>Szerkesztéskor látható</value>
+  </data>
+  <data name="FieldDesigner_ShowInList" xml:space="preserve">
+    <value>Listában látható</value>
+  </data>
+  <data name="FieldDesigner_ShowInView" xml:space="preserve">
+    <value>Megtekintéskor látható</value>
+  </data>
+  <data name="FieldDesigner_ShowTheDisplayTextInList" xml:space="preserve">
+    <value>A megjelenített szöveg mutatása a lista- és megtekintőoldalakon</value>
+  </data>
+  <data name="FieldDesigner_Sortable" xml:space="preserve">
+    <value>Rendezhető</value>
+  </data>
+  <data name="FieldDesigner_Step" xml:space="preserve">
+    <value>Lépésköz</value>
+  </data>
+  <data name="FieldDesigner_TestThePatternWithASample" xml:space="preserve">
+    <value>A minta kipróbálása egy példával (a teljes szövegnek illeszkednie kell)</value>
+  </data>
+  <data name="FieldDesigner_Text" xml:space="preserve">
+    <value>Szöveg</value>
+  </data>
+  <data name="FieldDesigner_Tooltip" xml:space="preserve">
+    <value>Elemleírás</value>
+  </data>
+  <data name="FieldDesigner_TrueText" xml:space="preserve">
+    <value>Igaz érték szövege</value>
+  </data>
+  <data name="FieldDesigner_TypeASampleValue" xml:space="preserve">
+    <value>Írjon be egy példaértéket</value>
+  </data>
+  <data name="FieldDesigner_Width120px20Auto" xml:space="preserve">
+    <value>Szélesség (120px, 20%, auto)</value>
+  </data>
+  <data name="Generate_AutoScroll" xml:space="preserve">
+    <value>Automatikus görgetés</value>
+  </data>
+  <data name="Generate_BuildOnly" xml:space="preserve">
+    <value>Csak fordítás</value>
+  </data>
+  <data name="Generate_ChangeInTheProjectTab" xml:space="preserve">
+    <value>Módosítás a Projekt lapon</value>
+  </data>
+  <data name="Generate_Code" xml:space="preserve">
+    <value>Kód</value>
+  </data>
+  <data name="Generate_CopyAll" xml:space="preserve">
+    <value>Az összes másolása</value>
+  </data>
+  <data name="Generate_DiagnosticsDoubleClickARowTo" xml:space="preserve">
+    <value>Diagnosztika (dupla kattintás egy soron: útvonal:sor másolása)</value>
+  </data>
+  <data name="Generate_Line" xml:space="preserve">
+    <value>Sor</value>
+  </data>
+  <data name="Generate_Message" xml:space="preserve">
+    <value>Üzenet</value>
+  </data>
+  <data name="Generate_OpenInBrowser" xml:space="preserve">
+    <value>Megnyitás böngészőben</value>
+  </data>
+  <data name="Generate_OpenOptions" xml:space="preserve">
+    <value>Beállítások megnyitása</value>
+  </data>
+  <data name="Generate_OpenOutputFolder" xml:space="preserve">
+    <value>Kimeneti mappa megnyitása</value>
+  </data>
+  <data name="Generate_OutputFolderRelativeToTheProject" xml:space="preserve">
+    <value>Kimeneti mappa (a projektmappához képest vagy abszolút)</value>
+  </data>
+  <data name="Generate_PublishOnly" xml:space="preserve">
+    <value>Csak közzététel</value>
+  </data>
+  <data name="Generate_RunningAt" xml:space="preserve">
+    <value>Fut itt:</value>
+  </data>
+  <data name="Generate_RunSite" xml:space="preserve">
+    <value>Webhely futtatása</value>
+  </data>
+  <data name="Generate_Severity" xml:space="preserve">
+    <value>Súlyosság</value>
+  </data>
+  <data name="Generate_Stop" xml:space="preserve">
+    <value>Leállítás</value>
+  </data>
+  <data name="Generate_WritesTheASPNETCoreProject" xml:space="preserve">
+    <value>Megírja az ASP.NET Core projektet minden Generálásra jelölt táblához, majd a Projekt lap beállításai szerint lefordítja, közzéteszi vagy becsomagolja. Generálás előtt mentse a projektet.</value>
+  </data>
+  <data name="ImportExport_ChoosePerTableWhetherItExports" xml:space="preserve">
+    <value>Táblánként válassza ki, hogy exportálható és importálható-e. A beszúrás-vagy-frissítés (upsert) frissíti a már létező kulcsú sorokat. A kizárt mezők (vesszővel elválasztva) mindkettőből kimaradnak; a jelszó- és titkos mezők mindig.</value>
+  </data>
+  <data name="ImportExport_ColumnHeaders" xml:space="preserve">
+    <value>Oszlopfejlécek</value>
+  </data>
+  <data name="ImportExport_CSVDelimiterOneCharacterOrTab" xml:space="preserve">
+    <value>CSV-elválasztó (egy karakter vagy tabulátor)</value>
+  </data>
+  <data name="ImportExport_DateFormat" xml:space="preserve">
+    <value>Dátumformátum</value>
+  </data>
+  <data name="ImportExport_Export" xml:space="preserve">
+    <value>Exportálás</value>
+  </data>
+  <data name="ImportExport_ExportFileNameTableDateDatetime" xml:space="preserve">
+    <value>Exportfájl neve ({table}, {date}, {datetime})</value>
+  </data>
+  <data name="ImportExport_FileFormats" xml:space="preserve">
+    <value>Fájlformátumok</value>
+  </data>
+  <data name="ImportExport_Import" xml:space="preserve">
+    <value>Importálás</value>
+  </data>
+  <data name="ImportExport_ImportMode" xml:space="preserve">
+    <value>Importálási mód</value>
+  </data>
+  <data name="ImportExport_LargestUploadMB" xml:space="preserve">
+    <value>Legnagyobb feltöltés (MB)</value>
+  </data>
+  <data name="ImportExport_LetUsersExportListRowsAnd" xml:space="preserve">
+    <value>A felhasználók exportálhatják a lista sorait és fájlokat importálhatnak a táblákba</value>
+  </data>
+  <data name="ImportExport_LowestUserLevelToExport" xml:space="preserve">
+    <value>Exportáláshoz szükséges legalacsonyabb felhasználói szint</value>
+  </data>
+  <data name="ImportExport_LowestUserLevelToImport" xml:space="preserve">
+    <value>Importáláshoz szükséges legalacsonyabb felhasználói szint</value>
+  </data>
+  <data name="ImportExport_MostExportRows0All" xml:space="preserve">
+    <value>Legtöbb exportált sor (0 = mind)</value>
+  </data>
+  <data name="ImportExport_WriteAHeaderRow" xml:space="preserve">
+    <value>Fejlécsor írása</value>
+  </data>
+  <data name="Languages_AddFromList" xml:space="preserve">
+    <value>Hozzáadás listából...</value>
+  </data>
+  <data name="Languages_BuiltInShippedWithWebAppForgeTyping" xml:space="preserve">
+    <value>Beépített: a WebAppForge-dzsal érkezik; ha szöveget ír be, az erre a projektre lecseréli</value>
+  </data>
+  <data name="Languages_DefaultLanguageTheLanguageOfYour" xml:space="preserve">
+    <value>Alapértelmezett nyelv (a feliratok nyelve)</value>
+  </data>
+  <data name="Languages_EnableMultiLanguageSupportInThe" xml:space="preserve">
+    <value>Többnyelvű támogatás bekapcsolása a generált webhelyen</value>
+  </data>
+  <data name="Languages_ExportCSV" xml:space="preserve">
+    <value>CSV exportálása...</value>
+  </data>
+  <data name="Languages_ImportCSV" xml:space="preserve">
+    <value>CSV importálása...</value>
+  </data>
+  <data name="Languages_Language" xml:space="preserve">
+    <value>Nyelv</value>
+  </data>
+  <data name="Languages_LanguagesAndAutomaticTranslation" xml:space="preserve">
+    <value>Nyelvek és automatikus fordítás</value>
+  </data>
+  <data name="Languages_Of" xml:space="preserve">
+    <value>/</value>
+  </data>
+  <data name="Languages_OnlyMissing" xml:space="preserve">
+    <value>Csak hiányzók</value>
+  </data>
+  <data name="Languages_OnlyStale" xml:space="preserve">
+    <value>Csak elavultak</value>
+  </data>
+  <data name="Languages_OnlyUnreviewed" xml:space="preserve">
+    <value>Csak ellenőrizetlenek</value>
+  </data>
+  <data name="Languages_OrTypeACodeEG" xml:space="preserve">
+    <value>vagy írjon be egy kódot, pl. pt-BR</value>
+  </data>
+  <data name="Languages_ReviewedAReviewedTextIsNever" xml:space="preserve">
+    <value>Ellenőrzött: az ellenőrzött szöveget az automatikus fordítás soha nem írja felül</value>
+  </data>
+  <data name="Languages_Rows" xml:space="preserve">
+    <value>sor</value>
+  </data>
+  <data name="Languages_SearchKeysAndTexts" xml:space="preserve">
+    <value>Kulcsok és szövegek keresése</value>
+  </data>
+  <data name="Languages_SourceText" xml:space="preserve">
+    <value>Forrásszöveg</value>
+  </data>
+  <data name="Languages_TextsAreSentToTheService" xml:space="preserve">
+    <value>A szövegek csak akkor kerülnek a szolgáltatáshoz, ha Ön elindítja és megerősíti a fordítást. Az ellenőrzött és a kézzel beírt szövegeket a fordítás soha nem írja felül.</value>
+  </data>
+  <data name="Languages_TranslateAutomaticallyWithAnOnlineService" xml:space="preserve">
+    <value>Automatikus fordítás online szolgáltatással (külön engedélyezendő)</value>
+  </data>
+  <data name="Languages_TranslateMissing" xml:space="preserve">
+    <value>Hiányzók fordítása</value>
+  </data>
+  <data name="Languages_TranslateSelectedRows" xml:space="preserve">
+    <value>Kijelölt sorok fordítása</value>
+  </data>
+  <data name="Languages_TranslatesTheMissingTextsOfThe" xml:space="preserve">
+    <value>Lefordítja a kiválasztott nyelv vagy az összes nyelv hiányzó szövegeit</value>
+  </data>
+  <data name="Languages_TranslationNotesStyleGlossarySentWith" xml:space="preserve">
+    <value>Fordítási megjegyzések (stílus, szójegyzék; a szövegekkel elküldve)</value>
+  </data>
+  <data name="Languages_TranslationService" xml:space="preserve">
+    <value>Fordítószolgáltatás</value>
+  </data>
+  <data name="Languages_WrittenRightToLeft" xml:space="preserve">
+    <value>Jobbról balra írt</value>
+  </data>
+  <data name="Main_AboutWebAppForge" xml:space="preserve">
+    <value>A WebAppForge névjegye</value>
+  </data>
+  <data name="Main_ConnectToDatabase" xml:space="preserve">
+    <value>Csatlakozás az adatbázishoz</value>
+  </data>
+  <data name="Main_CustomStyles" xml:space="preserve">
+    <value>Egyéni stílusok...</value>
+  </data>
+  <data name="Main_Exit" xml:space="preserve">
+    <value>Kilépés</value>
+  </data>
+  <data name="Main_Help" xml:space="preserve">
+    <value>Súgó</value>
+  </data>
+  <data name="Main_New" xml:space="preserve">
+    <value>Új</value>
+  </data>
+  <data name="Main_NewProject" xml:space="preserve">
+    <value>Új projekt</value>
+  </data>
+  <data name="Main_NotSavedYet" xml:space="preserve">
+    <value>Még nincs mentve</value>
+  </data>
+  <data name="Main_Open" xml:space="preserve">
+    <value>Megnyitás...</value>
+  </data>
+  <data name="Main_Open2" xml:space="preserve">
+    <value>Megnyitás</value>
+  </data>
+  <data name="Main_OpenProjectCtrlO" xml:space="preserve">
+    <value>Projekt megnyitása (Ctrl+O)</value>
+  </data>
+  <data name="Main_Options" xml:space="preserve">
+    <value>Beállítások...</value>
+  </data>
+  <data name="Main_OptionsCtrl" xml:space="preserve">
+    <value>Beállítások (Ctrl+,)</value>
+  </data>
+  <data name="Main_SaveAs" xml:space="preserve">
+    <value>Mentés másként...</value>
+  </data>
+  <data name="Main_SaveCtrlS" xml:space="preserve">
+    <value>Mentés (Ctrl+S)</value>
+  </data>
+  <data name="Main_Saved" xml:space="preserve">
+    <value>Mentve</value>
+  </data>
+  <data name="Main_SearchKindField" xml:space="preserve">
+    <value>Mező</value>
+  </data>
+  <data name="Main_SearchKindReport" xml:space="preserve">
+    <value>Kimutatás</value>
+  </data>
+  <data name="Main_SearchKindSection" xml:space="preserve">
+    <value>Szakasz</value>
+  </data>
+  <data name="Main_SearchKindTable" xml:space="preserve">
+    <value>Tábla</value>
+  </data>
+  <data name="Main_SearchTheProject" xml:space="preserve">
+    <value>Keresés a projektben</value>
+  </data>
+  <data name="Main_SessionIdleSaveNow" xml:space="preserve">
+    <value>A munkamenet tétlen. Menti most?</value>
+  </data>
+  <data name="Main_ShowFieldsTab" xml:space="preserve">
+    <value>Mezők lap megjelenítése</value>
+  </data>
+  <data name="Main_ShowTablesTab" xml:space="preserve">
+    <value>Táblák lap megjelenítése</value>
+  </data>
+  <data name="Main_Tools" xml:space="preserve">
+    <value>Eszközök</value>
+  </data>
+  <data name="Main_UnsavedChanges" xml:space="preserve">
+    <value>Nem mentett módosítások</value>
+  </data>
+  <data name="Main_UntitledProject" xml:space="preserve">
+    <value>Névtelen projekt</value>
+  </data>
+  <data name="Options_Advanced" xml:space="preserve">
+    <value>Speciális</value>
+  </data>
+  <data name="Options_Appearance" xml:space="preserve">
+    <value>Megjelenés</value>
+  </data>
+  <data name="Options_AppearanceMode" xml:space="preserve">
+    <value>Megjelenési mód</value>
+  </data>
+  <data name="Options_Apply" xml:space="preserve">
+    <value>Alkalmaz</value>
+  </data>
+  <data name="Options_ApproximationsOfTheBootstrap53" xml:space="preserve">
+    <value>A Bootstrap 5.3 színpaletta-család közelítései (primary, success, info, warning, danger és semleges árnyalatok).</value>
+  </data>
+  <data name="Options_AskBeforeExitingWhenTheProject" xml:space="preserve">
+    <value>Kérdezzen rá kilépéskor, ha a projektben nem mentett módosítások vannak (ki: kilépés kérdés nélkül)</value>
+  </data>
+  <data name="Options_AutosaveIntervalInMinutes0Off" xml:space="preserve">
+    <value>Automatikus mentés gyakorisága percben (0 = ki)</value>
+  </data>
+  <data name="Options_AutosaveWritesABackupCopyNext" xml:space="preserve">
+    <value>Az automatikus mentés biztonsági másolatot ír a projektfájl mellé név.autosave.xml néven. Magát a projektfájlt soha nem írja felül.</value>
+  </data>
+  <data name="Options_CheckAgain" xml:space="preserve">
+    <value>Újraellenőrzés</value>
+  </data>
+  <data name="Options_ClaudeModelId" xml:space="preserve">
+    <value>Claude-modell azonosítója</value>
+  </data>
+  <data name="Options_ClearTheOutputFolderBeforeGenerating" xml:space="preserve">
+    <value>A kimeneti mappa kiürítése generálás előtt</value>
+  </data>
+  <data name="Options_CompactTablesSmallerRowHeight" xml:space="preserve">
+    <value>Tömör táblázatok (kisebb sormagasság)</value>
+  </data>
+  <data name="Options_CustomStylesAXAMLResourceDictionaryOptional" xml:space="preserve">
+    <value>Egyéni stílusok (AXAML-erőforrásszótár, nem kötelező)</value>
+  </data>
+  <data name="Options_DefaultBuildConfiguration" xml:space="preserve">
+    <value>Alapértelmezett fordítási konfiguráció</value>
+  </data>
+  <data name="Options_DefaultOutputFolderPattern" xml:space="preserve">
+    <value>Alapértelmezett kimeneti mappa mintája</value>
+  </data>
+  <data name="Options_DefaultPageSize" xml:space="preserve">
+    <value>Alapértelmezett oldalméret</value>
+  </data>
+  <data name="Options_Detect" xml:space="preserve">
+    <value>Felismerés</value>
+  </data>
+  <data name="Options_DetectRunsEachProgramWithVersion" xml:space="preserve">
+    <value>A Felismerés minden programot a --version kapcsolóval futtat (5 másodperces korlát). Az útvonalak későbbi funkciókhoz tárolódnak; az alkalmazás egyelőre nem futtatja ezeket az eszközöket.</value>
+  </data>
+  <data name="Options_General" xml:space="preserve">
+    <value>Általános</value>
+  </data>
+  <data name="Options_HTTPProxyURLOptional" xml:space="preserve">
+    <value>HTTP-proxy URL-címe (nem kötelező)</value>
+  </data>
+  <data name="Options_KeysAreReadFromEnvironmentVariables" xml:space="preserve">
+    <value>A kulcsok környezeti változókból olvasódnak be, és soha nem kerülnek a projektfájlokba vagy ezekbe a beállításokba. A szolgáltató és a modell későbbi funkciókhoz tárolódik; egyelőre nincs fordítás.</value>
+  </data>
+  <data name="Options_KeyStatus" xml:space="preserve">
+    <value>Kulcs állapota</value>
+  </data>
+  <data name="Options_LeaveAPathEmptyToUse" xml:space="preserve">
+    <value>Hagyja üresen az útvonalat a PATH-ban talált program használatához.</value>
+  </data>
+  <data name="Options_Network" xml:space="preserve">
+    <value>Hálózat</value>
+  </data>
+  <data name="Options_NoFileChosen" xml:space="preserve">
+    <value>Nincs kiválasztott fájl</value>
+  </data>
+  <data name="Options_OpenSettingsFolder" xml:space="preserve">
+    <value>Beállítások mappájának megnyitása</value>
+  </data>
+  <data name="Options_OpenTheOutputFolderAfterGenerating" xml:space="preserve">
+    <value>A kimeneti mappa megnyitása generálás után</value>
+  </data>
+  <data name="Options_RecentFilesListLength5To" xml:space="preserve">
+    <value>Legutóbbi fájlok listájának hossza (5–20)</value>
+  </data>
+  <data name="Options_ReopenTheLastProjectAtStartup" xml:space="preserve">
+    <value>Az utolsó projekt újranyitása indításkor</value>
+  </data>
+  <data name="Options_RequestTimeoutInSeconds0No" xml:space="preserve">
+    <value>Kérés időkorlátja másodpercben (0 = nincs korlát a fordításra és közzétételre)</value>
+  </data>
+  <data name="Options_ResetALLAsksForConfirmationThen" xml:space="preserve">
+    <value>Az Összes visszaállítása megerősítést kér, majd minden lap minden beállítását az alapértékre állítja, és azonnal alkalmazza.</value>
+  </data>
+  <data name="Options_ResetALLSettings" xml:space="preserve">
+    <value>Összes beállítás visszaállítása...</value>
+  </data>
+  <data name="Options_ResetThisPageToDefaults" xml:space="preserve">
+    <value>E lap alapértékeinek visszaállítása</value>
+  </data>
+  <data name="Options_ResourcesOnlyTheFileMustBe" xml:space="preserve">
+    <value>Csak erőforrások: a fájlnak x:Class nélküli ResourceDictionary-nek kell lennie.</value>
+  </data>
+  <data name="Options_SessionIdleTimeoutInMinutesNo" xml:space="preserve">
+    <value>Munkamenet tétlenségi időkorlátja percben (bevitel nélkül)</value>
+  </data>
+  <data name="Options_SettingsFile" xml:space="preserve">
+    <value>Beállításfájl</value>
+  </data>
+  <data name="Options_StoredForLaterFeaturesTheApp" xml:space="preserve">
+    <value>Későbbi funkciókhoz tárolva: az alkalmazás egyelőre nem küld hálózati kéréseket.</value>
+  </data>
+  <data name="Options_StoredForLaterFeaturesTheOutput" xml:space="preserve">
+    <value>Későbbi funkciókhoz tárolva: a kimeneti mappa mintáját, az alapértelmezett oldalméretet, a generálás előtti kiürítést és a fordítási beállításokat a Generálás még nem használja. A kimeneti mappa megnyitása már működik.</value>
+  </data>
+  <data name="Options_StoredOnlyForNowTheApp" xml:space="preserve">
+    <value>Egyelőre csak tárolva: az alkalmazás még nem ír naplót.</value>
+  </data>
+  <data name="Options_SystemLanguage" xml:space="preserve">
+    <value>Rendszer nyelve ({0})</value>
+  </data>
+  <data name="Options_ThemePaletteAccentColour" xml:space="preserve">
+    <value>Témapaletta (kiemelőszín)</value>
+  </data>
+  <data name="Options_ToolsAndPaths" xml:space="preserve">
+    <value>Eszközök és útvonalak</value>
+  </data>
+  <data name="Options_TranslationAndAI" xml:space="preserve">
+    <value>Fordítás és MI</value>
+  </data>
+  <data name="Options_TranslationProvider" xml:space="preserve">
+    <value>Fordítószolgáltató</value>
+  </data>
+  <data name="Options_UIFontSize10To20" xml:space="preserve">
+    <value>Felület betűmérete (10–20)</value>
+  </data>
+  <data name="Options_UiLanguage" xml:space="preserve">
+    <value>Felület nyelve</value>
+  </data>
+  <data name="Options_UiLanguageHint" xml:space="preserve">
+    <value>A szerkesztő menüinek, lapjainak és párbeszédablakainak nyelve. A generált webhely nyelveit a Nyelvek lapon állíthatja be.</value>
+  </data>
+  <data name="Options_UsePATH" xml:space="preserve">
+    <value>(PATH használata)</value>
+  </data>
+  <data name="Options_WarningEverythingInTheOutputFolder" xml:space="preserve">
+    <value>Figyelem: minden generálás előtt a kimeneti mappa teljes tartalma törlődne. A kézzel hozzáadott fájlok elvesznek.</value>
+  </data>
+  <data name="PageDesigner_ActionsFirst" xml:space="preserve">
+    <value>Műveletek elöl</value>
+  </data>
+  <data name="PageDesigner_AddButtonText" xml:space="preserve">
+    <value>Hozzáadás gomb szövege</value>
+  </data>
+  <data name="PageDesigner_AddPage" xml:space="preserve">
+    <value>Oldal hozzáadása</value>
+  </data>
+  <data name="PageDesigner_AppliesToTheAddCopyEdit" xml:space="preserve">
+    <value>A Hozzáadás, Másolás, Szerkesztés és Keresés oldalakra vonatkozik.</value>
+  </data>
+  <data name="PageDesigner_AppliesToTheListPage" xml:space="preserve">
+    <value>A Lista oldalra vonatkozik.</value>
+  </data>
+  <data name="PageDesigner_AskForConfirmationBeforeSaving" xml:space="preserve">
+    <value>Megerősítés kérése mentés előtt</value>
+  </data>
+  <data name="PageDesigner_Bordered" xml:space="preserve">
+    <value>Szegélyezett</value>
+  </data>
+  <data name="PageDesigner_ButtonPlacement" xml:space="preserve">
+    <value>Gombok elhelyezése</value>
+  </data>
+  <data name="PageDesigner_CancelText" xml:space="preserve">
+    <value>Mégse gomb szövege</value>
+  </data>
+  <data name="PageDesigner_ClearColumns" xml:space="preserve">
+    <value>Oszlopok törlése</value>
+  </data>
+  <data name="PageDesigner_ClearPicks" xml:space="preserve">
+    <value>Kijelölések törlése</value>
+  </data>
+  <data name="PageDesigner_ClearsTheSearchTheFiltersAnd" xml:space="preserve">
+    <value>Törli a lista keresését, szűrőit és rendezését.</value>
+  </data>
+  <data name="PageDesigner_ColumnsNoneEveryFieldMarkedShow" xml:space="preserve">
+    <value>Oszlopok (nincs: minden „listában látható” mező)</value>
+  </data>
+  <data name="PageDesigner_ConditionsPerColumnContainsBetweenEmpty" xml:space="preserve">
+    <value>Oszloponkénti feltételek (tartalmazza, =, &gt;, között, üres...) „mind” vagy „bármelyik” kapcsolattal, legfeljebb három rendezési szinttel.</value>
+  </data>
+  <data name="PageDesigner_ContainerHowThePageOpensFrom" xml:space="preserve">
+    <value>Tároló (hogyan nyílik meg az oldal a listából)</value>
+  </data>
+  <data name="PageDesigner_CopyDesignFrom" xml:space="preserve">
+    <value>Tervezés másolása innen...</value>
+  </data>
+  <data name="PageDesigner_CustomCSS" xml:space="preserve">
+    <value>Egyéni CSS</value>
+  </data>
+  <data name="PageDesigner_CustomScript" xml:space="preserve">
+    <value>Egyéni szkript</value>
+  </data>
+  <data name="PageDesigner_EveryWordMustMatchSomeColumn" xml:space="preserve">
+    <value>Minden szónak illeszkednie kell valamelyik oszlopra. Az „idézőjeles kifejezések”, az oszlop:érték és a -szó (kizárás) is használható.</value>
+  </data>
+  <data name="PageDesigner_FieldsOnPages" xml:space="preserve">
+    <value>Mezők az oldalakon</value>
+  </data>
+  <data name="PageDesigner_FilterAndSortBuilder" xml:space="preserve">
+    <value>Szűrő- és rendezésszerkesztő</value>
+  </data>
+  <data name="PageDesigner_FooterHTML" xml:space="preserve">
+    <value>Lábléc HTML</value>
+  </data>
+  <data name="PageDesigner_Form" xml:space="preserve">
+    <value>Űrlap</value>
+  </data>
+  <data name="PageDesigner_FormLayout" xml:space="preserve">
+    <value>Űrlap elrendezése</value>
+  </data>
+  <data name="PageDesigner_FormPages" xml:space="preserve">
+    <value>Űrlapoldalak</value>
+  </data>
+  <data name="PageDesigner_GiveTheListPageOfEvery" xml:space="preserve">
+    <value>Ez a három beállítás kerüljön minden generált tábla listaoldalára.</value>
+  </data>
+  <data name="PageDesigner_HeaderHTMLWrittenIntoThePage" xml:space="preserve">
+    <value>Fejléc HTML (változtatás nélkül kerül az oldalba)</value>
+  </data>
+  <data name="PageDesigner_Hover" xml:space="preserve">
+    <value>Kiemelés rámutatáskor</value>
+  </data>
+  <data name="PageDesigner_Icon" xml:space="preserve">
+    <value>Ikon</value>
+  </data>
+  <data name="PageDesigner_IconBootstrapIconsNamePickOne" xml:space="preserve">
+    <value>Ikon (Bootstrap Icons név; válasszon vagy írjon be bármelyiket)</value>
+  </data>
+  <data name="PageDesigner_ListLayout" xml:space="preserve">
+    <value>Lista elrendezése</value>
+  </data>
+  <data name="PageDesigner_MenuGroup" xml:space="preserve">
+    <value>Menücsoport</value>
+  </data>
+  <data name="PageDesigner_MenuOrder" xml:space="preserve">
+    <value>Menübeli sorrend</value>
+  </data>
+  <data name="PageDesigner_MoveToNextPage" xml:space="preserve">
+    <value>Áthelyezés a következő oldalra</value>
+  </data>
+  <data name="PageDesigner_MoveToPreviousPage" xml:space="preserve">
+    <value>Áthelyezés az előző oldalra</value>
+  </data>
+  <data name="PageDesigner_MultiPageForms" xml:space="preserve">
+    <value>Többoldalas űrlapok</value>
+  </data>
+  <data name="PageDesigner_Page" xml:space="preserve">
+    <value>Oldal</value>
+  </data>
+  <data name="PageDesigner_PageModeOfEachPageType" xml:space="preserve">
+    <value>Az egyes oldaltípusok megjelenítési módja</value>
+  </data>
+  <data name="PageDesigner_Pager" xml:space="preserve">
+    <value>Lapozó</value>
+  </data>
+  <data name="PageDesigner_PageSizeOptionsCommaListFor" xml:space="preserve">
+    <value>Oldalméret-lehetőségek (vesszővel elválasztva, például 10, 25, 50)</value>
+  </data>
+  <data name="PageDesigner_Pick" xml:space="preserve">
+    <value>Kijelölés</value>
+  </data>
+  <data name="PageDesigner_PickAll" xml:space="preserve">
+    <value>Az összes kijelölése</value>
+  </data>
+  <data name="PageDesigner_PreviewSchematic" xml:space="preserve">
+    <value>Előnézet (vázlatos)</value>
+  </data>
+  <data name="PageDesigner_PutPickedFieldsOnThisPage" xml:space="preserve">
+    <value>A kijelölt mezők erre az oldalra</value>
+  </data>
+  <data name="PageDesigner_QuickFilterBox" xml:space="preserve">
+    <value>Gyorsszűrő mező</value>
+  </data>
+  <data name="PageDesigner_ResetButton" xml:space="preserve">
+    <value>Visszaállítás gomb</value>
+  </data>
+  <data name="PageDesigner_ResetPageDesign" xml:space="preserve">
+    <value>Oldaltervezés visszaállítása</value>
+  </data>
+  <data name="PageDesigner_RowNumbers" xml:space="preserve">
+    <value>Sorszámok</value>
+  </data>
+  <data name="PageDesigner_RowStyleRules" xml:space="preserve">
+    <value>Sorstílus-szabályok</value>
+  </data>
+  <data name="PageDesigner_SearchingFilteringAndSorting" xml:space="preserve">
+    <value>Keresés, szűrés és rendezés</value>
+  </data>
+  <data name="PageDesigner_ShowCancelButton" xml:space="preserve">
+    <value>Mégse gomb megjelenítése</value>
+  </data>
+  <data name="PageDesigner_SplitTheViewAddCopyAnd" xml:space="preserve">
+    <value>A tábla Megtekintés, Hozzáadás, Másolás és Szerkesztés oldalainak felosztása több oldalra (fülek, pirulák, harmonika vagy varázsló). A mezők lent választják ki az oldalukat; az oldal nélküli mező az első oldalra kerül.</value>
+  </data>
+  <data name="PageDesigner_StickyHeader" xml:space="preserve">
+    <value>Rögzített fejléc</value>
+  </data>
+  <data name="PageDesigner_Striped" xml:space="preserve">
+    <value>Csíkozott</value>
+  </data>
+  <data name="PageDesigner_SubmitButtonCSSClass" xml:space="preserve">
+    <value>Küldés gomb CSS-osztálya</value>
+  </data>
+  <data name="PageDesigner_SubmitText" xml:space="preserve">
+    <value>Küldés gomb szövege</value>
+  </data>
+  <data name="PageDesigner_Subtitle" xml:space="preserve">
+    <value>Alcím</value>
+  </data>
+  <data name="PageDesigner_SuccessMessage" xml:space="preserve">
+    <value>Sikerüzenet</value>
+  </data>
+  <data name="PageDesigner_TableUI" xml:space="preserve">
+    <value>Táblázat felülete</value>
+  </data>
+  <data name="PageDesigner_TextForAnEmptyList" xml:space="preserve">
+    <value>Üres lista szövege</value>
+  </data>
+  <data name="PageDesigner_TitleEmptyTheGeneratedHeading" xml:space="preserve">
+    <value>Cím (üres: a generált címsor)</value>
+  </data>
+  <data name="PageDesigner_UseListFields" xml:space="preserve">
+    <value>Listamezők használata</value>
+  </data>
+  <data name="PageDesigner_UseOnEveryList" xml:space="preserve">
+    <value>Használat minden listán</value>
+  </data>
+  <data name="PageDesigner_Visible" xml:space="preserve">
+    <value>Látható</value>
+  </data>
+  <data name="PageDesigner_Width" xml:space="preserve">
+    <value>Szélesség</value>
+  </data>
+  <data name="ProjectSettings_AddAHealthEndpoint" xml:space="preserve">
+    <value>/health végpont hozzáadása</value>
+  </data>
+  <data name="ProjectSettings_AddedToEveryPageOfThe" xml:space="preserve">
+    <value>A generált webhely minden oldalára bekerül.</value>
+  </data>
+  <data name="ProjectSettings_ASPNETApplicationTitle" xml:space="preserve">
+    <value>ASP.NET-alkalmazás címe</value>
+  </data>
+  <data name="ProjectSettings_AssemblyNameEmptyFromTheProject" xml:space="preserve">
+    <value>Szerelvény neve (üres: a projekt nevéből)</value>
+  </data>
+  <data name="ProjectSettings_Author" xml:space="preserve">
+    <value>Szerző</value>
+  </data>
+  <data name="ProjectSettings_BaseRuntimeImage" xml:space="preserve">
+    <value>Futtatókörnyezet alaplemezképe</value>
+  </data>
+  <data name="ProjectSettings_BaseSDKImage" xml:space="preserve">
+    <value>SDK alaplemezképe</value>
+  </data>
+  <data name="ProjectSettings_BuildAndDocker" xml:space="preserve">
+    <value>Fordítás és Docker</value>
+  </data>
+  <data name="ProjectSettings_BuildTheDockerImageAfterGenerating" xml:space="preserve">
+    <value>A Docker-lemezkép elkészítése generálás után</value>
+  </data>
+  <data name="ProjectSettings_ChangeTheEngineAndTheConnection" xml:space="preserve">
+    <value>Az adatbázismotort és a kapcsolatot az Adatbázis lapon módosíthatja.</value>
+  </data>
+  <data name="ProjectSettings_ColorMode" xml:space="preserve">
+    <value>Színmód</value>
+  </data>
+  <data name="ProjectSettings_Company" xml:space="preserve">
+    <value>Cég</value>
+  </data>
+  <data name="ProjectSettings_CompressResponses" xml:space="preserve">
+    <value>Válaszok tömörítése</value>
+  </data>
+  <data name="ProjectSettings_Configuration" xml:space="preserve">
+    <value>Konfiguráció</value>
+  </data>
+  <data name="ProjectSettings_Connection" xml:space="preserve">
+    <value>Kapcsolat</value>
+  </data>
+  <data name="ProjectSettings_Copyright" xml:space="preserve">
+    <value>Szerzői jog</value>
+  </data>
+  <data name="ProjectSettings_Environment" xml:space="preserve">
+    <value>Környezet</value>
+  </data>
+  <data name="ProjectSettings_ExposedPort165535" xml:space="preserve">
+    <value>Közzétett port (1-65535)</value>
+  </data>
+  <data name="ProjectSettings_Favicon" xml:space="preserve">
+    <value>Webhelyikon</value>
+  </data>
+  <data name="ProjectSettings_FooterText" xml:space="preserve">
+    <value>Lábléc szövege</value>
+  </data>
+  <data name="ProjectSettings_GenerateADockerfile" xml:space="preserve">
+    <value>Dockerfile generálása</value>
+  </data>
+  <data name="ProjectSettings_GenerateDockerComposeFile" xml:space="preserve">
+    <value>docker-compose fájl generálása</value>
+  </data>
+  <data name="ProjectSettings_GlobalCSS" xml:space="preserve">
+    <value>Globális CSS</value>
+  </data>
+  <data name="ProjectSettings_GlobalScript" xml:space="preserve">
+    <value>Globális szkript</value>
+  </data>
+  <data name="ProjectSettings_GoToLanguagesTab" xml:space="preserve">
+    <value>Ugrás a Nyelvek lapra</value>
+  </data>
+  <data name="ProjectSettings_GoToSecurityTab" xml:space="preserve">
+    <value>Ugrás a Biztonság lapra</value>
+  </data>
+  <data name="ProjectSettings_HTTPPort165535" xml:space="preserve">
+    <value>HTTP-port (1-65535)</value>
+  </data>
+  <data name="ProjectSettings_HTTPSPort165535" xml:space="preserve">
+    <value>HTTPS-port (1-65535)</value>
+  </data>
+  <data name="ProjectSettings_Identity" xml:space="preserve">
+    <value>Azonosítás</value>
+  </data>
+  <data name="ProjectSettings_ImageNameEmptyTheProjectName" xml:space="preserve">
+    <value>Lemezkép neve (üres: a projekt neve kisbetűvel)</value>
+  </data>
+  <data name="ProjectSettings_JavaScriptAddedToEveryPageOf" xml:space="preserve">
+    <value>A generált webhely minden oldalára bekerülő JavaScript.</value>
+  </data>
+  <data name="ProjectSettings_Localization" xml:space="preserve">
+    <value>Honosítás</value>
+  </data>
+  <data name="ProjectSettings_Logo" xml:space="preserve">
+    <value>Logó</value>
+  </data>
+  <data name="ProjectSettings_NavbarStyle" xml:space="preserve">
+    <value>Navigációs sáv stílusa</value>
+  </data>
+  <data name="ProjectSettings_OutputFolderRelativeToTheProject" xml:space="preserve">
+    <value>Kimeneti mappa (a projektfájlhoz képest vagy abszolút)</value>
+  </data>
+  <data name="ProjectSettings_ProjectId" xml:space="preserve">
+    <value>Projektazonosító</value>
+  </data>
+  <data name="ProjectSettings_Provider" xml:space="preserve">
+    <value>Szolgáltató</value>
+  </data>
+  <data name="ProjectSettings_PublishFolderRelativeToTheOutput" xml:space="preserve">
+    <value>Közzétételi mappa (a kimeneti mappához képest)</value>
+  </data>
+  <data name="ProjectSettings_PublishInsteadOfBuild" xml:space="preserve">
+    <value>Közzététel fordítás helyett</value>
+  </data>
+  <data name="ProjectSettings_Regenerate" xml:space="preserve">
+    <value>Újragenerálás...</value>
+  </data>
+  <data name="ProjectSettings_RootNamespaceEmptyFromTheProject" xml:space="preserve">
+    <value>Gyökérnévtér (üres: a projekt nevéből)</value>
+  </data>
+  <data name="ProjectSettings_Runtime" xml:space="preserve">
+    <value>Futtatókörnyezet</value>
+  </data>
+  <data name="ProjectSettings_RuntimeIdentifierForExampleWinX64" xml:space="preserve">
+    <value>Futtatókörnyezet-azonosító (például win-x64; üres: bármely platform)</value>
+  </data>
+  <data name="ProjectSettings_SecurityAndLocalization" xml:space="preserve">
+    <value>Biztonság és honosítás</value>
+  </data>
+  <data name="ProjectSettings_SelfContained" xml:space="preserve">
+    <value>Önálló</value>
+  </data>
+  <data name="ProjectSettings_SendHSTSHeadersNeedsHTTPS" xml:space="preserve">
+    <value>HSTS-fejlécek küldése (HTTPS szükséges)</value>
+  </data>
+  <data name="ProjectSettings_SettingsOfTheWholeProjectChanges" xml:space="preserve">
+    <value>A teljes projekt beállításai. A módosítások a projektfájllal együtt mentődnek.</value>
+  </data>
+  <data name="ProjectSettings_Site" xml:space="preserve">
+    <value>Webhely</value>
+  </data>
+  <data name="ProjectSettings_SQLiteFilePath" xml:space="preserve">
+    <value>SQLite-fájl útvonala</value>
+  </data>
+  <data name="ProjectSettings_Theme" xml:space="preserve">
+    <value>Téma</value>
+  </data>
+  <data name="ProjectSettings_UseHTTPS" xml:space="preserve">
+    <value>HTTPS használata</value>
+  </data>
+  <data name="ProjectSettings_Version" xml:space="preserve">
+    <value>Verzió</value>
+  </data>
+  <data name="Relations_AddKeyLink" xml:space="preserve">
+    <value>Kulcskapcsolat hozzáadása</value>
+  </data>
+  <data name="Relations_AddLink" xml:space="preserve">
+    <value>Kapcsolat hozzáadása</value>
+  </data>
+  <data name="Relations_AfterAddGoToEdit" xml:space="preserve">
+    <value>Hozzáadás után szerkesztés</value>
+  </data>
+  <data name="Relations_AllowAdd" xml:space="preserve">
+    <value>Hozzáadás engedélyezése</value>
+  </data>
+  <data name="Relations_AllowDelete" xml:space="preserve">
+    <value>Törlés engedélyezése</value>
+  </data>
+  <data name="Relations_AllowEdit" xml:space="preserve">
+    <value>Szerkesztés engedélyezése</value>
+  </data>
+  <data name="Relations_AQuickFilterBoxSortableColumn" xml:space="preserve">
+    <value>Gyorsszűrő mező, rendezhető oszlopfejlécek és visszaállító hivatkozás a rács fölött a fő rekord megtekintésekor.</value>
+  </data>
+  <data name="Relations_CaptionEmptyTheDetailTableS" xml:space="preserve">
+    <value>Felirat (üres: a részletező tábla felirata)</value>
+  </data>
+  <data name="Relations_DetailField" xml:space="preserve">
+    <value>Részletező mező</value>
+  </data>
+  <data name="Relations_DetailGridColumnsNoneTheDetail" xml:space="preserve">
+    <value>Részletező rács oszlopai (nincs: a részletező tábla „listában látható” mezői)</value>
+  </data>
+  <data name="Relations_DetailLinksOfTheMasterTable" xml:space="preserve">
+    <value>A fő tábla részletező kapcsolatai</value>
+  </data>
+  <data name="Relations_DetailTable" xml:space="preserve">
+    <value>Részletező tábla</value>
+  </data>
+  <data name="Relations_EveryLinkOfTheProjectMaster" xml:space="preserve">
+    <value>A projekt összes kapcsolata: fő -&gt; részletező, kulcspárok és szabályok. Dupla kattintással megnyithat egy sort.</value>
+  </data>
+  <data name="Relations_FormPagesAreDefinedOnThe" xml:space="preserve">
+    <value>Az űrlapoldalakat az Oldalak lapon adhatja meg. Csak akkor érvényesek, ha a fő tábla oldala többoldalas módot használ.</value>
+  </data>
+  <data name="Relations_FormPageThatHoldsTheGrid" xml:space="preserve">
+    <value>A rácsot tartalmazó űrlapoldal</value>
+  </data>
+  <data name="Relations_KeyLinksMasterFieldDetailField" xml:space="preserve">
+    <value>Kulcskapcsolatok (fő mező = részletező mező)</value>
+  </data>
+  <data name="Relations_MasterField" xml:space="preserve">
+    <value>Fő mező</value>
+  </data>
+  <data name="Relations_MasterTable" xml:space="preserve">
+    <value>Fő tábla</value>
+  </data>
+  <data name="Relations_Note" xml:space="preserve">
+    <value>Megjegyzés</value>
+  </data>
+  <data name="Relations_OnDeleteOfAMasterRecord" xml:space="preserve">
+    <value>Fő rekord törlésekor</value>
+  </data>
+  <data name="Relations_OnUpdateOfALinkedMaster" xml:space="preserve">
+    <value>Kapcsolt fő mező módosításakor</value>
+  </data>
+  <data name="Relations_PageSize1To200" xml:space="preserve">
+    <value>Oldalméret (1–200)</value>
+  </data>
+  <data name="Relations_PreviewOnTheMasterSList" xml:space="preserve">
+    <value>Előnézet a fő tábla listáján</value>
+  </data>
+  <data name="Relations_QuickFilterAndColumnSortingOn" xml:space="preserve">
+    <value>Gyorsszűrő és oszloprendezés a megtekintőoldalon</value>
+  </data>
+  <data name="Relations_RelationsOverview" xml:space="preserve">
+    <value>Kapcsolatok áttekintése</value>
+  </data>
+  <data name="Relations_ShowOnEdit" xml:space="preserve">
+    <value>Megjelenítés szerkesztéskor</value>
+  </data>
+  <data name="Relations_ShowOnView" xml:space="preserve">
+    <value>Megjelenítés megtekintéskor</value>
+  </data>
+  <data name="Relations_SuggestFromForeignKeys" xml:space="preserve">
+    <value>Javaslat idegen kulcsokból</value>
+  </data>
+  <data name="Relations_TheMasterItselfIsAllowedA" xml:space="preserve">
+    <value>Maga a fő tábla is választható (önhivatkozás, például fa szerkezet). A tábla módosításakor a kulcskapcsolatok elölről kezdődnek.</value>
+  </data>
+  <data name="Reports_12ColumnsFillARowReports" xml:space="preserve">
+    <value>12 oszlop tölt ki egy sort. Azok a kimutatások, amelyeket egy felhasználó nem nyithat meg, kimaradnak az irányítópultjáról.</value>
+  </data>
+  <data name="Reports_AddFilter" xml:space="preserve">
+    <value>Szűrő hozzáadása</value>
+  </data>
+  <data name="Reports_AddGroup" xml:space="preserve">
+    <value>Csoport hozzáadása</value>
+  </data>
+  <data name="Reports_AddReport" xml:space="preserve">
+    <value>Kimutatás hozzáadása</value>
+  </data>
+  <data name="Reports_AddTotal" xml:space="preserve">
+    <value>Összesítés hozzáadása</value>
+  </data>
+  <data name="Reports_AReportReadsOneTableThe" xml:space="preserve">
+    <value>Egy kimutatás egy táblát olvas. A tábla szűrője, tulajdonosmezője és megtekintési szintje rá is érvényes, a diagramokat pedig a kiszolgáló rajzolja meg, így a webhelynek nincs szüksége további szkriptre.</value>
+  </data>
+  <data name="Reports_CaptionEmptyTheName" xml:space="preserve">
+    <value>Felirat (üres: a név)</value>
+  </data>
+  <data name="Reports_ChartType" xml:space="preserve">
+    <value>Diagram típusa</value>
+  </data>
+  <data name="Reports_DateField" xml:space="preserve">
+    <value>Dátummező</value>
+  </data>
+  <data name="Reports_DateRangeFilterFromAndTo" xml:space="preserve">
+    <value>Dátumtartomány-szűrő (Ettől és Eddig a kimutatás fölött)</value>
+  </data>
+  <data name="Reports_Descending" xml:space="preserve">
+    <value>Csökkenő</value>
+  </data>
+  <data name="Reports_DescriptionShownUnderTheHeading" xml:space="preserve">
+    <value>Leírás (a címsor alatt jelenik meg)</value>
+  </data>
+  <data name="Reports_EndDateFieldForRowsThat" xml:space="preserve">
+    <value>Záródátum mezője (több napra kiterjedő sorokhoz)</value>
+  </data>
+  <data name="Reports_FilterSQLWithoutWHEREAddedTo" xml:space="preserve">
+    <value>Szűrő (SQL WHERE nélkül, a tábla saját szűrőjéhez adódik)</value>
+  </data>
+  <data name="Reports_Function" xml:space="preserve">
+    <value>Függvény</value>
+  </data>
+  <data name="Reports_GrandTotal" xml:space="preserve">
+    <value>Végösszeg</value>
+  </data>
+  <data name="Reports_GroupByOutermostFirst" xml:space="preserve">
+    <value>Csoportosítás (a legkülső elöl)</value>
+  </data>
+  <data name="Reports_GroupDatesBy" xml:space="preserve">
+    <value>Dátumok csoportosítása</value>
+  </data>
+  <data name="Reports_HeadingEmptyEGSumOf" xml:space="preserve">
+    <value>Címsor (üres: pl. Freight összege)</value>
+  </data>
+  <data name="Reports_LinkEntriesToTheViewPage" xml:space="preserve">
+    <value>Bejegyzések hivatkozása a megtekintőoldalra</value>
+  </data>
+  <data name="Reports_LinkTheNumbersToTheRows" xml:space="preserve">
+    <value>A számok hivatkozzanak a mögöttük lévő sorokra</value>
+  </data>
+  <data name="Reports_ListTheRowsOfEachGroup" xml:space="preserve">
+    <value>Az egyes csoportok sorainak listázása</value>
+  </data>
+  <data name="Reports_LowestUserLevel0AnyUser" xml:space="preserve">
+    <value>Legalacsonyabb felhasználói szint (0: bármely felhasználó)</value>
+  </data>
+  <data name="Reports_MenuGroupEmptyWithTheTables" xml:space="preserve">
+    <value>Menücsoport (üres: a táblákkal együtt)</value>
+  </data>
+  <data name="Reports_MostCategoriesShown0All" xml:space="preserve">
+    <value>Legtöbb megjelenített kategória (0: mind)</value>
+  </data>
+  <data name="Reports_MostColumnsOrSeries1To" xml:space="preserve">
+    <value>Legtöbb oszlop vagy adatsor (1–500)</value>
+  </data>
+  <data name="Reports_Order" xml:space="preserve">
+    <value>Sorrend</value>
+  </data>
+  <data name="Reports_OwnerFieldsAndUserLevelsAre" xml:space="preserve">
+    <value>Az előnézetben a tulajdonosmezők és a felhasználói szintek nem érvényesülnek.</value>
+  </data>
+  <data name="Reports_PickListFilters" xml:space="preserve">
+    <value>Választólistás szűrők</value>
+  </data>
+  <data name="Reports_Report" xml:space="preserve">
+    <value>Kimutatás</value>
+  </data>
+  <data name="Reports_ReportsOnTheDashboard" xml:space="preserve">
+    <value>Kimutatások az irányítópulton</value>
+  </data>
+  <data name="Reports_RowColumnsForListedRowsAnd" xml:space="preserve">
+    <value>Sorok oszlopai a listázott sorokhoz és a részletező oldalhoz (nincs: a listában látható mezők)</value>
+  </data>
+  <data name="Reports_ShowTheDataTableBelowThe" xml:space="preserve">
+    <value>Az adattábla megjelenítése a diagram alatt</value>
+  </data>
+  <data name="Reports_TitleFieldNoneTheFirstText" xml:space="preserve">
+    <value>Címmező (nincs: az első szöveges mező)</value>
+  </data>
+  <data name="Reports_TotalsNoneARowCount" xml:space="preserve">
+    <value>Összesítések (nincs: sorok száma)</value>
+  </data>
+  <data name="Reports_WeeksStartOnMonday" xml:space="preserve">
+    <value>A hét hétfővel kezdődik</value>
+  </data>
+  <data name="Reports_Width1To12" xml:space="preserve">
+    <value>Szélesség (1–12)</value>
+  </data>
+  <data name="Security_AdministratorLevel" xml:space="preserve">
+    <value>Rendszergazdai szint</value>
+  </data>
+  <data name="Security_AdministratorUserName" xml:space="preserve">
+    <value>Rendszergazda felhasználóneve</value>
+  </data>
+  <data name="Security_AllowChangePasswordSignedInUsers" xml:space="preserve">
+    <value>Jelszóváltoztatás engedélyezése (a bejelentkezett felhasználók megváltoztathatják a jelszavukat)</value>
+  </data>
+  <data name="Security_AllowRegistrationNewUsersCanSign" xml:space="preserve">
+    <value>Regisztráció engedélyezése (új felhasználók regisztrálhatnak)</value>
+  </data>
+  <data name="Security_ASPNETCoreIdentity" xml:space="preserve">
+    <value>ASP.NET Core Identity</value>
+  </data>
+  <data name="Security_ChooseAFieldOfTheUser" xml:space="preserve">
+    <value>Válasszon mezőt a felhasználói táblából</value>
+  </data>
+  <data name="Security_ChooseATableMarkedGenerate" xml:space="preserve">
+    <value>Válasszon Generálásra jelölt táblát</value>
+  </data>
+  <data name="Security_CreateMissingIdentityTablesWhenThe" xml:space="preserve">
+    <value>Hiányzó identitástáblák létrehozása a webhely indulásakor</value>
+  </data>
+  <data name="Security_CreateMissingTables" xml:space="preserve">
+    <value>Hiányzó táblák létrehozása</value>
+  </data>
+  <data name="Security_LevelFieldIntegerOptionalEnablesUser" xml:space="preserve">
+    <value>Szintmező (egész szám, nem kötelező: bekapcsolja a felhasználói szintű biztonságot)</value>
+  </data>
+  <data name="Security_LevelOfNewUsers" xml:space="preserve">
+    <value>Új felhasználók szintje</value>
+  </data>
+  <data name="Security_LoginOptions" xml:space="preserve">
+    <value>Bejelentkezési beállítások</value>
+  </data>
+  <data name="Security_MaxFailedAttempts" xml:space="preserve">
+    <value>Sikertelen próbálkozások max. száma</value>
+  </data>
+  <data name="Security_MinimumPasswordLength" xml:space="preserve">
+    <value>Jelszó minimális hossza</value>
+  </data>
+  <data name="Security_PasswordEnvironmentVariable" xml:space="preserve">
+    <value>Jelszót tartalmazó környezeti változó</value>
+  </data>
+  <data name="Security_PasswordFieldStoresThePasswordHash" xml:space="preserve">
+    <value>Jelszómező (a jelszó kivonatát tárolja)</value>
+  </data>
+  <data name="Security_PasswordOptions" xml:space="preserve">
+    <value>Jelszóbeállítások</value>
+  </data>
+  <data name="Security_Permissions" xml:space="preserve">
+    <value>Jogosultságok</value>
+  </data>
+  <data name="Security_RequireAConfirmedEMailAddress" xml:space="preserve">
+    <value>Megerősített e-mail-cím szükséges a bejelentkezéshez</value>
+  </data>
+  <data name="Security_RequireADigit" xml:space="preserve">
+    <value>Számjegy kötelező</value>
+  </data>
+  <data name="Security_RequireALowercaseLetter" xml:space="preserve">
+    <value>Kisbetű kötelező</value>
+  </data>
+  <data name="Security_RequireAnUppercaseLetter" xml:space="preserve">
+    <value>Nagybetű kötelező</value>
+  </data>
+  <data name="Security_RequireASymbol" xml:space="preserve">
+    <value>Szimbólum kötelező</value>
+  </data>
+  <data name="Security_RequireSignInCookieLoginAgainst" xml:space="preserve">
+    <value>Bejelentkezés megkövetelése (cookie-alapú bejelentkezés egy generált tábla alapján)</value>
+  </data>
+  <data name="Security_TablePrefix" xml:space="preserve">
+    <value>Táblanév-előtag</value>
+  </data>
+  <data name="Security_TheSiteCreatesTheAdministratorWhen" xml:space="preserve">
+    <value>Ha a webhelynek nincs felhasználója, létrehozza a rendszergazdát a környezeti változóban megadott jelszóval. A jelszó soha nem kerül a projektbe.</value>
+  </data>
+  <data name="Security_TrackFailedSignInAttempts" xml:space="preserve">
+    <value>Sikertelen bejelentkezések nyilvántartása</value>
+  </data>
+  <data name="Security_UserNameField" xml:space="preserve">
+    <value>Felhasználónév mezője</value>
+  </data>
+  <data name="Security_UserStore" xml:space="preserve">
+    <value>Felhasználói tár</value>
+  </data>
+  <data name="Security_UserTable" xml:space="preserve">
+    <value>Felhasználói tábla</value>
+  </data>
+  <data name="Security_WhenSignInIsEnabledEvery" xml:space="preserve">
+    <value>Bekapcsolt bejelentkezésnél minden oldal és API-útvonal bejelentkezett felhasználót igényel, kivéve a /login és /logout útvonalat. Projekttábla esetén a felhasználói táblát a Táblák lapon Generálásra kell jelölni; ASP.NET Core Identity esetén a szintek a szerepkörökből jönnek, és a rendszergazdák a /users oldalon kezelik a felhasználókat. Amíg ezek a beállítások érvénytelenek, a Generálás nem érhető el.</value>
+  </data>
+  <data name="Security_WindowMinutes" xml:space="preserve">
+    <value>Időablak (perc)</value>
+  </data>
+  <data name="Stage_Build" xml:space="preserve">
+    <value>4 · FORDÍTÁS</value>
+  </data>
+  <data name="Stage_Data" xml:space="preserve">
+    <value>2 · ADATOK</value>
+  </data>
+  <data name="Stage_Setup" xml:space="preserve">
+    <value>1 · BEÁLLÍTÁS</value>
+  </data>
+  <data name="Stage_Site" xml:space="preserve">
+    <value>3 · WEBHELY</value>
+  </data>
+  <data name="Tab_AuditTrail" xml:space="preserve">
+    <value>Változásnapló</value>
+  </data>
+  <data name="Tab_Database" xml:space="preserve">
+    <value>Adatbázis</value>
+  </data>
+  <data name="Tab_Fields" xml:space="preserve">
+    <value>Mezők</value>
+  </data>
+  <data name="Tab_Generate" xml:space="preserve">
+    <value>Generálás</value>
+  </data>
+  <data name="Tab_HomePage" xml:space="preserve">
+    <value>Kezdőlap</value>
+  </data>
+  <data name="Tab_ImportExport" xml:space="preserve">
+    <value>Import/export</value>
+  </data>
+  <data name="Tab_Languages" xml:space="preserve">
+    <value>Nyelvek</value>
+  </data>
+  <data name="Tab_Pages" xml:space="preserve">
+    <value>Oldalak</value>
+  </data>
+  <data name="Tab_Project" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="Tab_Relations" xml:space="preserve">
+    <value>Kapcsolatok</value>
+  </data>
+  <data name="Tab_Reports" xml:space="preserve">
+    <value>Kimutatások</value>
+  </data>
+  <data name="Tab_Security" xml:space="preserve">
+    <value>Biztonság</value>
+  </data>
+  <data name="Tab_Tables" xml:space="preserve">
+    <value>Táblák</value>
+  </data>
+  <data name="Tables_ACCESS" xml:space="preserve">
+    <value>HOZZÁFÉRÉS</value>
+  </data>
+  <data name="Tables_Delete" xml:space="preserve">
+    <value>Törlés</value>
+  </data>
+  <data name="Tables_EditLevel" xml:space="preserve">
+    <value>Szerkesztési szint</value>
+  </data>
+  <data name="Tables_FilterSQLWithoutWHERE" xml:space="preserve">
+    <value>Szűrő (SQL WHERE nélkül)</value>
+  </data>
+  <data name="Tables_GENERAL" xml:space="preserve">
+    <value>ÁLTALÁNOS</value>
+  </data>
+  <data name="Tables_GenerateThisTable" xml:space="preserve">
+    <value>E tábla generálása</value>
+  </data>
+  <data name="Tables_LevelsApplyWhenTheSecuritySection" xml:space="preserve">
+    <value>A szintek akkor érvényesek, ha a Biztonság szakaszban meg van adva a felhasználói szint mezője. A 0 bármely bejelentkezett felhasználót jelenti.</value>
+  </data>
+  <data name="Tables_OwnerFieldRowsBelongToThe" xml:space="preserve">
+    <value>Tulajdonosmező (a sorok a bejelentkezett felhasználóhoz tartoznak)</value>
+  </data>
+  <data name="Tables_PAGES" xml:space="preserve">
+    <value>OLDALAK</value>
+  </data>
+  <data name="Tables_RowsPerPage" xml:space="preserve">
+    <value>Sorok oldalanként</value>
+  </data>
+  <data name="Tables_SelectATableToEditIt" xml:space="preserve">
+    <value>Válasszon ki egy táblát, hogy jobb oldalt szerkessze, vagy a mezőit a Mezők szakaszban. A halvány sorok nem generálódnak; a sárga soroknak nincs elsődleges kulcsa.</value>
+  </data>
+  <data name="Tables_ViewLevel" xml:space="preserve">
+    <value>Megtekintési szint</value>
+  </data>
+  <data name="UnsavedChanges_Discard" xml:space="preserve">
+    <value>Elvetés</value>
+  </data>
+  <data name="UnsavedChanges_TheOpenProjectHasUnsavedChanges" xml:space="preserve">
+    <value>A megnyitott projektben nem mentett módosítások vannak. Menti őket, mielőtt folytatja?</value>
+  </data>
+  <data name="UnsavedChanges_UnsavedChanges" xml:space="preserve">
+    <value>Nem mentett módosítások</value>
+  </data>
+</root>

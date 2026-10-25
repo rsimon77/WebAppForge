@@ -165,9 +165,46 @@ public class LocalizationTests
         Assert.Equal(MainViewModel.TabNames.Count, keys.Count(k => k.StartsWith("Tab_", StringComparison.Ordinal)));
     }
 
-    private static HashSet<string> ResxKeys()
-        => XDocument.Load(Path.Combine(DesktopFolder(), "Localization", "Strings.resx")).Root!
-            .Elements("data").Select(d => (string)d.Attribute("name")!).ToHashSet(StringComparer.Ordinal);
+    // ---- Hungarian ----
+
+    [Fact]
+    public void HungarianHasEveryEnglishKeyAndNoOthers()
+    {
+        var english = ResxTexts("Strings.resx");
+        var hungarian = ResxTexts("Strings.hu.resx");
+        var missing = english.Keys.Except(hungarian.Keys).Order().ToList();
+        var extra = hungarian.Keys.Except(english.Keys).Order().ToList();
+        Assert.True(missing.Count == 0 && extra.Count == 0,
+            $"Strings.hu.resx is out of step with Strings.resx.\nMissing: {string.Join(", ", missing)}\nNot in English: {string.Join(", ", extra)}");
+        Assert.DoesNotContain(hungarian, e => string.IsNullOrWhiteSpace(e.Value));
+    }
+
+    [Fact]
+    public void HungarianKeepsThePlaceholdersOfTheEnglishText()
+    {
+        var english = ResxTexts("Strings.resx");
+        var placeholder = new Regex("\\{[0-9a-z]+\\}");
+        var wrong = ResxTexts("Strings.hu.resx")
+            .Where(e => !placeholder.Matches(e.Value).Select(m => m.Value).Order().SequenceEqual(placeholder.Matches(english[e.Key]).Select(m => m.Value).Order()))
+            .Select(e => e.Key)
+            .ToList();
+        Assert.True(wrong.Count == 0, "Placeholders differ from English in: " + string.Join(", ", wrong));
+    }
+
+    [Fact]
+    public void TheHungarianSatelliteIsBuiltAndOffered()
+    {
+        Assert.Contains(Localizer.AvailableCultures(), c => c.Name == "hu");
+        var localizer = new Localizer(
+            new ResourceManager("WebAppForge.Desktop.Localization.Strings", typeof(Localizer).Assembly), CultureInfo.GetCultureInfo("hu-HU"));
+        Assert.Equal("Táblák", localizer["Tab_Tables"]);
+    }
+
+    private static Dictionary<string, string> ResxTexts(string file)
+        => XDocument.Load(Path.Combine(DesktopFolder(), "Localization", file)).Root!
+            .Elements("data").ToDictionary(d => (string)d.Attribute("name")!, d => (string?)d.Element("value") ?? "", StringComparer.Ordinal);
+
+    private static HashSet<string> ResxKeys() => ResxTexts("Strings.resx").Keys.ToHashSet(StringComparer.Ordinal);
 
     private static IEnumerable<string> ViewFiles() => Directory.EnumerateFiles(Path.Combine(DesktopFolder(), "Views"), "*.axaml");
 
