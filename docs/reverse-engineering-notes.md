@@ -323,6 +323,9 @@ Currency keeps the symbol of the default language with the visitor's separators.
   files can be imported again.
 - A decimal typed in a form is read with the visitor's decimal separator first, then with "."; group separators are refused,
   so "1,5" is 1.5 in Hungarian and an error in English (never 15). Integers stay invariant.
+- An import (CSV, JSON, XML, XLSX, Word) reads the invariant forms first, so the site's own exports import unchanged, and then
+  the visitor's language: a decimal comma ("12,5"), the visitor's date order ("2026. 08. 05.", 03/04/2026 as 3 April for en-GB)
+  before the invariant month-first order. Group separators stay refused. Sites without localization are unchanged.
 - The html lang attribute and the Accept-Language fallback (when there is no language cookie) already existed.
 Sites without localization are byte-identical.
 

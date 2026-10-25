@@ -22,7 +22,34 @@ internal static partial class Templates
             text = AuditedExchange(text);
         }
 
+        if (Localized)
+        {
+            text = LocalizedExchange(text);
+        }
+
         return Regex.Replace(text, @"@@UI:(\w+)@@", m => Ui(m.Groups[1].Value));
+    }
+
+    /// <summary>
+    /// The import of a localized site also reads numbers and dates as the visitor's language writes them, after the invariant
+    /// forms that the site's own exports use: "12,5" is 12.5 for a Hungarian visitor, and "2026. 08. 05." is a date. Group
+    /// separators stay refused, so "1,5" never becomes 15. A date is tried in the visitor's order before the invariant
+    /// (month first) one, so 03/04/2026 is 3 April for a British visitor.
+    /// </summary>
+    private static string LocalizedExchange(string text)
+    {
+        static string Swap(string text, string from, string to) =>
+            text.Contains(from, StringComparison.Ordinal) ? text.Replace(from, to, StringComparison.Ordinal) : throw new InvalidOperationException("The import runtime changed: " + from);
+
+        text = Swap(text,
+            "if (decimal.TryParse(text, number, Invariant, out var exact) && exact",
+            "if ((decimal.TryParse(text, number, Invariant, out var exact) || decimal.TryParse(text, number, Strings.Culture, out exact)) && exact");
+        text = Swap(text,
+            "if (decimal.TryParse(text, number, Invariant, out var fraction))",
+            "if (decimal.TryParse(text, number, Invariant, out var fraction) || decimal.TryParse(text, number, Strings.Culture, out fraction))");
+        return Swap(text,
+            "|| DateTime.TryParse(text, Invariant, DateTimeStyles.None, out value);",
+            "|| DateTime.TryParse(text, Strings.Culture, DateTimeStyles.None, out value) || DateTime.TryParse(text, Invariant, DateTimeStyles.None, out value);");
     }
 
     /// <summary>
