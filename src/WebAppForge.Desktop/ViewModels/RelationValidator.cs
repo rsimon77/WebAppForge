@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using WebAppForge.Core.Model;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -21,7 +22,7 @@ public sealed record RelationIssue(RelationSeverity Severity, string Table, stri
     public bool IsError => Severity == RelationSeverity.Error;
 
     /// <summary>The message with its severity in front, as the validation list shows it.</summary>
-    public string Text => (IsError ? "Error: " : "Warning: ") + Message;
+    public string Text => (IsError ? Localizer.Instance["RelationValidator_Error"] : Localizer.Instance["RelationValidator_Warning"]) + Message;
 }
 
 /// <summary>
@@ -70,7 +71,7 @@ public static class RelationValidator
 
     /// <summary>"Customers -> Orders", with a placeholder while no detail table is chosen.</summary>
     public static string LinkName(TableInfo master, DetailLink link)
-        => $"{master.Name} -> {(string.IsNullOrWhiteSpace(link.DetailTable) ? "(no detail table)" : link.DetailTable)}";
+        => $"{master.Name} -> {(string.IsNullOrWhiteSpace(link.DetailTable) ? Localizer.Instance["Relations_NoDetailTable"] : link.DetailTable)}";
 
     /// <summary>"Id = CustomerId" pairs joined with ", ".</summary>
     public static string PairsText(DetailLink link)
@@ -94,7 +95,7 @@ public static class RelationValidator
         var name = LinkName(master, link);
 
         void Add(RelationSeverity severity, string message)
-            => issues.Add(new RelationIssue(severity, master.Name, $"Master/detail {name}: {message}", link));
+            => issues.Add(new RelationIssue(severity, master.Name, Localizer.Instance.Format("RelationValidator_MasterDetail", name, message), link));
 
         void Error(string message) => Add(RelationSeverity.Error, message);
         void Warn(string message) => Add(RelationSeverity.Warning, message);
@@ -102,18 +103,18 @@ public static class RelationValidator
         TableInfo? detail = null;
         if (string.IsNullOrWhiteSpace(link.DetailTable))
         {
-            Error("choose the detail table.");
+            Error(Localizer.Instance["RelationValidator_ChooseTheDetailTable"]);
         }
         else
         {
             detail = FindTable(all, link.DetailTable);
             if (detail is null)
             {
-                Error($"the detail table '{link.DetailTable}' does not exist.");
+                Error(Localizer.Instance.Format("RelationValidator_TheDetailTableDoesNotExist", link.DetailTable));
             }
             else if (!detail.Generate)
             {
-                Error($"the detail table '{link.DetailTable}' is not generated (Generate is off).");
+                Error(Localizer.Instance.Format("RelationValidator_TheDetailTableIsNotGenerated", link.DetailTable));
             }
         }
 
@@ -128,26 +129,26 @@ public static class RelationValidator
             var pair = link.Links[i];
             if (string.IsNullOrWhiteSpace(pair.MasterField))
             {
-                Error($"key link {(i + 1).ToString(CultureInfo.InvariantCulture)} has no master field.");
+                Error(Localizer.Instance.Format("RelationValidator_KeyLinkHasNoMasterField", (i + 1).ToString(CultureInfo.InvariantCulture)));
             }
             else if (FindField(master, pair.MasterField) is null)
             {
-                Error($"the master field '{pair.MasterField}' does not exist in table '{master.Name}'.");
+                Error(Localizer.Instance.Format("RelationValidator_TheMasterFieldDoesNotExist", pair.MasterField, master.Name));
             }
 
             if (string.IsNullOrWhiteSpace(pair.DetailField))
             {
-                Error($"key link {(i + 1).ToString(CultureInfo.InvariantCulture)} has no detail field.");
+                Error(Localizer.Instance.Format("RelationValidator_KeyLinkHasNoDetailField", (i + 1).ToString(CultureInfo.InvariantCulture)));
             }
             else if (detail is not null && FindField(detail, pair.DetailField) is null)
             {
-                Error($"the detail field '{pair.DetailField}' does not exist in table '{detail.Name}'.");
+                Error(Localizer.Instance.Format("RelationValidator_TheDetailFieldDoesNotExist", pair.DetailField, detail.Name));
             }
 
             if (!string.IsNullOrWhiteSpace(pair.MasterField) && !string.IsNullOrWhiteSpace(pair.DetailField)
                 && !seenPairs.Add((pair.MasterField + "\u0001" + pair.DetailField).ToUpperInvariant()))
             {
-                Error($"the key link '{pair.MasterField} = {pair.DetailField}' is listed twice.");
+                Error(Localizer.Instance.Format("RelationValidator_TheKeyLinkIsListedTwice", pair.MasterField, pair.DetailField));
             }
 
             var masterField = FindField(master, pair.MasterField);
@@ -156,12 +157,12 @@ public static class RelationValidator
             {
                 if (masterField.Type != detailField.Type)
                 {
-                    Warn($"master field '{master.Name}.{masterField.Name}' is {masterField.Type} but detail field '{detail!.Name}.{detailField.Name}' is {detailField.Type}; the values may never match.");
+                    Warn(Localizer.Instance.Format("RelationValidator_MasterFieldIsButDetailField", master.Name, masterField.Name, masterField.Type, detail!.Name, detailField.Name, detailField.Type));
                 }
 
                 if (ReferenceEquals(master, detail) && Names.Equals(masterField.Name, detailField.Name))
                 {
-                    Warn($"the key link '{pair.MasterField} = {pair.DetailField}' relates every row to itself.");
+                    Warn(Localizer.Instance.Format("RelationValidator_TheKeyLinkRelatesEveryRow", pair.MasterField, pair.DetailField));
                 }
             }
         }
@@ -170,7 +171,7 @@ public static class RelationValidator
         {
             if (link.Links.Count > 0 && SameLink(master.Details[earlier], link))
             {
-                Error($"duplicate of another link of '{master.Name}' to '{link.DetailTable}' with the same key fields ({PairsText(link)}).");
+                Error(Localizer.Instance.Format("RelationValidator_DuplicateOfAnotherLinkOfTo", master.Name, link.DetailTable, PairsText(link)));
                 break;
             }
         }
@@ -178,7 +179,7 @@ public static class RelationValidator
         if (link.Links.Count > 0 && link.Links.Count < master.PrimaryKeys.Count
             && link.Links.All(l => FindField(master, l.MasterField) is { IsPrimaryKey: true }))
         {
-            Warn($"links {link.Links.Count.ToString(CultureInfo.InvariantCulture)} of the {master.PrimaryKeys.Count.ToString(CultureInfo.InvariantCulture)} primary key columns of '{master.Name}'; one detail row can match several master rows.");
+            Warn(Localizer.Instance.Format("RelationValidator_LinksOfThePrimaryKeyColumns", link.Links.Count.ToString(CultureInfo.InvariantCulture), master.PrimaryKeys.Count.ToString(CultureInfo.InvariantCulture), master.Name));
         }
 
         if (detail is not null)
@@ -187,19 +188,19 @@ public static class RelationValidator
             {
                 if (FindField(detail, column) is null)
                 {
-                    Error($"the grid column '{column}' does not exist in table '{detail.Name}'.");
+                    Error(Localizer.Instance.Format("RelationValidator_TheGridColumnDoesNotExist", column, detail.Name));
                 }
             }
         }
 
         if (link.PageSize < MinPageSize || link.PageSize > MaxPageSize)
         {
-            Error($"the page size {link.PageSize.ToString(CultureInfo.InvariantCulture)} must be from {MinPageSize} to {MaxPageSize}.");
+            Error(Localizer.Instance.Format("RelationValidator_ThePageSizeMustBeFrom", link.PageSize.ToString(CultureInfo.InvariantCulture), MinPageSize, MaxPageSize));
         }
 
         if (!string.IsNullOrEmpty(link.FormPage) && !master.FormPages.Any(p => Names.Equals(p.Name, link.FormPage)))
         {
-            Error($"the grid is placed on form page '{link.FormPage}', which '{master.Name}' does not have.");
+            Error(Localizer.Instance.Format("RelationValidator_TheGridIsPlacedOnForm", link.FormPage, master.Name));
         }
 
         if (link.OnDelete == DeleteRule.SetNull && detail is not null)
@@ -208,7 +209,7 @@ public static class RelationValidator
             {
                 if (FindField(detail, pair.DetailField) is { } field && (field.IsRequired || field.IsPrimaryKey))
                 {
-                    Error($"on delete 'Set null' needs nullable link fields, but '{field.Name}' of '{detail.Name}' is required.");
+                    Error(Localizer.Instance.Format("RelationValidator_OnDeleteSetNullNeedsNullable", field.Name, detail.Name));
                 }
             }
         }
@@ -216,24 +217,24 @@ public static class RelationValidator
         if (link.OnUpdate == UpdateRule.Cascade && link.Links.Count > 0
             && link.Links.All(l => FindField(master, l.MasterField) is { } f && (f.IsPrimaryKey || f.IsAutoIncrement)))
         {
-            Warn("'Cascade' on update only matters for editable non-key link fields, and every master field here is a key field.");
+            Warn(Localizer.Instance["RelationValidator_CascadeOnUpdateOnlyMattersFor"]);
         }
     }
 
     private static void CheckFormPages(TableInfo table, List<RelationIssue> issues)
     {
-        void Add(RelationSeverity severity, string message) => issues.Add(new RelationIssue(severity, table.Name, $"Table '{table.Name}': {message}"));
+        void Add(RelationSeverity severity, string message) => issues.Add(new RelationIssue(severity, table.Name, Localizer.Instance.Format("RelationValidator_Table", table.Name, message)));
 
         var seen = new HashSet<string>(Names);
         foreach (var page in table.FormPages)
         {
             if (string.IsNullOrWhiteSpace(page.Name))
             {
-                Add(RelationSeverity.Error, "a form page has no name.");
+                Add(RelationSeverity.Error, Localizer.Instance["RelationValidator_AFormPageHasNoName"]);
             }
             else if (!seen.Add(page.Name))
             {
-                Add(RelationSeverity.Error, $"the form page '{page.Name}' exists twice.");
+                Add(RelationSeverity.Error, Localizer.Instance.Format("RelationValidator_TheFormPageExistsTwice", page.Name));
             }
         }
 
@@ -245,7 +246,7 @@ public static class RelationValidator
         {
             if (design.MultiPage != MultiPageMode.None && table.FormPages.Count == 0)
             {
-                Add(RelationSeverity.Warning, $"the {kind} page uses {design.MultiPage} form pages but the table has no form pages.");
+                Add(RelationSeverity.Warning, Localizer.Instance.Format("RelationValidator_ThePageUsesFormPagesBut", kind, design.MultiPage));
             }
         }
 
@@ -254,7 +255,7 @@ public static class RelationValidator
             var page = field.Ui.FormPage;
             if (!string.IsNullOrEmpty(page) && !seen.Contains(page))
             {
-                Add(RelationSeverity.Warning, $"field '{field.Name}' is on form page '{page}', which does not exist.");
+                Add(RelationSeverity.Warning, Localizer.Instance.Format("RelationValidator_FieldIsOnFormPageWhich", field.Name, page));
             }
         }
     }
@@ -299,8 +300,8 @@ public static class RelationValidator
             }
 
             var message = path.Count == 1
-                ? $"Cascade delete cycle: '{path[0]}' would delete its own records through a link {path[0]} -> {path[0]}. Use Restrict or Set null for a link to the same table."
-                : $"Cascade delete cycle: {string.Join(" -> ", path)} -> {path[0]}. Deleting a record would loop; use Restrict or Set null on one of these links.";
+                ? Localizer.Instance.Format("RelationValidator_CascadeDeleteCycleWouldDeleteIts", path[0], path[0], path[0])
+                : Localizer.Instance.Format("RelationValidator_CascadeDeleteCycleLoop", string.Join(" -> ", path), path[0]);
             issues.Add(new RelationIssue(RelationSeverity.Error, path[0], message));
         }
     }

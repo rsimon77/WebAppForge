@@ -11,6 +11,7 @@ using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
 using WebAppForge.Desktop.Services;
 using CommunityToolkit.Mvvm.Input;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -23,7 +24,7 @@ namespace WebAppForge.Desktop.ViewModels;
 public partial class LanguagesViewModel : EditorViewModelBase
 {
     /// <summary>The language filter entry that shows every language.</summary>
-    public const string AllLanguagesLabel = "All languages";
+    public static string AllLanguagesLabel => Localizer.Instance["Languages_AllLanguages"];
 
     private readonly MainViewModel _main;
     private List<TranslationRow> _allRows = [];
@@ -150,13 +151,13 @@ public partial class LanguagesViewModel : EditorViewModelBase
             var kind = Settings.TranslationProvider;
             if (kind == TranslationProviderKind.None)
             {
-                return "No translation service chosen. Choose Google or Claude to translate automatically.";
+                return Localizer.Instance["Languages_NoTranslationServiceChosenChooseGoogle"];
             }
 
             var variable = EnvironmentApiKeyProvider.VariableFor(kind);
             return KeyIsSet(kind)
-                ? $"{variable} is set. The key is read from the environment and is never saved in the project."
-                : $"{variable} is not set. Set it as an environment variable and restart the editor.";
+                ? Localizer.Instance.Format("Languages_IsSetTheKeyIsRead", variable)
+                : Localizer.Instance.Format("Languages_IsNotSetSetItAs", variable);
         }
     }
 
@@ -210,7 +211,7 @@ public partial class LanguagesViewModel : EditorViewModelBase
 
         if (Settings.AllLanguages.Contains(code, StringComparer.OrdinalIgnoreCase))
         {
-            Message = $"{code} is already one of the languages.";
+            Message = Localizer.Instance.Format("Languages_IsAlreadyOneOfTheLanguages", code);
             return false;
         }
 
@@ -226,7 +227,7 @@ public partial class LanguagesViewModel : EditorViewModelBase
     {
         var existing = Settings.AllLanguages;
         var offered = LanguageCatalog.Common.Where(l => !existing.Contains(l.Code, StringComparer.OrdinalIgnoreCase)).ToList();
-        var choice = await _main.Dialogs.ChooseOneAsync("Add language", "Choose a language to add to the site.", offered.Select(l => l.Display).ToList());
+        var choice = await _main.Dialogs.ChooseOneAsync(Localizer.Instance["Languages_AddLanguage"], Localizer.Instance["Languages_ChooseALanguageToAddTo"], offered.Select(l => l.Display).ToList());
         if (choice is null)
         {
             return;
@@ -246,13 +247,13 @@ public partial class LanguagesViewModel : EditorViewModelBase
         row ??= SelectedLanguage;
         if (row is null)
         {
-            Message = "Select a language to remove.";
+            Message = Localizer.Instance["Languages_SelectALanguageToRemove"];
             return;
         }
 
         if (row.IsDefault)
         {
-            Message = "The default language cannot be removed. Choose another default language first.";
+            Message = Localizer.Instance["Languages_TheDefaultLanguageCannotBeRemoved"];
             return;
         }
 
@@ -612,20 +613,20 @@ public partial class LanguagesViewModel : EditorViewModelBase
         // The opt-in guard: nothing leaves the machine unless every one of these holds.
         if (!settings.AutoTranslate)
         {
-            TranslateMessage = "Automatic translation is off. Tick 'Translate automatically with an online service' first. Nothing was sent.";
+            TranslateMessage = Localizer.Instance["Languages_AutomaticTranslationIsOffTickTranslate"];
             return;
         }
 
         var kind = settings.TranslationProvider;
         if (kind == TranslationProviderKind.None)
         {
-            TranslateMessage = "Choose a translation service (Google or Claude) first. Nothing was sent.";
+            TranslateMessage = Localizer.Instance["Languages_ChooseATranslationServiceGoogleOr"];
             return;
         }
 
         if (!KeyIsSet(kind))
         {
-            TranslateMessage = $"{EnvironmentApiKeyProvider.VariableFor(kind)} is not set, so {kind} cannot be used. Nothing was sent.";
+            TranslateMessage = Localizer.Instance.Format("Languages_IsNotSetSoCannotBe", EnvironmentApiKeyProvider.VariableFor(kind), kind);
             return;
         }
 
@@ -635,7 +636,7 @@ public partial class LanguagesViewModel : EditorViewModelBase
             keys = _selectedRows.Select(r => r.Key).ToHashSet(StringComparer.Ordinal);
             if (keys.Count == 0)
             {
-                TranslateMessage = "Select one or more rows in the grid first.";
+                TranslateMessage = Localizer.Instance["Languages_SelectOneOrMoreRowsIn"];
                 return;
             }
         }
@@ -649,8 +650,8 @@ public partial class LanguagesViewModel : EditorViewModelBase
             LastFailed = 0;
             LastFailures = [];
             LastCancelled = false;
-            ResultSummary = $"Nothing to translate. {plan.UpToDate} up to date, {plan.Protected} skipped because reviewed or typed by hand"
-                + (plan.BuiltIn > 0 ? $", {plan.BuiltIn} covered by the built-in translation." : ".");
+            ResultSummary = Localizer.Instance.Format("Languages_NothingToTranslateUpToDate", plan.UpToDate, plan.Protected)
+                + (plan.BuiltIn > 0 ? Localizer.Instance.Format("Languages_CoveredByTheBuiltInTranslation", plan.BuiltIn) : ".");
             _main.Status = ResultSummary;
             return;
         }
@@ -660,12 +661,12 @@ public partial class LanguagesViewModel : EditorViewModelBase
         if (NeedsConfirmation(kind, languagesToSend))
         {
             var confirmed = await _main.Dialogs.ConfirmAsync(
-                "Send texts to a translation service?",
+                Localizer.Instance["Languages_SendTextsToATranslationService"],
                 ConfirmationText(kind, languagesToSend, total, settings.TranslationNotes),
-                "Translate");
+                Localizer.Instance["Languages_TranslateButton"]);
             if (!confirmed)
             {
-                TranslateMessage = "Translation cancelled. Nothing was sent.";
+                TranslateMessage = Localizer.Instance["Languages_TranslationCancelledNothingWasSent"];
                 return;
             }
 
@@ -679,7 +680,7 @@ public partial class LanguagesViewModel : EditorViewModelBase
         var provider = ProviderFactory.Create(kind);
         if (provider is null)
         {
-            TranslateMessage = "The translation service could not be created. Nothing was sent.";
+            TranslateMessage = Localizer.Instance["Languages_TheTranslationServiceCouldNotBe"];
             return;
         }
 
@@ -693,13 +694,13 @@ public partial class LanguagesViewModel : EditorViewModelBase
     {
         var service = kind == TranslationProviderKind.Google ? "Google Cloud Translation" : "Claude (Anthropic)";
         var text = new StringBuilder();
-        text.Append("These texts will be sent to a third party over the internet:\n\n");
-        text.Append("Service: ").Append(service).Append('\n');
-        text.Append("Target languages: ").Append(string.Join(", ", languages)).Append('\n');
-        text.Append("Strings to send: ").Append(count).Append('\n');
+        text.Append(Localizer.Instance["Languages_TheseTextsWillBeSentTo"]);
+        text.Append(Localizer.Instance["Languages_Service"]).Append(service).Append('\n');
+        text.Append(Localizer.Instance["Languages_TargetLanguages"]).Append(string.Join(", ", languages)).Append('\n');
+        text.Append(Localizer.Instance["Languages_StringsToSend"]).Append(count).Append('\n');
         if (!string.IsNullOrWhiteSpace(notes))
         {
-            text.Append("Your translation notes are sent with them.\n");
+            text.Append(Localizer.Instance["Languages_YourTranslationNotesAreSentWith"]);
         }
 
         text.Append("\nTranslated texts are marked as machine translated and unreviewed. Nothing is sent if you cancel.");
@@ -785,10 +786,10 @@ public partial class LanguagesViewModel : EditorViewModelBase
         var text = new StringBuilder();
         if (cancelled)
         {
-            text.Append("Cancelled. ");
+            text.Append(Localizer.Instance["Languages_Cancelled"]);
         }
 
-        text.Append($"Translated {translated}, skipped {skipped} because reviewed or typed by hand, failed {failed}.");
+        text.Append(Localizer.Instance.Format("Languages_TranslatedSkippedBecauseReviewedOrTyped", translated, skipped, failed));
         foreach (var failure in failures)
         {
             text.Append(' ').Append(failure);
@@ -947,12 +948,12 @@ public partial class LanguagesViewModel : EditorViewModelBase
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ResultSummary = $"Export failed: {ex.Message}";
+            ResultSummary = Localizer.Instance.Format("Languages_ExportFailed", ex.Message);
             _main.Status = ResultSummary;
             return -1;
         }
 
-        ResultSummary = $"Exported {records.Count} translation(s) to {Path.GetFileName(path)}.";
+        ResultSummary = Localizer.Instance.Format("Languages_ExportedTranslationSTo", records.Count, Path.GetFileName(path));
         _main.Status = ResultSummary;
         return records.Count;
     }
@@ -971,7 +972,7 @@ public partial class LanguagesViewModel : EditorViewModelBase
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ResultSummary = $"Import failed: {ex.Message}";
+            ResultSummary = Localizer.Instance.Format("Languages_ImportFailed", ex.Message);
             _main.Status = ResultSummary;
             return -1;
         }
@@ -1000,7 +1001,7 @@ public partial class LanguagesViewModel : EditorViewModelBase
             }
         }
 
-        ResultSummary = $"Imported {imported} translation(s). Skipped {unknownKey} for unknown keys, {unknownLanguage} for languages not in the project, {skipped} other.";
+        ResultSummary = Localizer.Instance.Format("Languages_ImportedTranslationSSkippedForUnknown", imported, unknownKey, unknownLanguage, skipped);
         _main.Status = ResultSummary;
         RefreshGrid();
         return imported;

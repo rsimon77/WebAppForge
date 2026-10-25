@@ -1,6 +1,7 @@
 using System.Linq;
 using Avalonia.Data.Converters;
 using WebAppForge.Core.Model;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -11,7 +12,7 @@ public static class TableSummary
     public static string KeyText(TableInfo table)
     {
         var keys = table.PrimaryKeys;
-        return keys.Count == 0 ? "No key" : string.Join(" + ", keys.Select(k => k.Name));
+        return keys.Count == 0 ? Localizer.Instance["TableSummary_NoKey"] : string.Join(" + ", keys.Select(k => k.Name));
     }
 
     /// <summary>The initials of the generated pages, in page order: List, View, Add, Copy, Edit, Delete, Search.</summary>
@@ -19,7 +20,7 @@ public static class TableSummary
     {
         if (!table.Generate)
         {
-            return "Not generated";
+            return Localizer.Instance["TableSummary_NotGenerated"];
         }
 
         var p = table.Pages;
@@ -34,11 +35,11 @@ public static class TableSummary
         var parts = new System.Collections.Generic.List<string>
         {
             table.Fields.Count == 1 ? "1 field" : $"{table.Fields.Count} fields",
-            table.PrimaryKeys.Count == 0 ? "no key" : "key " + KeyText(table),
+            table.PrimaryKeys.Count == 0 ? Localizer.Instance["TableSummary_NoKey2"] : "key " + KeyText(table),
         };
         if (table.Details.Count > 0)
         {
-            parts.Add(table.Details.Count == 1 ? "1 detail link" : $"{table.Details.Count} detail links");
+            parts.Add(table.Details.Count == 1 ? "1 detail link" : Localizer.Instance.Format("TableSummary_DetailLinks", table.Details.Count));
         }
 
         return string.Join(", ", parts);

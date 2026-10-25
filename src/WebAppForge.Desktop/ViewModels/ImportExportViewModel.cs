@@ -6,6 +6,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using WebAppForge.Core.Generation;
 using WebAppForge.Core.Model;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -63,7 +64,7 @@ public partial class ImportExportViewModel : ViewModelBase
     public string MaxUploadText
     {
         get => _maxUploadText;
-        set => ApplyNumber(ref _maxUploadText, value, 1, 100, v => Model.MaxUploadMb = v, "The upload limit must be a whole number of megabytes from 1 to 100.");
+        set => ApplyNumber(ref _maxUploadText, value, 1, 100, v => Model.MaxUploadMb = v, Localizer.Instance["ImportExport_TheUploadLimitMustBeA"]);
     }
 
     /// <summary>One character, or "tab".</summary>
@@ -134,13 +135,13 @@ public partial class ImportExportViewModel : ViewModelBase
     public string ExportMinLevelText
     {
         get => _exportMinLevelText;
-        set => ApplyNumber(ref _exportMinLevelText, value, 0, int.MaxValue, v => Model.ExportMinLevel = v, "The lowest level for export must be zero or a positive whole number.");
+        set => ApplyNumber(ref _exportMinLevelText, value, 0, int.MaxValue, v => Model.ExportMinLevel = v, Localizer.Instance["ImportExport_TheLowestLevelForExportMust"]);
     }
 
     public string ImportMinLevelText
     {
         get => _importMinLevelText;
-        set => ApplyNumber(ref _importMinLevelText, value, 0, int.MaxValue, v => Model.ImportMinLevel = v, "The lowest level for import must be zero or a positive whole number.");
+        set => ApplyNumber(ref _importMinLevelText, value, 0, int.MaxValue, v => Model.ImportMinLevel = v, Localizer.Instance["ImportExport_TheLowestLevelForImportMust"]);
     }
 
     /// <summary>Message about the last rejected number input, or null.</summary>
@@ -241,7 +242,7 @@ public partial class ImportExportViewModel : ViewModelBase
             return;
         }
 
-        Reject(message + " The last valid value was kept.");
+        Reject(message + Localizer.Instance["ImportExport_TheLastValidValueWasKept"]);
     }
 }
 
@@ -260,8 +261,8 @@ public sealed partial class FormatChoice : ObservableObject
 
     public string Name => Format switch
     {
-        DataFormats.Xlsx => "Excel (.xlsx)",
-        DataFormats.Word => "Word (.docx)",
+        DataFormats.Xlsx => Localizer.Instance["ImportExport_ExcelXlsx"],
+        DataFormats.Word => Localizer.Instance["ImportExport_WordDocx"],
         _ => Format.ToString().ToUpperInvariant(),
     };
 
@@ -384,7 +385,7 @@ public sealed partial class TableImportExportRow : ObservableObject
                 return;
             }
 
-            _owner.Reject($"The most export rows of '{Name}' must be zero (all) or a positive whole number. The last valid value was kept.");
+            _owner.Reject(Localizer.Instance.Format("ImportExport_TheMostExportRowsOfMust", Name));
         }
     }
 

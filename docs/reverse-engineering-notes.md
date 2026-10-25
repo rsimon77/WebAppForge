@@ -345,7 +345,12 @@ the open windows at once. A key missing in a language falls back to English; a k
 Only the UI language changes: number and date formats keep the system settings. The setting is AppSettings.UiLanguage (null =
 the system's UI language); the environment variable WEBAPPFORGE_UI_LANGUAGE overrides it, and the FlaUI tests set it to "en".
 Tabs keep English ids (MainViewModel.TabNames, automation ids Tab_<Id>), and their titles come from the Tab_<Id> keys.
-Messages that view models build (status line, validation, dialogs) are still English; they move to Strings.resx in the next phase.
+Messages that view models and services build (status line, validation, confirmations, file dialogs) also come from
+Strings.resx, through Localizer.Instance["Key"] or Localizer.Instance.Format("Key", args); Format uses the UI language's number
+format. Choice lists that are built once (report kinds, chart types, delete rules) take the language in effect when they are
+first shown, so a switch reaches them after a restart. Not translated on purpose: theme names (stored in settings), the English
+names in the language list, connection-string samples, and the mock site text in the previews. Messages that come from Core
+(generator and build errors) are still English.
 Hungarian (Strings.hu.resx, formal register) covers every key; LocalizationTests fails when a key has no Hungarian entry or a
 placeholder differs, and UiLanguageTests renders every tab in Hungarian and fails on text that is cut off or an untranslated key.
 Tests pin the UI to English (TestSupport/EnglishUi.cs), so they pass on a Hungarian Windows too.

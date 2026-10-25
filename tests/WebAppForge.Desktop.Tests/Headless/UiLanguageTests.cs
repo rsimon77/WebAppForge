@@ -85,6 +85,29 @@ public class UiLanguageTests
         Assert.True(problems.Count == 0, "Hungarian texts that do not fit or are missing:\n" + string.Join("\n", problems.Distinct()));
     }
 
+    [Fact]
+    public void MessagesBuiltInCodeFollowTheLanguage()
+    {
+        Localizer.Instance.SetCulture(Hungarian);
+        try
+        {
+            var main = new MainViewModel(new FakeDialogService());
+            Assert.Equal("Új projekt. Mentse, hogy kiválassza a projektmappát.", main.Status);
+            Assert.Equal("Még nincs mentve", main.SaveState);
+
+            var options = new OptionsViewModel(new WebAppForge.Desktop.Services.AppSettings(), _ => { }, new FakeDialogService())
+            {
+                SessionTimeoutText = "0",
+            };
+            Assert.Equal("Munkamenet tétlenségi időkorlátja: 1 és 1440 közötti egész szám lehet (perc).", options.SessionTimeoutError);
+            Assert.Equal("Általános", options.Categories[0].Title.Value);
+        }
+        finally
+        {
+            Localizer.Instance.SetCulture(Localizer.NeutralCulture);
+        }
+    }
+
     /// <summary>
     /// A one-line text without trimming that is wider than the space it got is cut off. A grid column header draws its text
     /// across the whole header cell (the sort arrow space is empty until the column is sorted), so the cell is the limit there.

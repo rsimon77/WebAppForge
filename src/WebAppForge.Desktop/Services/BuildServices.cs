@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using WebAppForge.Core.Build;
 using WebAppForge.Core.Localization;
 using WebAppForge.Core.Model;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.Services;
 
@@ -261,7 +262,7 @@ public sealed class ToolServices
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            throw new InvalidOperationException("Only http and https addresses can be opened.");
+            throw new InvalidOperationException(Localizer.Instance["BuildServices_OnlyHttpAndHttpsAddressesCan"]);
         }
 
         using var process = Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });

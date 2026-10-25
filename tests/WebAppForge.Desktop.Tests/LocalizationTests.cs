@@ -165,6 +165,21 @@ public class LocalizationTests
         Assert.Equal(MainViewModel.TabNames.Count, keys.Count(k => k.StartsWith("Tab_", StringComparison.Ordinal)));
     }
 
+    [Fact]
+    public void KeysDifferInMoreThanCase()
+    {
+        // The resource compiler treats names without case and drops the second of two such keys.
+        var clashes = ResxKeys().GroupBy(k => k, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1).Select(g => string.Join(" / ", g)).ToList();
+        Assert.True(clashes.Count == 0, "Keys that differ only in case: " + string.Join(", ", clashes));
+    }
+
+    [Fact]
+    public void EveryFieldDesignerSectionHasATitle()
+    {
+        var keys = ResxKeys();
+        Assert.All(FieldDesignerViewModel.Sections, s => Assert.Contains("FieldDesigner_Section" + s, keys));
+    }
+
     // ---- Hungarian ----
 
     [Fact]

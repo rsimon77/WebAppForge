@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.Services;
 
@@ -96,13 +97,13 @@ public static class LanguageCatalog
         var trimmed = (text ?? string.Empty).Trim().Replace('_', '-');
         if (trimmed.Length == 0)
         {
-            error = "Enter a language code such as de or pt-BR.";
+            error = Localizer.Instance["LanguageCatalog_EnterALanguageCodeSuchAs"];
             return false;
         }
 
         if (!CodePattern.IsMatch(trimmed))
         {
-            error = $"'{trimmed}' is not a language code. Use letters and digits such as de, pt-BR or zh-Hans.";
+            error = Localizer.Instance.Format("LanguageCatalog_IsNotALanguageCodeUse", trimmed);
             return false;
         }
 

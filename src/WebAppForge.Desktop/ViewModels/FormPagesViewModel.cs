@@ -8,6 +8,7 @@ using WebAppForge.Core.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FieldInfo = WebAppForge.Core.Model.FieldInfo;
+using WebAppForge.Desktop.Localization;
 
 namespace WebAppForge.Desktop.ViewModels;
 
@@ -112,7 +113,7 @@ public sealed class FieldPageRow : ObservableObject
 public partial class FormPagesViewModel : EditorViewModelBase
 {
     /// <summary>The picker entry that stands for an empty <see cref="FieldUi.FormPage"/>: the field goes on the first page.</summary>
-    public const string FirstPageLabel = "(first page)";
+    public static string FirstPageLabel => Localizer.Instance["FormPages_FirstPage"];
 
     private static readonly StringComparer Names = StringComparer.OrdinalIgnoreCase;
 
@@ -402,15 +403,15 @@ public partial class FormPagesViewModel : EditorViewModelBase
         string? error = null;
         if (name.Length == 0)
         {
-            error = "A form page needs a name. The last name was kept.";
+            error = Localizer.Instance["FormPages_AFormPageNeedsAName"];
         }
         else if (name.Length > 50)
         {
-            error = "A form page name can have at most 50 characters. The last name was kept.";
+            error = Localizer.Instance["FormPages_AFormPageNameCanHave"];
         }
         else if (Pages.Any(p => !ReferenceEquals(p, row) && Names.Equals(p.Name, name)))
         {
-            error = $"There is already a form page named '{name}'. The last name was kept.";
+            error = Localizer.Instance.Format("FormPages_ThereIsAlreadyAFormPage", name);
         }
 
         if (error is not null)
@@ -515,7 +516,7 @@ public partial class FormPagesViewModel : EditorViewModelBase
         var rows = Ticked();
         if (rows.Count == 0)
         {
-            Message = "Tick the fields to assign first.";
+            Message = Localizer.Instance["FormPages_TickTheFieldsToAssignFirst"];
             return;
         }
 
@@ -538,13 +539,13 @@ public partial class FormPagesViewModel : EditorViewModelBase
         var rows = Ticked();
         if (rows.Count == 0)
         {
-            Message = "Tick the fields to move first.";
+            Message = Localizer.Instance["FormPages_TickTheFieldsToMoveFirst"];
             return;
         }
 
         if (Pages.Count == 0)
         {
-            Message = "Add a form page first.";
+            Message = Localizer.Instance["FormPages_AddAFormPageFirst"];
             return;
         }
 

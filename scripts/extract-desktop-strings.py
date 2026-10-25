@@ -8,7 +8,7 @@ names, key captions) stay as they are. LocalizationGuardTests fails while any ot
 Usage: python scripts/extract-desktop-strings.py [--check] [--prune]
   --check  only list the literal text that would be moved; exit code 1 when there is any.
   --prune  also drop Strings.resx entries whose key no .axaml or .cs file of the desktop app names. Keys that code builds
-           at run time (such as "Tab_" + id) must also be written out somewhere, or they are dropped.
+           at run time (such as "Tab_" + id) are kept when their prefix is in RUNTIME_PREFIXES.
 """
 
 import html
@@ -23,6 +23,9 @@ DESKTOP = ROOT / "src" / "WebAppForge.Desktop"
 RESX = DESKTOP / "Localization" / "Strings.resx"
 IGNORE = Path(__file__).resolve().parent / "desktop-strings-ignore.txt"
 XMLNS = 'xmlns:l="using:WebAppForge.Desktop.Localization"'
+
+# Keys that code builds at run time from an id (MainViewModel.TabTitle, TrConverter); --prune keeps them.
+RUNTIME_PREFIXES = ("Tab_", "FieldDesigner_Section")
 
 # The same list is in LocalizationGuardTests.
 ATTRIBUTES = r"Text|Header|Content|ToolTip\.Tip|PlaceholderText|Watermark|Title|AutomationProperties\.Name|AutomationProperties\.HelpText"
@@ -126,7 +129,8 @@ def main():
             return by_value[value]
         base = ("Common" if usage[value] > 1 else prefix(path)) + "_" + slug(value)
         key, n = base, 2
-        while key in entries and entries[key] != value:
+        # Resource names are compared without case, so "ResetAll" and "ResetALL" would clash.
+        while key.lower() in {k.lower() for k in entries}:
             key, n = f"{base}{n}", n + 1
         entries[key] = value
         by_value[value] = key
@@ -156,7 +160,7 @@ def main():
     if "--prune" in sys.argv:
         sources = [p.read_text(encoding="utf-8") for p in DESKTOP.rglob("*") if p.suffix in (".axaml", ".cs") and "obj" not in p.parts and "bin" not in p.parts]
         used = set(re.findall(r"[A-Za-z0-9]+_[A-Za-z0-9_]+", "\n".join(sources)))
-        for key in [k for k in entries if k not in used]:
+        for key in [k for k in entries if k not in used and not k.startswith(RUNTIME_PREFIXES)]:
             print(f"Dropped unused key {key}")
             del entries[key]
 

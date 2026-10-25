@@ -46,7 +46,7 @@ public partial class MainViewModel : ViewModelBase
     private string _projectName = "Project1";
 
     [ObservableProperty]
-    private string _status = "Create a new project or open an existing one.";
+    private string _status = Localizer.Instance["Main_CreateANewProjectOrOpen"];
 
     [ObservableProperty]
     private bool _isSessionIdle;
@@ -86,7 +86,7 @@ public partial class MainViewModel : ViewModelBase
         Settings = store?.Load() ?? new AppSettings();
         _idle = new SessionIdleTracker(TimeSpan.FromMinutes(Settings.SessionTimeoutMinutes), DateTime.UtcNow);
 
-        ApplyProject(new Project(), null, "New project. Save it to choose a project folder.");
+        ApplyProject(new Project(), null, Localizer.Instance["Main_NewProjectSaveItToChoose"]);
         var appearanceMessage = _appearance?.Apply(Settings);
         Localizer.Instance.CultureChanged += (_, _) =>
         {
@@ -157,7 +157,7 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Folder of the project file, or null while the project is unsaved.</summary>
     public string? ProjectFolder => ProjectPath is null ? null : Path.GetDirectoryName(ProjectPath);
 
-    public string FolderDisplay => ProjectFolder ?? "(not saved yet)";
+    public string FolderDisplay => ProjectFolder ?? Localizer.Instance["Main_NotSavedYet2"];
 
     /// <summary>"Project > Tab > Table > Field" for the current selection. The table and field appear only where the tab shows them.</summary>
     public string Breadcrumb
@@ -326,12 +326,12 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             var project = ProjectFile.Load(path);
-            ApplyProject(project, path, $"Reopened {Path.GetFileName(path)} with {project.Tables.Count} table(s).");
+            ApplyProject(project, path, Localizer.Instance.Format("Main_ReopenedWithTableS", Path.GetFileName(path), project.Tables.Count));
             return true;
         }
         catch (Exception ex)
         {
-            Status = $"Could not reopen {Path.GetFileName(path)}: {ex.Message}";
+            Status = Localizer.Instance.Format("Main_CouldNotReopen", Path.GetFileName(path), ex.Message);
             return false;
         }
     }
@@ -364,12 +364,12 @@ public partial class MainViewModel : ViewModelBase
         {
             ProjectFile.Save(Current, backup);
             _autosavedSnapshot = snapshot;
-            Status = $"Autosaved a backup copy to {Path.GetFileName(backup)}.";
+            Status = Localizer.Instance.Format("Main_AutosavedABackupCopyTo", Path.GetFileName(backup));
             return backup;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            Status = $"Autosave failed: {ex.Message}";
+            Status = Localizer.Instance.Format("Main_AutosaveFailed", ex.Message);
             return null;
         }
     }
@@ -408,7 +408,7 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
 
-        ApplyProject(new Project(), null, "New project. Save it to choose a project folder.");
+        ApplyProject(new Project(), null, Localizer.Instance["Main_NewProjectSaveItToChoose"]);
     }
 
     [RelayCommand]
@@ -428,12 +428,12 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             var project = ProjectFile.Load(path);
-            ApplyProject(project, path, $"Opened {Path.GetFileName(path)} with {project.Tables.Count} table(s).");
+            ApplyProject(project, path, Localizer.Instance.Format("Main_OpenedWithTableS", Path.GetFileName(path), project.Tables.Count));
             NoteRecent(path);
         }
         catch (Exception ex)
         {
-            Status = $"Could not open {Path.GetFileName(path)}: {ex.Message}";
+            Status = Localizer.Instance.Format("Main_CouldNotOpen", Path.GetFileName(path), ex.Message);
         }
     }
 
@@ -486,7 +486,7 @@ public partial class MainViewModel : ViewModelBase
 
     private async Task ShowOptionsPageAsync(string? categoryId)
     {
-        var options = new OptionsViewModel(Settings, next => ApplySettings(next, "Options applied."), _dialogs, OptionsEnvironment);
+        var options = new OptionsViewModel(Settings, next => ApplySettings(next, Localizer.Instance["Main_OptionsApplied"]), _dialogs, OptionsEnvironment);
         if (categoryId is not null)
         {
             options.SelectedCategory = options.Categories.First(c => c.Id == categoryId);
@@ -506,7 +506,7 @@ public partial class MainViewModel : ViewModelBase
 
         var next = Settings.Clone();
         next.CustomStylesPath = path;
-        ApplySettings(next, $"Custom styles set to {Path.GetFileName(path)}.");
+        ApplySettings(next, Localizer.Instance.Format("Main_CustomStylesSetTo", Path.GetFileName(path)));
     }
 
     [RelayCommand]
@@ -516,7 +516,7 @@ public partial class MainViewModel : ViewModelBase
     private void ShowFieldsTab() => ActiveTabIndex = TabNames.ToList().IndexOf("Fields");
 
     [RelayCommand]
-    private void About() => Status = "WebAppForge desktop editor. Appearance and session settings are under Tools > Options.";
+    private void About() => Status = Localizer.Instance["Main_WebAppForgeDesktopEditorAppearanceAndSession"];
 
     /// <summary>
     /// Returns true when the open project may be replaced. With unsaved changes it asks Save, Discard or Cancel.
@@ -571,13 +571,13 @@ public partial class MainViewModel : ViewModelBase
             ProjectFile.Save(Current, path);
             ProjectPath = path;
             _savedSnapshot = Snapshot(Current);
-            Status = $"Saved {path}.";
+            Status = Localizer.Instance.Format("Main_Saved2", path);
             RefreshSaveState();
             NoteRecent(path);
         }
         catch (Exception ex)
         {
-            Status = $"Save failed: {ex.Message}";
+            Status = Localizer.Instance.Format("Main_SaveFailed", ex.Message);
         }
     }
 
