@@ -373,7 +373,8 @@ public class ImportExportGenerationTests
         var runtime = files["Web/DataExchange.cs"];
 
         Assert.Contains("using LocShop.Localization;", runtime);
-        foreach (var text in UiStrings.ImportExport)
+        // The check of foreign keys of more than one column, and its message, is only in sites that have such a key.
+        foreach (var text in UiStrings.ImportExport.Where(t => t.Key != "ui.impReference"))
         {
             Assert.Contains($"\"{text.Key}\"", runtime);
         }

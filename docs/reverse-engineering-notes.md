@@ -300,7 +300,13 @@ Project.ImportExport and TableInfo.ImportExport, edited on the desktop "Import/E
 Word use DocumentFormat.OpenXml, referenced only by sites that offer them. Imports into audited tables write audit
 entries in the import transaction. Off by default, so existing projects generate identical output.
 
-Limits: Word import reads the first table only; composite foreign keys are not checked on import; at most 50,000 rows
+Foreign keys of more than one column are checked on import (2026-10-25): a row whose values of such a key are all filled in
+must match a row of the referenced table, or it is refused with "region, num: no row of orders has these values." A key with an
+empty value is not checked, like a foreign key in SQL, and a key with a column the import leaves out is not checked at all. Sites
+without such keys get the import code without the check, so their output is unchanged.
+
+Limits: Word import reads the first table only; a row cannot refer to a row added earlier in the same file through such a
+key (the check reads the referenced table before the import); at most 50,000 rows
 per file, held in memory; imports into tables without a primary key write no audit entries; imported audit values are
 the stored database values. SQL Server and MySQL sites are generated and compiled in tests but not run.
 

@@ -22,6 +22,11 @@ internal static partial class Templates
             text = AuditedExchange(text);
         }
 
+        if (MdTables.Any(t => ExchangeReferences(t).Count > 0))
+        {
+            text = ReferencedExchange(text);
+        }
+
         if (Localized)
         {
             text = LocalizedExchange(text);
@@ -50,6 +55,58 @@ internal static partial class Templates
         return Swap(text,
             "|| DateTime.TryParse(text, Invariant, DateTimeStyles.None, out value);",
             "|| DateTime.TryParse(text, Strings.Culture, DateTimeStyles.None, out value) || DateTime.TryParse(text, Invariant, DateTimeStyles.None, out value);");
+    }
+
+    /// <summary>
+    /// The import of a site where a table refers to another one with a foreign key of more than one column: a row whose values of
+    /// such a key are all filled in must match a row of the referenced table, as the database would require. A key with an empty
+    /// value is not checked, like a foreign key in SQL. Sites without such keys keep the import code without this check.
+    /// </summary>
+    private static string ReferencedExchange(string text)
+    {
+        static string Swap(string text, string from, string to) =>
+            text.Contains(from, StringComparison.Ordinal) ? text.Replace(from, to, StringComparison.Ordinal) : throw new InvalidOperationException("The import runtime changed: " + from);
+
+        const string property = "/// <summary>A foreign key of more than one column that every imported row must match.</summary>\n"
+            + "        public Reference[] References { get; init; } = Array.Empty<Reference>();";
+        text = Swap(text, "public sealed record Lookup(string Table, string Key, string Display, string Filter);",
+            "public sealed record Lookup(string Table, string Key, string Display, string Filter);\n\n"
+            + "    /// <summary>A foreign key: the referenced table, the indexes of its columns in Spec.Columns, the referenced columns and the caption of the table.</summary>\n"
+            + "    public sealed record Reference(string Table, int[] Columns, string[] Referenced, string Caption);");
+        text = text.Contains("public string AuditIdentity { get; init; } = string.Empty;", StringComparison.Ordinal)
+            ? Swap(text, "public string AuditIdentity { get; init; } = string.Empty;", "public string AuditIdentity { get; init; } = string.Empty;\n\n        " + property)
+            : Swap(text, "string SelectTop, string LimitTail, Col[] Columns);", "string SelectTop, string LimitTail, Col[] Columns)\n    {\n        " + property + "\n    }");
+        text = Swap(text, "var seen = new HashSet<string>(StringComparer.Ordinal);",
+            "var seen = new HashSet<string>(StringComparer.Ordinal);\n        var references = new Dictionary<string, bool>(StringComparer.Ordinal);");
+        text = Swap(text, "if (matchColumns.Length > 0 && matchColumns.All(i => map[i] >= 0 && plan.Values[i] is not null))",
+            "foreach (var reference in spec.References)\n"
+            + "            {\n"
+            + "                if (reference.Columns.All(i => map[i] >= 0 && plan.Values[i] is not null) && !await ReferenceExists(spec, reference, plan.Values, connection, references))\n"
+            + "                {\n"
+            + "                    plan.Errors.Add(string.Format(@@UI:impReference@@, string.Join(\", \", reference.Columns.Select(i => columns[i].Caption)), reference.Caption));\n"
+            + "                }\n"
+            + "            }\n\n"
+            + "            if (matchColumns.Length > 0 && matchColumns.All(i => map[i] >= 0 && plan.Values[i] is not null))");
+        return Swap(text, "/// <summary>True for a field that must have a value in a new row",
+            "/// <summary>True when the referenced table has a row with the values of a row of the file; known answers are reused.</summary>\n"
+            + "    private static async Task<bool> ReferenceExists(Spec spec, Reference reference, object?[] values, SqliteConnection connection, Dictionary<string, bool> known)\n"
+            + "    {\n"
+            + "        var key = reference.Table + \"\\u001e\" + string.Join(\"\\u001f\", reference.Columns.Select(i => Cell(spec.Columns[i], values[i])));\n"
+            + "        if (!known.TryGetValue(key, out var exists))\n"
+            + "        {\n"
+            + "            var args = new DynamicParameters();\n"
+            + "            var where = new List<string>();\n"
+            + "            for (var n = 0; n < reference.Columns.Length; n++)\n"
+            + "            {\n"
+            + "                where.Add(reference.Referenced[n] + \" = @r\" + n);\n"
+            + "                args.Add(\"@r\" + n, values[reference.Columns[n]]);\n"
+            + "            }\n\n"
+            + "            exists = await connection.ExecuteScalarAsync<long>(\"SELECT COUNT(*) FROM \" + reference.Table + \" WHERE \" + string.Join(\" AND \", where), args) > 0;\n"
+            + "            known[key] = exists;\n"
+            + "        }\n\n"
+            + "        return exists;\n"
+            + "    }\n\n"
+            + "    /// <summary>True for a field that must have a value in a new row");
     }
 
     /// <summary>
