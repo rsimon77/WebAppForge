@@ -120,7 +120,7 @@ public class LocalizationTests
             var source = File.ReadAllText(file);
             var values = Literal.Matches(source).Select(m => m.Groups[2].Value)
                 .Concat(TabTag.Matches(source).Select(m => m.Groups[1].Value))
-                .Select(System.Net.WebUtility.HtmlDecode)
+                .Select(v => System.Net.WebUtility.HtmlDecode(v) ?? v)
                 .Where(v => v.Any(char.IsAsciiLetter) && !ignored.Contains(v));
             found.AddRange(values.Select(v => $"{Path.GetFileName(file)}: {v}"));
         }
